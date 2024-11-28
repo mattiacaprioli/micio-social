@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
+  Alert,
 } from "react-native";
 import React, { useState, useRef } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -20,6 +21,8 @@ import Button from "../../components/Button";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import { getSupabaseFileUrl } from "../../services/imageService";
+import { Video } from "expo-av";
+import { createOrUpdatePost } from "../../services/postService";
 
 const NewPost = () => {
   const { user } = useAuth();
@@ -65,7 +68,7 @@ const NewPost = () => {
     }
 
     // check image or video fro remote file
-    if (file.includes("postImage")) {
+    if (file.includes("postImages")) {
       return "image";
     }
 
@@ -81,7 +84,32 @@ const NewPost = () => {
     return getSupabaseFileUrl(file)?.uri;
   };
 
-  const onSubmit = async () => {};
+  const onSubmit = async () => {
+    if(!bodyRef.current && !file){
+      Alert.alert('Post', 'Please choose an image of add post body');
+      return;
+    }
+
+    let data ={
+      file,
+      body: bodyRef.current,
+      userId: user?.id,
+    }
+
+    // create post
+    setLoading(true);
+    let res = await createOrUpdatePost(data);
+    setLoading(false);
+    if(res.success){
+      setFile(null);
+      bodyRef.current = "";
+      editorRef.current?.setContentHTML("");
+      router.back();
+    }else{
+      Alert.alert('Post', res.msg);
+    }
+
+  };
 
   return (
     <ScreenWrapper bg="white">
@@ -111,7 +139,13 @@ const NewPost = () => {
           {file && (
             <View style={styles.file}>
               {getFileType(file) == "video" ? (
-                <></>
+                <Video 
+                  style={{flex: 1}}
+                  source={{uri: getFileUri(file)}}
+                  useNativeControls
+                  resizeMode="cover"
+                  isLooping
+                />
               ) : (
                 <Image
                   source={{ uri: getFileUri(file) }}
