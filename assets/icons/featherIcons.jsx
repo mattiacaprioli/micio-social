@@ -1,4 +1,5 @@
 import Icon from 'react-native-vector-icons/Feather';
+import IconFill from 'react-native-vector-icons/FontAwesome';
 
 export const HomeIcon = ({ size, color }) => (
   <Icon name="home" size={size} color={color} />
@@ -18,6 +19,10 @@ export const UserIcon = ({ size, color }) => (
 
 export const HeartIcon = ({ size, color }) => (
   <Icon name="heart" size={size} color={color} />
+);
+
+export const HeartFillIcon = ({ size, color }) => (
+  <IconFill name="heart" size={size} color={color} />
 );
 
 export const PlusIcon = ({ size, color }) => (
