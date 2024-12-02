@@ -37,7 +37,8 @@ export const fetchPost = async (limit = 10) => {
       .from("posts")
       .select(`
         *,
-        user: users (id, name, image)
+        user: users (id, name, image),
+        postLikes (*)
       `)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -53,3 +54,46 @@ export const fetchPost = async (limit = 10) => {
     return { success: false, msg: "Could not fetch the posts" };
   }
 };
+
+export const createPostLike = async (postLike) => {
+  try {
+    
+    const { data, error } = await supabase
+      .from("postLikes")
+      .insert(postLike)
+      .select()
+      .single();
+
+    if (error) {
+      console.log("postLike error: ", error);
+      return { success: false, msg: "Could not like the post" };
+    }
+
+    return { success: true, data: data };
+  } catch (error) {
+    console.log("postLike error: ", error);
+    return { success: false, msg: "Could not like the post" };
+  }
+};
+
+export const removePostLike = async (postId, userId) => {
+  try {
+    
+    const { error } = await supabase
+      .from("postLikes")
+      .delete()
+      .eq("userId", userId)
+      .eq("postId", postId);
+
+    if (error) {
+      console.log("postLike error: ", error);
+      return { success: false, msg: "Could not remove the post like" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.log("postLike error: ", error);
+    return { success: false, msg: "Could not remove the post like" };
+  }
+};
+
