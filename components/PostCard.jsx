@@ -1,16 +1,24 @@
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  Share,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { theme } from "../constants/theme";
-import { hp, wp } from "../helpers/common";
+import { hp, stripHtmlTags, wp } from "../helpers/common";
 import Avatar from "./Avatar";
 import moment from "moment";
 import Icon from "../assets/icons";
 import RenderHtml from "react-native-render-html";
 import { color } from "@rneui/themed/dist/config";
 import { Image } from "expo-image";
-import { getSupabaseFileUrl } from "../services/imageService";
+import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video } from "expo-av";
 import { createPostLike, removePostLike } from "../services/postService";
+import Loading from "./Loading";
 
 const textStyles = {
   color: theme.colors.dark,
@@ -41,13 +49,14 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
   };
 
   const [likes, setLikes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLikes(item?.postLikes);
   }, []);
 
   const openPostDetails = () => {
-    // later
+    router.push({pathname: 'postDetails', params: {postId: item?.id}});
   };
 
   const onLike = async () => {
@@ -75,6 +84,19 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
         Alert.alert("Post", "Something went wrong!");
       }
     }
+  };
+
+  const onShare = async () => {
+    let content = { message: stripHtmlTags(item?.body) };
+    if (item?.file) {
+      // download the file then share the local uri
+      setLoading(true);
+      let url = await downloadFile(getSupabaseFileUrl(item?.file).uri);
+      console.log("downloaded file: ", url);
+      setLoading(false);
+      content.url = url;
+    }
+    Share.share(content);
   };
 
   const createdAt = moment(item?.created_at).format("MMM D");
@@ -152,15 +174,19 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
             <Text style={styles.count}>{likes?.length}</Text>
           </View>
           <View style={styles.footerButton}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={openPostDetails}>
               <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
             <Text style={styles.count}>{0}</Text>
           </View>
           <View style={styles.footerButton}>
-            <TouchableOpacity>
-              <Icon name="share" size={24} color={theme.colors.textLight} />
-            </TouchableOpacity>
+            {loading ? (
+              <Loading size="small" />
+            ) : (
+              <TouchableOpacity onPress={onShare}>
+                <Icon name="share" size={24} color={theme.colors.textLight} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>

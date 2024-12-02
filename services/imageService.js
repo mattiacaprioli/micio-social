@@ -18,6 +18,23 @@ export  const getSupabaseFileUrl = filePath => {
   return null;
 };
 
+export const downloadFile = async (url) => {
+  try {
+    const { uri } = await FileSystem.downloadAsync(url, getLocalFilePath(url));
+    console.log("Downloaded file URI:", uri);
+    return uri;
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    return null; // Restituisci null se il download fallisce
+  }
+};
+
+
+export const getLocalFilePath = filePath => {
+  let fileName = filePath.split('/').pop()
+  return `${FileSystem.documentDirectory}${fileName}`;
+}
+
 export const uploadFile = async (folderName, filePath, isImage = true) => {
   try {
     const fileBase64 = await FileSystem.readAsStringAsync(filePath, {
