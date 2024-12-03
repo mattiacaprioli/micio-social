@@ -8,7 +8,7 @@ import { getUserImageSrc } from '../services/imageService'
 const Avatar = ({
   uri,
   size = hp(4.5),
-  rounded = theme.rounded.md,
+  rounded = theme.radius.md,
   style = {},
 }) => {
   return (
