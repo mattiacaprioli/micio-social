@@ -31,7 +31,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     // show confirm modal
-    Alert.alert("Confirm", "Are you sure you want to logout?", [
+    Alert.alert("Confirm", "Are you sure you want to log out?", [
       {
         text: "Cancel",
         onPress: () => console.log("Modal cancelled"),

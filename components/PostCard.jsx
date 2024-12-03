@@ -37,7 +37,13 @@ const tagsStyles = {
   },
 };
 
-const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
+const PostCard = ({
+  item,
+  currentUser,
+  router,
+  hasShadow = true,
+  showMoreIcon = true,
+}) => {
   const shadowStyle = {
     shadowOffset: {
       width: 0,
@@ -56,7 +62,8 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
   }, []);
 
   const openPostDetails = () => {
-    router.push({pathname: 'postDetails', params: {postId: item?.id}});
+    if (!showMoreIcon) return null;
+    router.push({ pathname: "postDetails", params: { postId: item?.id } });
   };
 
   const onLike = async () => {
@@ -118,13 +125,15 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
             <Text style={styles.postTime}>{createdAt}</Text>
           </View>
         </View>
-        <TouchableOpacity onPress={openPostDetails}>
-          <Icon
-            name="threeDotsHorizontal"
-            size={hp(3.4)}
-            color={theme.colors.text}
-          />
-        </TouchableOpacity>
+        {showMoreIcon && (
+          <TouchableOpacity onPress={openPostDetails}>
+            <Icon
+              name="threeDotsHorizontal"
+              size={hp(3.4)}
+              color={theme.colors.text}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* post body & video */}
@@ -177,7 +186,7 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
             <TouchableOpacity onPress={openPostDetails}>
               <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
-            <Text style={styles.count}>{0}</Text>
+            <Text style={styles.count}>{item?.comments[0]?.count}</Text>
           </View>
           <View style={styles.footerButton}>
             {loading ? (
