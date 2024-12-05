@@ -1,12 +1,13 @@
 import {
   Alert,
+  FlatList,
   Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -16,16 +17,38 @@ import Icon from "../../assets/icons";
 import { theme } from "../../constants/theme";
 import { supabase } from "../../lib/supabase";
 import Avatar from "../../components/Avatar";
+import { fetchPost } from "../../services/postService";
+import PostCard from "../../components/PostCard";
+import Loading from "../../components/Loading";
 
+var limit = 0;
 const Profile = () => {
   const { user, setAuth } = useAuth();
   const router = useRouter();
+  const [posts, setPosts] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
 
   const onLogout = async () => {
     // setAuth(null);
     const { error } = await supabase.auth.signOut();
     if (error) {
       Alert.alert("Logout", "error signing out!");
+    }
+  };
+
+  const getPosts = async () => {
+    // call the api here
+
+    if (!hasMore) return null;
+    limit = limit + 10;
+
+    console.log("fetching post: ", limit);
+    let res = await fetchPost(limit, user.id);
+    if (res.success) {
+      if (posts.length == res.data.length) {
+        setHasMore(false);
+      }
+      setPosts(res.data);
     }
   };
 
@@ -47,7 +70,33 @@ const Profile = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <UserHeader user={user} router={router} handleLogout={handleLogout} />
+      <FlatList
+        data={posts}
+        ListHeaderComponent={<UserHeader user={user} router={router} handleLogout={handleLogout} />}
+        ListHeaderComponentStyle={{marginBottom: 30}}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listStyle}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <PostCard item={item} currentUser={user} router={router} />
+        )}
+        onEndReached={() => {
+          getPosts();
+          console.log("got to the end");
+        }}
+        onEndReachedThreshold={0}
+        ListFooterComponent={
+          hasMore ? (
+            <View style={{ marginVertical: posts.length == 0 ? 100 : 30 }}>
+              <Loading />
+            </View>
+          ) : (
+            <View style={{ marginVertical: 30 }}>
+              <Text style={styles.noPost}>No more posts</Text>
+            </View>
+          )
+        }
+      />
     </ScreenWrapper>
   );
 };
@@ -98,11 +147,9 @@ const UserHeader = ({ user, router, handleLogout }) => {
                 <Text style={styles.infoText}>{user && user.phoneNumber}</Text>
               </View>
             )}
-            {
-              user && user.bio && (
-                <Text style={styles.infoText}>{user.bio}</Text>
-              )
-            }
+            {user && user.bio && (
+              <Text style={styles.infoText}>{user.bio}</Text>
+            )}
           </View>
         </View>
       </View>
