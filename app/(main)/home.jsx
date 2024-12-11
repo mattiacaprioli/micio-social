@@ -7,7 +7,8 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -116,6 +117,12 @@ const Home = () => {
       setPosts(res.data);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      getPosts(true);
+    }, [])
+  );
 
   // console.log('user: ', user);
 
