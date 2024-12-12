@@ -7,7 +7,8 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -63,6 +64,26 @@ const Home = () => {
     }
   };
 
+  const handleNewComment = async (payload) => {
+    if (payload.eventType == "INSERT" && payload.new.id) {
+      let newComment = { ...payload.new };
+      let res = await getUserData(newComment.userId);
+      newComment.user = res.success ? res.data : {};
+  
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if (post.id == newComment.postId) {
+            return {
+              ...post,
+              comments: [newComment, ...post.comments], // O incrementa il conteggio
+            };
+          }
+          return post;
+        })
+      );
+    }
+  };
+  
   const handleNewNotification = async (payload) => {
     if(payload.eventType == "INSERT" && payload.new.id){
       setNotificationCount((prevCount) => prevCount + 1);
@@ -81,6 +102,20 @@ const Home = () => {
 
     // getPosts();
 
+    let commentChannel = supabase
+      .channel("*")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "comments",
+          filter: `postId=in.${posts.map((post) => post.id).join(",")}`,
+        },
+        handleNewComment
+      )
+      .subscribe();
+
     let notificationChannel = supabase
       .channel("notifications")
       .on(
@@ -97,6 +132,7 @@ const Home = () => {
 
     return () => {
       supabase.removeChannel(postChannel);
+      supabase.removeChannel(commentChannel);
       supabase.removeChannel(notificationChannel);
     };
   }, []);
@@ -116,6 +152,12 @@ const Home = () => {
       setPosts(res.data);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      getPosts(true);
+    }, [])
+  );
 
   // console.log('user: ', user);
 
