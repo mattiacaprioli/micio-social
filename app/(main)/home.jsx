@@ -174,7 +174,7 @@ const Home = () => {
       <View style={styles.container}>
         {/* header */}
         <View style={styles.header}>
-          <Text style={styles.title}>LinkUp</Text>
+          <Text style={styles.title}>Micio Social</Text>
           <View style={styles.icons}>
             <Pressable 
               onPress={() => {
