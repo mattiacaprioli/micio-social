@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, RefreshControl, Text, View } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
 import { fetchNotifications } from "../../services/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import { hp, wp } from "../../helpers/common";
@@ -11,6 +11,7 @@ import Header from "../../components/Header";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -18,12 +19,17 @@ const Notifications = () => {
     getNotifications();
   }, []);
 
-  const getNotifications = async () => {
+  const getNotifications = async (isRefreshing = false) => {
     let res = await fetchNotifications(user.id);
     if (res.success) {
       setNotifications(res.data);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getNotifications().finally(() => setRefreshing(false));
+  }, []);
 
   return (
     <ScreenWrapper>
@@ -32,6 +38,13 @@ const Notifications = () => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listStyle}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh} 
+              colors={[theme.colors.primary]}
+            />
+          }
         >
           {notifications.map((item) => {
             return (

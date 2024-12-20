@@ -5,9 +5,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  RefreshControl,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -27,6 +28,7 @@ const Profile = () => {
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const onLogout = async () => {
     // setAuth(null);
@@ -36,11 +38,16 @@ const Profile = () => {
     }
   };
 
-  const getPosts = async () => {
+  const getPosts = async (isRefreshing = false) => {
     // call the api here
 
-    if (!hasMore) return null;
-    limit = limit + 10;
+    if (!hasMore && !isRefreshing) return null;
+
+    if (isRefreshing) {
+      limit = 10; // Resetta il limite durante il refresh
+    } else {
+      limit += 10;
+    }
 
     console.log("fetching post: ", limit);
     let res = await fetchPost(limit, user.id);
@@ -50,7 +57,15 @@ const Profile = () => {
       }
       setPosts(res.data);
     }
+    if (isRefreshing) {
+      setRefreshing(false);
+    }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getPosts(true);
+  }, []);
 
   const handleLogout = async () => {
     // show confirm modal
@@ -85,6 +100,13 @@ const Profile = () => {
           console.log("got to the end");
         }}
         onEndReachedThreshold={0}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
+        }
         ListFooterComponent={
           hasMore ? (
             <View style={{ marginVertical: posts.length == 0 ? 100 : 30 }}>

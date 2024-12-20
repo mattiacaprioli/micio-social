@@ -3,6 +3,7 @@ import {
   Button,
   FlatList,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -31,6 +32,7 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handlePostEvent = async (payload) => {
     // console.log('payload: ', payload);
@@ -137,11 +139,15 @@ const Home = () => {
     };
   }, []);
 
-  const getPosts = async () => {
+  const getPosts = async (isRefreshing = false) => {
     // call the api here
+    if (!hasMore && !isRefreshing) return null;
 
-    if (!hasMore) return null;
-    limit = limit + 10;
+    if (isRefreshing) {
+      limit = 10; // Resetta il limite durante il refresh
+    } else {
+      limit += 10;
+    }
 
     console.log("fetching post: ", limit);
     let res = await fetchPost(limit);
@@ -151,6 +157,9 @@ const Home = () => {
       }
       setPosts(res.data);
     }
+    if (isRefreshing) {
+      setRefreshing(false);
+    }
   };
 
   useFocusEffect(
@@ -158,6 +167,11 @@ const Home = () => {
       getPosts(true);
     }, [])
   );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getPosts(true); 
+  }, []);
 
   // console.log('user: ', user);
 
@@ -218,6 +232,13 @@ const Home = () => {
             console.log("got to the end");
           }}
           onEndReachedThreshold={0}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+            />
+          }
           ListFooterComponent={
             hasMore ? (
               <View style={{ marginVertical: posts.length == 0 ? 200 : 30 }}>
