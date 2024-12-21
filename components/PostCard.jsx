@@ -41,6 +41,7 @@ const PostCard = ({
   item,
   currentUser,
   router,
+  isUserProfile = false,
   hasShadow = true,
   showMoreIcon = true,
   showDelete = false,
@@ -67,6 +68,17 @@ const PostCard = ({
   const openPostDetails = () => {
     if (!showMoreIcon) return null;
     router.push({ pathname: "postDetails", params: { postId: item?.id } });
+  };
+
+  const openUserProfile = () => {
+    if (item?.user?.id === currentUser?.id) {
+      router.push("profile");
+    } else {
+      router.push({
+        pathname: "userProfile",
+        params: { userId: item?.user?.id },
+      });
+    }
   };
 
   const onLike = async () => {
@@ -132,7 +144,11 @@ const PostCard = ({
   return (
     <View style={[styles.container, hasShadow && shadowStyle]}>
       <View style={styles.header}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={!isUserProfile ? openUserProfile : null}
+          disabled={isUserProfile} 
+        >
           <Avatar
             size={hp(4.5)}
             uri={item?.user?.image}
@@ -142,7 +158,8 @@ const PostCard = ({
             <Text style={styles.username}>{item?.user?.name}</Text>
             <Text style={styles.postTime}>{createdAt}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
+
         {showMoreIcon && (
           <TouchableOpacity onPress={openPostDetails}>
             <Icon
@@ -156,18 +173,10 @@ const PostCard = ({
         {showDelete && currentUser.id == item?.userId && (
           <View style={styles.actions}>
             <TouchableOpacity onPress={() => onEdit(item)}>
-              <Icon
-                name="edit"
-                size={hp(2.4)}
-                color={theme.colors.text}
-              />
+              <Icon name="edit" size={hp(2.4)} color={theme.colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handlePostDelete}>
-              <Icon
-                name="delete"
-                size={hp(2.4)}
-                color={theme.colors.rose}
-              />
+              <Icon name="delete" size={hp(2.4)} color={theme.colors.rose} />
             </TouchableOpacity>
           </View>
         )}
