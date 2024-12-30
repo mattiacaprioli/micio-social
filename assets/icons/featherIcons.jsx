@@ -92,3 +92,7 @@ export const ImageIcon = ({ size, color }) => (
 export const VideoIcon = ({ size, color }) => (
   <Icon name="video" size={size} color={color} />
 );
+
+export const SettingsIcon = ({ size, color }) => (
+  <Icon name="settings" size={size} color={color} />
+);
