@@ -24,6 +24,7 @@ import {
   LogoutIcon,
   ImageIcon,
   VideoIcon,
+  SettingsIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -51,6 +52,7 @@ const icons = {
   logout: LogoutIcon,
   image: ImageIcon,
   video: VideoIcon,
+  settings: SettingsIcon,
 }
 
 const Icon = ({name, ...props}) => {

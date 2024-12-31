@@ -16,7 +16,6 @@ import Header from "../../components/Header";
 import { wp, hp } from "../../helpers/common";
 import Icon from "../../assets/icons";
 import { theme } from "../../constants/theme";
-import { supabase } from "../../lib/supabase";
 import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
@@ -29,14 +28,6 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const onLogout = async () => {
-    // setAuth(null);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      Alert.alert("Logout", "error signing out!");
-    }
-  };
 
   const getPosts = async (isRefreshing = false) => {
     // call the api here
@@ -67,28 +58,12 @@ const Profile = () => {
     getPosts(true);
   }, []);
 
-  const handleLogout = async () => {
-    // show confirm modal
-    Alert.alert("Confirm", "Are you sure you want to log out?", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Modal cancelled"),
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        onPress: () => onLogout(),
-        style: "destructive",
-      },
-    ]);
-  };
-
   return (
     <ScreenWrapper bg="white">
       <FlatList
         data={posts}
         ListHeaderComponent={
-          <UserHeader user={user} router={router} handleLogout={handleLogout} />
+          <UserHeader user={user} router={router} />
         }
         ListHeaderComponentStyle={{ marginBottom: 30 }}
         showsVerticalScrollIndicator={false}
@@ -130,16 +105,16 @@ const Profile = () => {
   );
 };
 
-const UserHeader = ({ user, router, handleLogout }) => {
+const UserHeader = ({ user, router }) => {
   return (
     <View
       style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
     >
       <View>
         <Header title="Profile" mb={30} />
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Icon name="logout" color={theme.colors.rose} />
-        </TouchableOpacity>
+        <Pressable onPress={() => router.push("settings/settings")} style={styles.settingsButton}>
+          <Icon name="settings" color={theme.colors.text} />
+        </Pressable>
       </View>
 
       <View style={styles.container}>
@@ -233,12 +208,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: theme.colors.textLight,
   },
-  logoutButton: {
+  settingsButton: {
     position: "absolute",
     right: 0,
     padding: 5,
     borderRadius: theme.radius.sm,
-    backgroundColor: "#fee2e2",
+    backgroundColor: 'rgba(0,0,0,0.07)',
   },
   listStyle: {
     paddingHorizontal: wp(4),
