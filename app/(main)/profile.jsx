@@ -112,7 +112,7 @@ const UserHeader = ({ user, router }) => {
     >
       <View>
         <Header title="Profile" mb={30} />
-        <Pressable onPress={() => router.push("settings")} style={styles.settingsButton}>
+        <Pressable onPress={() => router.push("settings/settings")} style={styles.settingsButton}>
           <Icon name="settings" color={theme.colors.text} />
         </Pressable>
       </View>

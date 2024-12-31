@@ -9,15 +9,16 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ScreenWrapper from "../../../components/ScreenWrapper";
 import { useRouter } from "expo-router";
-import Header from "../../components/Header";
-import { wp, hp } from "../../helpers/common";
-import Icon from "../../assets/icons";
-import { theme } from "../../constants/theme";
-import { supabase } from "../../lib/supabase";
+import Header from "../../../components/Header";
+import { wp, hp } from "../../../helpers/common";
+import Icon from "../../../assets/icons";
+import { theme } from "../../../constants/theme";
+import { supabase } from "../../../lib/supabase";
 
 const Settings = () => {
+  const router = useRouter();
   const onLogout = async () => {
     // setAuth(null);
     const { error } = await supabase.auth.signOut();
@@ -46,33 +47,18 @@ const Settings = () => {
     {
       label: "Account",
       icon: "arrowRight",
-      action: () => console.log("Edit Profile pressed"),
+      action: () => router.push("settings/accountSettings"),
     },
     {
-      label: "Change Theme",
+      label: "Notifications",
       icon: "arrowRight",
-      action: () => console.log("Change Theme pressed"),
+      action: () => router.push("settings/notificationsSettings"),
     },
     {
-      label: "Change Language",
+      label: "Information",
       icon: "arrowRight",
-      action: () => console.log("Change Language pressed"),
-    },
-    {
-      label: "Change Password",
-      icon: "arrowRight",
-      action: () => console.log("Change Password pressed"),
-    },
-    {
-      label: "Privacy Policy",
-      icon: "arrowRight",
-      action: () => console.log("View Privacy Policy pressed"),
-    },
-    {
-      label: "Terms and Conditions",
-      icon: "arrowRight",
-      action: () => console.log("View Terms pressed"),
-    },
+      action: () => router.push("settings/informationSettings"),
+    }
   ];
 
   return (
@@ -100,7 +86,7 @@ const Settings = () => {
       <Image
         style={styles.image}
         resizeMode="contain"
-        source={require("../../assets/images/welcome.png")}
+        source={require("../../../assets/images/welcome.png")}
       />
       <Text style={styles.title}>Micio Social</Text>
       <Text style={styles.versionText}>App Version: 1.0.0</Text>
@@ -133,7 +119,7 @@ const styles = StyleSheet.create({
     marginTop: hp(2),
     backgroundColor: theme.colors.darkLight,
     borderRadius: theme.radius.xxl,
-    paddingVertical: hp(1),
+    paddingVertical: hp(1.5),
     paddingHorizontal: wp(2),
     borderWidth: 0.5,
     borderColor: theme.colors.border,
@@ -142,6 +128,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 3,
+    gap: hp(2),
   },
   item: {
     flexDirection: "row",
@@ -151,7 +138,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(3),
     borderRadius: theme.radius.lg,
     backgroundColor: "white",
-    marginBottom: hp(1),
   },
   shadow: {
     shadowColor: "#000",
