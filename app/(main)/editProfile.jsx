@@ -5,6 +5,8 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -27,26 +29,31 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     name: "",
-    phoneNumber: "",
-    image: null,
+    city: "",
     bio: "",
-    address: "",
+    phoneNumber: "",
+    birthday: "",
+    gender: "",
+    image: null,
   });
+  const [isModalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
       setUser({
         name: currentUser.name || "",
-        phoneNumber: currentUser.phoneNumber || "",
-        image: currentUser.image || null,
-        bio: currentUser.bio || "",
         address: currentUser.address || "",
+        bio: currentUser.bio || "",
+        phoneNumber: currentUser.phoneNumber || "",
+        birthday: currentUser.birthday || "",
+        gender: currentUser.gender || "",
+        image: currentUser.image || null,
       });
     }
   }, [currentUser]);
 
   const onPickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -59,53 +66,62 @@ const EditProfile = () => {
   };
 
   const onSubmit = async () => {
-    let userData = { ...user };
-    let { name, phoneNumber, bio, image, address } = userData;
-    if (!name || !phoneNumber || !bio || !address || !image) {
+    const { name, address, bio, phoneNumber, birthday, gender, image } =
+      user;
+
+    if (
+      !name ||
+      !address ||
+      !bio ||
+      !phoneNumber ||
+      !birthday ||
+      !gender
+    ) {
       Alert.alert("Profile", "Please fill all fields");
       return;
     }
+
     setLoading(true);
 
-    if(typeof image == "object"){
-      // upload image
-      let imagesRes = await uploadFile("profiles", image?.uri, true);
-      if(imagesRes.success) userData.image = imagesRes.data
-      else userData.image = null;
+    if (typeof image === "object") {
+      const imagesRes = await uploadFile("profiles", image.uri, true);
+      if (imagesRes.success) {
+        user.image = imagesRes.data;
+      } else {
+        user.image = null;
+      }
     }
 
-    // update user
-    const res = await updateUser(currentUser?.id, userData);
+    const res = await updateUser(currentUser?.id, user);
     setLoading(false);
 
     if (res.success) {
-      setUserData({ ...currentUser, ...userData });
+      setUserData({ ...currentUser, ...user });
       router.back();
     }
   };
 
-  let imageSourse =
-    user.image && typeof user.image == "object"
+  const imageSource =
+    user.image && typeof user.image === "object"
       ? user.image.uri
-      : getUserImageSrc(user.image)
+      : getUserImageSrc(user.image);
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container}>
-        <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
+        <View style={styles.container}>
           <Header title="Edit Profile" />
 
-          {/* form */}
+          {/* Profile Section */}
           <View style={styles.form}>
             <View style={styles.avatarContainer}>
-              <Image source={imageSourse} style={styles.avatar} />
+              <Image source={imageSource} style={styles.avatar} />
               <Pressable style={styles.cameraIcon} onPress={onPickImage}>
                 <Icon name="camera" size={20} />
               </Pressable>
             </View>
-            <Text style={{ fontSize: hp(1.5), color: theme.colors.text }}>
-              Please fill your profile details
-            </Text>
+
+            <Text style={styles.sectionTitle}>Profile Details</Text>
             <Input
               icon={<Icon name="user" />}
               placeholder="Enter your name"
@@ -113,14 +129,8 @@ const EditProfile = () => {
               onChangeText={(value) => setUser({ ...user, name: value })}
             />
             <Input
-              icon={<Icon name="call" />}
-              placeholder="Enter your phone number"
-              value={user.phoneNumber}
-              onChangeText={(value) => setUser({ ...user, phoneNumber: value })}
-            />
-            <Input
               icon={<Icon name="location" />}
-              placeholder="Enter your address"
+              placeholder="Enter your city"
               value={user.address}
               onChangeText={(value) => setUser({ ...user, address: value })}
             />
@@ -132,10 +142,84 @@ const EditProfile = () => {
               onChangeText={(value) => setUser({ ...user, bio: value })}
             />
 
+            {/* Personal Info Section */}
+            <Text style={styles.sectionTitle}>Personal Information</Text>
+            <Input
+              icon={<Icon name="call" />}
+              placeholder="Enter your phone number"
+              value={user.phoneNumber}
+              onChangeText={(value) => setUser({ ...user, phoneNumber: value })}
+            />
+            <Input
+              placeholder="Enter your birthday (DD-MM-YYYY)"
+              value={user.birthday}
+              onChangeText={(value) => setUser({ ...user, birthday: value })}
+            />
+
+            {/* Gender Selector */}
+            <TouchableOpacity
+              style={[styles.input, styles.genderSelector]}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text
+                style={[
+                  styles.genderText,
+                  !user.gender && styles.placeholderText,
+                ]}
+              >
+                {user.gender ? user.gender : "Select Gender"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Modal for Gender Selection */}
+            <Modal
+              visible={isModalVisible}
+              transparent={true}
+              animationType="slide"
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUser({ ...user, gender: "male" });
+                      setModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>Male</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUser({ ...user, gender: "female" });
+                      setModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>Female</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUser({ ...user, gender: "other" });
+                      setModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>Other</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalOption, styles.cancelButton]}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
             <Button title="Update" loading={loading} onPress={onSubmit} />
           </View>
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
@@ -146,6 +230,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: wp(4),
+    paddingBottom: 20,
   },
   avatarContainer: {
     height: hp(14),
@@ -177,20 +262,68 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 18,
   },
-  input: {
-    flexDirection: "row",
-    borderWidth: 0.4,
-    borderColor: theme.colors.text,
-    borderRadius: theme.radius.xxl,
-    borderCurve: "continuous",
-    padding: 17,
-    paddingHorizontal: 20,
-    gap: 15,
+  sectionTitle: {
+    fontSize: hp(2),
+    fontWeight: "bold",
+    color: theme.colors.text,
+    marginVertical: 10,
   },
   bio: {
     flexDirection: "row",
     height: hp(15),
     alignItems: "flex-start",
     paddingVertical: 15,
+  },
+  genderSelector: {
+    height: hp(7.2), // Altezza coerente con gli Input
+    justifyContent: "center",
+    paddingHorizontal: 18, // Coerente con Input
+    borderWidth: 0.4,
+    borderColor: theme.colors.text,
+    borderRadius: theme.radius.xxl,
+    backgroundColor: "white",
+  },
+  genderText: {
+    color: theme.colors.text,
+    fontSize: hp(2),
+  },
+  placeholderText: {
+    color: theme.colors.textLight,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalOption: {
+    paddingVertical: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+  modalOptionText: {
+    fontSize: hp(2),
+    color: theme.colors.text,
+  },
+  cancelButton: {
+    backgroundColor: theme.colors.primary,
+    marginTop: 15,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderRadius: theme.radius.xxl,
+  },
+  cancelButtonText: {
+    fontSize: hp(2),
+    color: "white",
+    fontWeight: "bold",
   },
 });

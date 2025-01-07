@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Alert, Switch, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  Switch,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import Input from "../../../components/Input";
@@ -9,14 +17,21 @@ import { theme } from "../../../constants/theme";
 
 const AccountSettings = () => {
   const [personalInfo, setPersonalInfo] = useState({ name: "", email: "" });
-  const [password, setPassword] = useState({ current: "", new: "", confirm: "" });
+  const [password, setPassword] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
   const [loading, setLoading] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [language, setLanguage] = useState("English");
 
   const handleUpdatePersonalInfo = () => {
     if (!personalInfo.name || !personalInfo.email) {
-      Alert.alert("Error", "All fields are required to update personal information.");
+      Alert.alert(
+        "Error",
+        "All fields are required to update personal information."
+      );
       return;
     }
     console.log("Updated personal information:", personalInfo);
@@ -42,14 +57,21 @@ const AccountSettings = () => {
       "Are you sure you want to deactivate your account? This action cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Deactivate", onPress: () => console.log("Account deactivated"), style: "destructive" },
+        {
+          text: "Deactivate",
+          onPress: () => console.log("Account deactivated"),
+          style: "destructive",
+        },
       ]
     );
   };
 
   const toggleTheme = () => {
     setIsDarkTheme((prev) => !prev);
-    Alert.alert("Theme Changed", `Theme set to ${!isDarkTheme ? "Dark" : "Light"}`);
+    Alert.alert(
+      "Theme Changed",
+      `Theme set to ${!isDarkTheme ? "Dark" : "Light"}`
+    );
   };
 
   const toggleLanguage = () => {
@@ -60,69 +82,94 @@ const AccountSettings = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container}>
-        <Header title="Account Settings" />
-        
-        <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <Header title="Account Settings" />
 
-        <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Update Personal Information</Text>
-          <Input
-            placeholder="Email"
-            value={personalInfo.email}
-            onChangeText={(text) => setPersonalInfo({ ...personalInfo, email: text })}
-          />
-          <Button title="Update Information" loading={loading} onPress={handleUpdatePersonalInfo} />
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Change Password</Text>
-          <Input
-            placeholder="Current Password"
-            secureTextEntry
-            value={password.current}
-            onChangeText={(text) => setPassword({ ...password, current: text })}
-          />
-          <Input
-            placeholder="New Password"
-            secureTextEntry
-            value={password.new}
-            onChangeText={(text) => setPassword({ ...password, new: text })}
-          />
-          <Input
-            placeholder="Confirm New Password"
-            secureTextEntry
-            value={password.confirm}
-            onChangeText={(text) => setPassword({ ...password, confirm: text })}
-          />
-          <Button title="Change Password" loading={loading} onPress={handleChangePassword} />
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.sectionTitle}>App Settings</Text>
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Dark Theme</Text>
-            <Switch
-              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-              thumbColor={isDarkTheme ? theme.colors.primary : theme.colors.textLight}
-              onValueChange={toggleTheme}
-              value={isDarkTheme}
+          <View style={styles.form}>
+            <Text style={styles.sectionTitle}>Update Personal Information</Text>
+            <Input
+              placeholder="Email"
+              value={personalInfo.email}
+              onChangeText={(text) =>
+                setPersonalInfo({ ...personalInfo, email: text })
+              }
+            />
+            <Button
+              title="Update Information"
+              loading={loading}
+              onPress={handleUpdatePersonalInfo}
             />
           </View>
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Language</Text>
-            <TouchableOpacity onPress={toggleLanguage} style={styles.languageButton}>
-              <Text style={styles.languageText}>{language}</Text>
-            </TouchableOpacity>
+
+          <View style={styles.form}>
+            <Text style={styles.sectionTitle}>Change Password</Text>
+            <Input
+              placeholder="Current Password"
+              secureTextEntry
+              value={password.current}
+              onChangeText={(text) =>
+                setPassword({ ...password, current: text })
+              }
+            />
+            <Input
+              placeholder="New Password"
+              secureTextEntry
+              value={password.new}
+              onChangeText={(text) => setPassword({ ...password, new: text })}
+            />
+            <Input
+              placeholder="Confirm New Password"
+              secureTextEntry
+              value={password.confirm}
+              onChangeText={(text) =>
+                setPassword({ ...password, confirm: text })
+              }
+            />
+            <Button
+              title="Change Password"
+              loading={loading}
+              onPress={handleChangePassword}
+            />
+          </View>
+
+          <View style={styles.form}>
+            <Text style={styles.sectionTitle}>App Settings</Text>
+            <View style={styles.settingItem}>
+              <Text style={styles.settingLabel}>Dark Theme</Text>
+              <Switch
+                trackColor={{
+                  false: theme.colors.border,
+                  true: theme.colors.primary,
+                }}
+                thumbColor={
+                  isDarkTheme ? theme.colors.primary : theme.colors.textLight
+                }
+                onValueChange={toggleTheme}
+                value={isDarkTheme}
+              />
+            </View>
+            <View style={styles.settingItem}>
+              <Text style={styles.settingLabel}>Language</Text>
+              <TouchableOpacity
+                onPress={toggleLanguage}
+                style={styles.languageButton}
+              >
+                <Text style={styles.languageText}>{language}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.form}>
+            <Text style={styles.sectionTitle}>Deactivate Account</Text>
+            <Button
+              title="Deactivate Account"
+              danger
+              onPress={handleDeactivateAccount}
+            />
           </View>
         </View>
-
-        <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Deactivate Account</Text>
-          <Button title="Deactivate Account" danger onPress={handleDeactivateAccount} />
-        </View>
-        </ScrollView>
-      </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 };
@@ -133,11 +180,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: wp(4),
-    paddingBottom: hp(2),
     backgroundColor: "white",
   },
   form: {
     marginTop: hp(3),
+    paddingBottom: 20,
     gap: hp(2),
   },
   sectionTitle: {
