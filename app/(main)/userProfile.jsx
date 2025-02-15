@@ -19,6 +19,10 @@ import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import {
+  getFollowersCount,
+  getFollowingCount,
+} from "../../services/followsService";
 
 var limit = 0;
 const userProfile = () => {
@@ -112,6 +116,22 @@ const userProfile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (user?.id) {
+        const followers = await getFollowersCount(user.id);
+        const following = await getFollowingCount(user.id);
+        setFollowersCount(followers);
+        setFollowingCount(following);
+      }
+    };
+
+    fetchCounts();
+  }, [user]);
+
   return (
     <View
       style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
@@ -137,6 +157,18 @@ const UserHeader = ({ user, router }) => {
             {user && user.bio && (
               <Text style={styles.infoText}>{user.bio}</Text>
             )}
+          </View>
+
+          {/* follower / following section */}
+          <View style={styles.followContainer}>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followersCount}</Text>
+              <Text style={styles.followLabel}>Followers</Text>
+            </View>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followingCount}</Text>
+              <Text style={styles.followLabel}>Following</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -186,5 +218,23 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     textAlign: "center",
     color: theme.colors.text,
+  },
+  followContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 40,
+    marginTop: 10,
+  },
+  followItem: {
+    alignItems: "center",
+  },
+  followCount: {
+    fontSize: hp(2.5),
+    fontWeight: "bold",
+    color: theme.colors.textDark,
+  },
+  followLabel: {
+    fontSize: hp(1.6),
+    color: theme.colors.textLight,
   },
 });
