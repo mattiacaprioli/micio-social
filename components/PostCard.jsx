@@ -19,6 +19,7 @@ import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video } from "expo-av";
 import { createPostLike, removePostLike } from "../services/postService";
 import Loading from "./Loading";
+import { createNotification } from "../services/notificationService";
 
 const textStyles = {
   color: theme.colors.dark,
@@ -100,7 +101,18 @@ const PostCard = ({
       };
       setLikes([...likes, data]);
       let res = await createPostLike(data);
-
+      if (res.success) {
+        if (currentUser.id !== item.user.id) {
+          let notify = {
+            senderId: currentUser.id,
+            receiverId: item.user.id,
+            title: 'Liked your post',
+            data: JSON.stringify({ postId: item.id }),
+          };
+          createNotification(notify);
+        }
+      }
+  
       console.log("added like: ", res);
       if (!res.success) {
         Alert.alert("Post", "Something went wrong!");
