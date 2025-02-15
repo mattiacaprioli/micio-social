@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, RefreshControl, Text, View } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
-import { fetchNotifications } from "../../services/notificationService";
+import { fetchNotifications, deleteNotification } from "../../services/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import { hp, wp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
@@ -26,6 +26,13 @@ const Notifications = () => {
     }
   };
 
+  const handleDeleteNotification = async (notificationId) => {
+    let res = await deleteNotification(notificationId);
+    if (res.success) {
+      setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
+    }
+  }
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     getNotifications().finally(() => setRefreshing(false));
@@ -48,7 +55,7 @@ const Notifications = () => {
         >
           {notifications.map((item) => {
             return (
-              <NotificationItem key={item?.id} item={item} router={router} />
+              <NotificationItem key={item?.id} item={item} router={router} onDelete={() => handleDeleteNotification(item.id)} />
             );
           })}
           {
