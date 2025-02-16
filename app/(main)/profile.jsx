@@ -8,7 +8,7 @@ import {
   RefreshControl,
   View,
 } from "react-native";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -20,6 +20,7 @@ import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import { getFollowersCount, getFollowingCount } from "../../services/followsService";
 
 var limit = 0;
 const Profile = () => {
@@ -106,10 +107,24 @@ const Profile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (user?.id) {
+        const followers = await getFollowersCount(user.id);
+        const following = await getFollowingCount(user.id);
+        setFollowersCount(followers);
+        setFollowingCount(following);
+      }
+    };
+
+    fetchCounts();
+  }, [user]);
+
   return (
-    <View
-      style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
-    >
+    <View style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}>
       <View>
         <Header title="Profile" mb={30} />
         <Pressable onPress={() => router.push("settings/settings")} style={styles.settingsButton}>
@@ -120,15 +135,8 @@ const UserHeader = ({ user, router }) => {
       <View style={styles.container}>
         <View style={{ gap: 15 }}>
           <View style={styles.avatarContainer}>
-            <Avatar
-              uri={user?.image}
-              size={hp(12)}
-              rounded={theme.radius.xxl}
-            />
-            <Pressable
-              style={styles.editIcon}
-              onPress={() => router.push("editProfile")}
-            >
+            <Avatar uri={user?.image} size={hp(12)} rounded={theme.radius.xxl} />
+            <Pressable style={styles.editIcon} onPress={() => router.push("editProfile")}>
               <Icon name="edit" size={20} />
             </Pressable>
           </View>
@@ -137,6 +145,18 @@ const UserHeader = ({ user, router }) => {
           <View style={{ alignItems: "center", gap: 4 }}>
             <Text style={styles.userName}>{user && user.name}</Text>
             <Text style={styles.infoText}>{user && user.address}</Text>
+          </View>
+
+          {/* follower / following section */}
+          <View style={styles.followContainer}>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followersCount}</Text>
+              <Text style={styles.followLabel}>Followers</Text>
+            </View>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followingCount}</Text>
+              <Text style={styles.followLabel}>Following</Text>
+            </View>
           </View>
 
           {/* email, phone, bio */}
@@ -148,12 +168,10 @@ const UserHeader = ({ user, router }) => {
             {user && user.phoneNumber && (
               <View style={styles.info}>
                 <Icon name="call" size={20} color={theme.colors.textLight} />
-                <Text style={styles.infoText}>{user && user.phoneNumber}</Text>
+                <Text style={styles.infoText}>{user.phoneNumber}</Text>
               </View>
             )}
-            {user && user.bio && (
-              <Text style={styles.infoText}>{user.bio}</Text>
-            )}
+            {user && user.bio && <Text style={styles.infoText}>{user.bio}</Text>}
           </View>
         </View>
       </View>
@@ -223,5 +241,23 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     textAlign: "center",
     color: theme.colors.text,
+  },
+  followContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 40,
+    marginTop: 10,
+  },
+  followItem: {
+    alignItems: "center",
+  },
+  followCount: {
+    fontSize: hp(2.5),
+    fontWeight: "bold",
+    color: theme.colors.textDark,
+  },
+  followLabel: {
+    fontSize: hp(1.6),
+    color: theme.colors.textLight,
   },
 });

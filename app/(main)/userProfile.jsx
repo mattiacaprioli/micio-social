@@ -19,6 +19,14 @@ import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import {
+  followUser,
+  unfollowUser,
+  isUserFollowing,
+  getFollowersCount,
+  getFollowingCount,
+} from "../../services/followsService";
+import { useAuth } from "../../context/AuthContext";
 
 var limit = 0;
 const userProfile = () => {
@@ -112,6 +120,52 @@ const userProfile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const { user: currentUser } = useAuth(); 
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  useEffect(() => {
+    // 1. Aggiorniamo il conteggio dei follower/following
+    const fetchCounts = async () => {
+      if (user?.id) {
+        const followers = await getFollowersCount(user.id);
+        const following = await getFollowingCount(user.id);
+        setFollowersCount(followers);
+        setFollowingCount(following);
+      }
+    };
+
+    // 2. Controlliamo se l'utente corrente segue già l'utente del profilo
+    const checkFollowingStatus = async () => {
+      if (currentUser?.id && user?.id && currentUser.id !== user.id) {
+        const followingStatus = await isUserFollowing(currentUser.id, user.id);
+        setIsFollowing(followingStatus);
+      }
+    };
+
+    fetchCounts();
+    checkFollowingStatus();
+  }, [user, currentUser]);
+
+  const handleFollowToggle = async () => {
+    if (!currentUser?.id || !user?.id) return;
+
+    // Se stiamo già seguendo, smettiamo di seguire
+    if (isFollowing) {
+      await unfollowUser(currentUser.id, user.id);
+    } else {
+      await followUser(currentUser.id, user.id);
+    }
+
+    // Ricalcoliamo lo stato di follow e i conteggi
+    const followingStatus = await isUserFollowing(currentUser.id, user.id);
+    setIsFollowing(followingStatus);
+
+    const followers = await getFollowersCount(user.id);
+    setFollowersCount(followers);
+  };
+
   return (
     <View
       style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
@@ -138,6 +192,27 @@ const UserHeader = ({ user, router }) => {
               <Text style={styles.infoText}>{user.bio}</Text>
             )}
           </View>
+
+          {/* follower / following section */}
+          <View style={styles.followContainer}>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followersCount}</Text>
+              <Text style={styles.followLabel}>Followers</Text>
+            </View>
+            <View style={styles.followItem}>
+              <Text style={styles.followCount}>{followingCount}</Text>
+              <Text style={styles.followLabel}>Following</Text>
+            </View>
+          </View>
+
+           {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
+           {currentUser?.id !== user?.id && (
+            <Pressable style={styles.followButton} onPress={handleFollowToggle}>
+              <Text style={styles.followButtonText}>
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </View>
@@ -187,4 +262,36 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: theme.colors.text,
   },
+  followContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 40,
+    marginTop: 10,
+  },
+  followItem: {
+    alignItems: "center",
+  },
+  followCount: {
+    fontSize: hp(2.5),
+    fontWeight: "bold",
+    color: theme.colors.textDark,
+  },
+  followLabel: {
+    fontSize: hp(1.6),
+    color: theme.colors.textLight,
+  },
+  followButton: {
+    backgroundColor: theme.colors.primary,
+    alignSelf: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  followButtonText: {
+    color: "#fff",
+    fontSize: hp(2),
+    fontWeight: "500",
+  },
+  
 });
