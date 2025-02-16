@@ -20,9 +20,13 @@ import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import {
+  followUser,
+  unfollowUser,
+  isUserFollowing,
   getFollowersCount,
   getFollowingCount,
 } from "../../services/followsService";
+import { useAuth } from "../../context/AuthContext";
 
 var limit = 0;
 const userProfile = () => {
@@ -116,10 +120,13 @@ const userProfile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const { user: currentUser } = useAuth(); 
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
+    // 1. Aggiorniamo il conteggio dei follower/following
     const fetchCounts = async () => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
@@ -129,8 +136,35 @@ const UserHeader = ({ user, router }) => {
       }
     };
 
+    // 2. Controlliamo se l'utente corrente segue già l'utente del profilo
+    const checkFollowingStatus = async () => {
+      if (currentUser?.id && user?.id && currentUser.id !== user.id) {
+        const followingStatus = await isUserFollowing(currentUser.id, user.id);
+        setIsFollowing(followingStatus);
+      }
+    };
+
     fetchCounts();
-  }, [user]);
+    checkFollowingStatus();
+  }, [user, currentUser]);
+
+  const handleFollowToggle = async () => {
+    if (!currentUser?.id || !user?.id) return;
+
+    // Se stiamo già seguendo, smettiamo di seguire
+    if (isFollowing) {
+      await unfollowUser(currentUser.id, user.id);
+    } else {
+      await followUser(currentUser.id, user.id);
+    }
+
+    // Ricalcoliamo lo stato di follow e i conteggi
+    const followingStatus = await isUserFollowing(currentUser.id, user.id);
+    setIsFollowing(followingStatus);
+
+    const followers = await getFollowersCount(user.id);
+    setFollowersCount(followers);
+  };
 
   return (
     <View
@@ -170,6 +204,15 @@ const UserHeader = ({ user, router }) => {
               <Text style={styles.followLabel}>Following</Text>
             </View>
           </View>
+
+           {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
+           {currentUser?.id !== user?.id && (
+            <Pressable style={styles.followButton} onPress={handleFollowToggle}>
+              <Text style={styles.followButtonText}>
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </View>
@@ -237,4 +280,18 @@ const styles = StyleSheet.create({
     fontSize: hp(1.6),
     color: theme.colors.textLight,
   },
+  followButton: {
+    backgroundColor: theme.colors.primary,
+    alignSelf: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  followButtonText: {
+    color: "#fff",
+    fontSize: hp(2),
+    fontWeight: "500",
+  },
+  
 });

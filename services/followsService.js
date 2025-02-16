@@ -47,3 +47,18 @@ export const getFollowingCount = async (userId) => {
 
   return count;
 };
+
+export const isUserFollowing = async (followerId, followingId) => {
+  const { data, error } = await supabase
+    .from("follows")
+    .select("id")
+    .eq("follower_id", followerId)
+    .eq("following_id", followingId);
+
+  if (error) {
+    console.error("Errore nel controllare se l'utente sta seguendo:", error);
+    return false;
+  }
+
+  return data && data.length > 0;
+};
