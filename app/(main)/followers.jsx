@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
+import { useLocalSearchParams } from "expo-router";
 import { getFollowersList } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
@@ -16,14 +17,16 @@ import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 
 const Followers = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
+  const { userId } = useLocalSearchParams();
+  const targetUserId = userId || currentUser?.id;
   const [followers, setFollowers] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchFollowers = async () => {
-    if (user?.id) {
+    if (targetUserId) {
       setRefreshing(true);
-      const data = await getFollowersList(user.id);
+      const data = await getFollowersList(targetUserId);
       setFollowers(data);
       setRefreshing(false);
     }
@@ -31,20 +34,18 @@ const Followers = () => {
 
   useEffect(() => {
     fetchFollowers();
-  }, [user]);
+  }, [targetUserId]);
 
-  const renderItem = ({ item }) => {
-    return (
-      <TouchableOpacity style={styles.item}>
-        <Avatar
-          uri={item.follower.image}
-          size={hp(8)}
-          rounded={theme.radius.xl}
-        />
-        <Text style={styles.name}>{item.follower.name}</Text>
-      </TouchableOpacity>
-    );
-  };
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.item}>
+      <Avatar
+        uri={item.follower.image}
+        size={hp(8)}
+        rounded={theme.radius.xl}
+      />
+      <Text style={styles.name}>{item.follower.name}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View

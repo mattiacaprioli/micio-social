@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   RefreshControl,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
@@ -120,7 +121,7 @@ const userProfile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
-  const { user: currentUser } = useAuth(); 
+  const { user: currentUser } = useAuth();
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -195,18 +196,22 @@ const UserHeader = ({ user, router }) => {
 
           {/* follower / following section */}
           <View style={styles.followContainer}>
-            <View style={styles.followItem}>
-              <Text style={styles.followCount}>{followersCount}</Text>
-              <Text style={styles.followLabel}>Followers</Text>
-            </View>
-            <View style={styles.followItem}>
-              <Text style={styles.followCount}>{followingCount}</Text>
-              <Text style={styles.followLabel}>Following</Text>
-            </View>
+          <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user.id } })}>
+              <View style={styles.followItem}>
+                <Text style={styles.followCount}>{followersCount}</Text>
+                <Text style={styles.followLabel}>Followers</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user.id } })}>
+              <View style={styles.followItem}>
+                <Text style={styles.followCount}>{followingCount}</Text>
+                <Text style={styles.followLabel}>Following</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
-           {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
-           {currentUser?.id !== user?.id && (
+          {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
+          {currentUser?.id !== user?.id && (
             <Pressable style={styles.followButton} onPress={handleFollowToggle}>
               <Text style={styles.followButtonText}>
                 {isFollowing ? "Unfollow" : "Follow"}
@@ -293,5 +298,4 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     fontWeight: "500",
   },
-  
 });

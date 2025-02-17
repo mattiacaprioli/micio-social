@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
+import { useLocalSearchParams } from "expo-router";
 import { getFollowingList } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
@@ -16,14 +17,16 @@ import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 
 const Followings = () => {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
+  const { userId } = useLocalSearchParams();
+  const targetUserId = userId || currentUser?.id;
   const [followings, setFollowings] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchFollowings = async () => {
-    if (user?.id) {
+    if (targetUserId) {
       setRefreshing(true);
-      const data = await getFollowingList(user.id);
+      const data = await getFollowingList(targetUserId);
       setFollowings(data);
       setRefreshing(false);
     }
@@ -31,7 +34,7 @@ const Followings = () => {
 
   useEffect(() => {
     fetchFollowings();
-  }, [user]);
+  }, [targetUserId]);
 
   const renderItem = ({ item }) => {
     return (
