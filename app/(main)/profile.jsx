@@ -20,7 +20,10 @@ import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
-import { getFollowersCount, getFollowingCount } from "../../services/followsService";
+import {
+  getFollowersCount,
+  getFollowingCount,
+} from "../../services/followsService";
 
 var limit = 0;
 const Profile = () => {
@@ -63,9 +66,7 @@ const Profile = () => {
     <ScreenWrapper bg="white">
       <FlatList
         data={posts}
-        ListHeaderComponent={
-          <UserHeader user={user} router={router} />
-        }
+        ListHeaderComponent={<UserHeader user={user} router={router} />}
         ListHeaderComponentStyle={{ marginBottom: 30 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listStyle}
@@ -124,10 +125,15 @@ const UserHeader = ({ user, router }) => {
   }, [user]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}>
+    <View
+      style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
+    >
       <View>
         <Header title="Profile" mb={30} />
-        <Pressable onPress={() => router.push("settings/settings")} style={styles.settingsButton}>
+        <Pressable
+          onPress={() => router.push("settings/settings")}
+          style={styles.settingsButton}
+        >
           <Icon name="settings" color={theme.colors.text} />
         </Pressable>
       </View>
@@ -135,8 +141,15 @@ const UserHeader = ({ user, router }) => {
       <View style={styles.container}>
         <View style={{ gap: 15 }}>
           <View style={styles.avatarContainer}>
-            <Avatar uri={user?.image} size={hp(12)} rounded={theme.radius.xxl} />
-            <Pressable style={styles.editIcon} onPress={() => router.push("editProfile")}>
+            <Avatar
+              uri={user?.image}
+              size={hp(12)}
+              rounded={theme.radius.xxl}
+            />
+            <Pressable
+              style={styles.editIcon}
+              onPress={() => router.push("editProfile")}
+            >
               <Icon name="edit" size={20} />
             </Pressable>
           </View>
@@ -149,14 +162,18 @@ const UserHeader = ({ user, router }) => {
 
           {/* follower / following section */}
           <View style={styles.followContainer}>
-            <View style={styles.followItem}>
-              <Text style={styles.followCount}>{followersCount}</Text>
-              <Text style={styles.followLabel}>Followers</Text>
-            </View>
-            <View style={styles.followItem}>
-              <Text style={styles.followCount}>{followingCount}</Text>
-              <Text style={styles.followLabel}>Following</Text>
-            </View>
+            <TouchableOpacity onPress={() => router.push("/followers")}>
+              <View style={styles.followItem}>
+                <Text style={styles.followCount}>{followersCount}</Text>
+                <Text style={styles.followLabel}>Followers</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/followings")}>
+              <View style={styles.followItem}>
+                <Text style={styles.followCount}>{followingCount}</Text>
+                <Text style={styles.followLabel}>Following</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
           {/* email, phone, bio */}
@@ -171,7 +188,9 @@ const UserHeader = ({ user, router }) => {
                 <Text style={styles.infoText}>{user.phoneNumber}</Text>
               </View>
             )}
-            {user && user.bio && <Text style={styles.infoText}>{user.bio}</Text>}
+            {user && user.bio && (
+              <Text style={styles.infoText}>{user.bio}</Text>
+            )}
           </View>
         </View>
       </View>
@@ -231,7 +250,7 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 5,
     borderRadius: theme.radius.sm,
-    backgroundColor: 'rgba(0,0,0,0.07)',
+    backgroundColor: "rgba(0,0,0,0.07)",
   },
   listStyle: {
     paddingHorizontal: wp(4),

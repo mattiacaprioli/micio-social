@@ -48,6 +48,39 @@ export const getFollowingCount = async (userId) => {
   return count;
 };
 
+export const getFollowersList = async (userId) => {
+  const { data, error } = await supabase
+    .from("follows")
+    .select(`
+      follower_id,
+      follower:users!follows_follower_id_fkey (id, name, image)
+    `)
+    .eq("following_id", userId);
+
+  if (error) {
+    console.error("Errore nel recupero della lista dei follower:", error);
+    return [];
+  }
+  return data;
+};
+
+export const getFollowingList = async (userId) => {
+  const { data, error } = await supabase
+    .from("follows")
+    .select(`
+      following_id,
+      following:users!follows_following_id_fkey (id, name, image)
+    `)
+    .eq("follower_id", userId);
+
+  if (error) {
+    console.error("Errore nel recupero della lista dei following:", error);
+    return [];
+  }
+  return data;
+};
+
+
 export const isUserFollowing = async (followerId, followingId) => {
   const { data, error } = await supabase
     .from("follows")
