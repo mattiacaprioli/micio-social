@@ -8,11 +8,17 @@ import Icon from "../assets/icons";
 
 const NotificationItem = ({ item, router, onDelete }) => {
   const handleClick = () => {
-    // open post details
-    console.log("NotificationItem clicked");
-    let { postId, commentId } = JSON.parse(item?.data);
-    router.push({ pathname: "postDetails", params: { postId, commentId } });
-  };
+    const parsedData = JSON.parse(item?.data);
+    if (parsedData.userId) {
+      // Notifica di follow: naviga al profilo dell'utente che ha iniziato a seguire
+      router.push({ pathname: "userProfile", params: { userId: parsedData.userId } });
+    } else if (parsedData.postId) {
+      // Notifica di like o altro: naviga ai dettagli del post
+      router.push({ pathname: "postDetails", params: { postId: parsedData.postId, commentId: parsedData.commentId } });
+    } else {
+      console.warn("Formato dei dati della notifica non riconosciuto:", parsedData);
+    }
+  };  
 
   const createdAt = moment(item?.created_at).format("MMM DD");
 

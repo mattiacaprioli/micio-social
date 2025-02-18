@@ -5,8 +5,11 @@ export const followUser = async (followerId, followingId) => {
     .from('follows')
     .insert([{ follower_id: followerId, following_id: followingId }]);
 
-  if (error) console.error(error);
-  return data;
+  if (error) {
+    console.error(error);
+    return { success: false, error };
+  }
+  return { success: true, data };
 };
 
 export const unfollowUser = async (followerId, followingId) => {

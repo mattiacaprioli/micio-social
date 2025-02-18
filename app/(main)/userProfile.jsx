@@ -28,6 +28,7 @@ import {
   getFollowingCount,
 } from "../../services/followsService";
 import { useAuth } from "../../context/AuthContext";
+import { createNotification } from "../../services/notificationService";
 
 var limit = 0;
 const userProfile = () => {
