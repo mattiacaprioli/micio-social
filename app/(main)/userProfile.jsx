@@ -151,21 +151,34 @@ const UserHeader = ({ user, router }) => {
 
   const handleFollowToggle = async () => {
     if (!currentUser?.id || !user?.id) return;
-
-    // Se stiamo già seguendo, smettiamo di seguire
+  
     if (isFollowing) {
+      // Se l'utente sta già seguendo, esegui l'unfollow
       await unfollowUser(currentUser.id, user.id);
     } else {
-      await followUser(currentUser.id, user.id);
+      // Esegui il follow e, se l'operazione va a buon fine, invia la notifica
+      let res = await followUser(currentUser.id, user.id);
+      if (res.success) {
+        // Evita di notificare se l'utente sta seguendo se stesso (opzionale)
+        if (currentUser.id !== user.id) {
+          let notify = {
+            senderId: currentUser.id,
+            receiverId: user.id,
+            title: 'Started following you',
+            data: JSON.stringify({ userId: currentUser.id }),
+          };
+          createNotification(notify);
+        }
+      }
     }
-
-    // Ricalcoliamo lo stato di follow e i conteggi
+  
+    // Ricalcola lo stato di follow e aggiorna i conteggi
     const followingStatus = await isUserFollowing(currentUser.id, user.id);
     setIsFollowing(followingStatus);
-
+  
     const followers = await getFollowersCount(user.id);
     setFollowersCount(followers);
-  };
+  };  
 
   return (
     <View
