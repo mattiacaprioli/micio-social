@@ -1,4 +1,4 @@
-import { 
+import {
   Alert,
   Pressable,
   ScrollView,
@@ -72,6 +72,14 @@ const EditProfile = () => {
     }
   }, [currentUser]);
 
+  const formatBirthday = (input) => {
+    const digits = input.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return digits.slice(0, 2) + '/' + digits.slice(2);
+    return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+  };
+
   const onPickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -91,9 +99,9 @@ const EditProfile = () => {
       Alert.alert("Profile", "Please fill all fields");
       return;
     }
-  
+
     setLoading(true);
-  
+
     if (typeof image === "object") {
       const imagesRes = await uploadFile("profiles", image.uri, true);
       if (imagesRes.success) {
@@ -104,19 +112,18 @@ const EditProfile = () => {
     }
     const updatedUser = {
       ...user,
-      phonePrefix, 
-      phoneNumber, 
+      phonePrefix,
+      phoneNumber,
     };
-  
+
     const res = await updateUser(currentUser?.id, updatedUser);
     setLoading(false);
-  
+
     if (res.success) {
       setUserData({ ...currentUser, ...updatedUser });
       router.back();
     }
   };
-  
 
   const imageSource =
     user.image && typeof user.image === "object"
@@ -174,8 +181,8 @@ const EditProfile = () => {
             <Text style={styles.sectionTitle}>Personal Information</Text>
             {/* Campo per il numero di telefono con selezione del prefisso */}
             <View style={styles.phoneInputContainer}>
-              <TouchableOpacity 
-                style={styles.prefixContainer} 
+              <TouchableOpacity
+                style={styles.prefixContainer}
                 onPress={() => setPrefixModalVisible(true)}
               >
                 <Text style={styles.prefixText}>{phonePrefix}</Text>
@@ -190,9 +197,14 @@ const EditProfile = () => {
             </View>
 
             <Input
-              placeholder="Enter your birthday (DD-MM-YYYY)"
+              placeholder="Enter your birthday (DD/MM/YYYY)"
               value={user.birthday}
-              onChangeText={(value) => setUser({ ...user, birthday: value })}
+              keyboardType="numeric"
+              maxLength={10}
+              onChangeText={(text) => {
+                const formatted = formatBirthday(text);
+                setUser({ ...user, birthday: formatted });
+              }}
             />
 
             {/* Selettore per il genere */}
