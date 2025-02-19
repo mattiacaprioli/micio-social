@@ -1,4 +1,4 @@
-import {
+import { 
   Alert,
   Pressable,
   ScrollView,
@@ -23,6 +23,8 @@ import { updateUser } from "../../services/userService";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 
+const MAX_BIO_LENGTH = 200;
+
 const EditProfile = () => {
   const router = useRouter();
   const { user: currentUser, setUserData } = useAuth();
@@ -36,6 +38,12 @@ const EditProfile = () => {
     gender: "",
     image: null,
   });
+
+  // Nuove variabili di stato per gestire prefisso e numero separatamente
+  const [phonePrefix, setPhonePrefix] = useState("+39");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isPrefixModalVisible, setPrefixModalVisible] = useState(false);
+
   const [isModalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
@@ -49,6 +57,18 @@ const EditProfile = () => {
         gender: currentUser.gender || "",
         image: currentUser.image || null,
       });
+      // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
+      if (currentUser.phoneNumber && currentUser.phoneNumber.startsWith("+")) {
+        const match = currentUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
+        if (match) {
+          setPhonePrefix(match[1]);
+          setPhoneNumber(match[2]);
+        } else {
+          setPhoneNumber(currentUser.phoneNumber);
+        }
+      } else {
+        setPhoneNumber(currentUser.phoneNumber || "");
+      }
     }
   }, [currentUser]);
 
@@ -66,23 +86,14 @@ const EditProfile = () => {
   };
 
   const onSubmit = async () => {
-    const { name, address, bio, phoneNumber, birthday, gender, image } =
-      user;
-
-    if (
-      !name ||
-      !address ||
-      !bio ||
-      !phoneNumber ||
-      !birthday ||
-      !gender
-    ) {
+    const { name, address, bio, birthday, gender, image } = user;
+    if (!name || !address || !bio || !phoneNumber || !birthday || !gender) {
       Alert.alert("Profile", "Please fill all fields");
       return;
     }
-
+  
     setLoading(true);
-
+  
     if (typeof image === "object") {
       const imagesRes = await uploadFile("profiles", image.uri, true);
       if (imagesRes.success) {
@@ -91,15 +102,21 @@ const EditProfile = () => {
         user.image = null;
       }
     }
-
-    const res = await updateUser(currentUser?.id, user);
+    const updatedUser = {
+      ...user,
+      phonePrefix, 
+      phoneNumber, 
+    };
+  
+    const res = await updateUser(currentUser?.id, updatedUser);
     setLoading(false);
-
+  
     if (res.success) {
-      setUserData({ ...currentUser, ...user });
+      setUserData({ ...currentUser, ...updatedUser });
       router.back();
     }
   };
+  
 
   const imageSource =
     user.image && typeof user.image === "object"
@@ -112,7 +129,7 @@ const EditProfile = () => {
         <View style={styles.container}>
           <Header title="Edit Profile" />
 
-          {/* Profile Section */}
+          {/* Sezione profilo */}
           <View style={styles.form}>
             <View style={styles.avatarContainer}>
               <Image source={imageSource} style={styles.avatar} />
@@ -134,29 +151,51 @@ const EditProfile = () => {
               value={user.address}
               onChangeText={(value) => setUser({ ...user, address: value })}
             />
-            <Input
-              placeholder="Enter your bio"
-              value={user.bio}
-              multiline
-              containerStyle={styles.bio}
-              onChangeText={(value) => setUser({ ...user, bio: value })}
-            />
 
-            {/* Personal Info Section */}
+            {/* BIO con limite di 200 caratteri e contatore */}
+            <View style={{ position: "relative" }}>
+              <Input
+                placeholder="Enter your bio"
+                value={user.bio}
+                multiline
+                containerStyle={styles.bio}
+                onChangeText={(value) => {
+                  if (value.length <= MAX_BIO_LENGTH) {
+                    setUser({ ...user, bio: value });
+                  }
+                }}
+              />
+              <Text style={styles.charCount}>
+                {user.bio.length}/{MAX_BIO_LENGTH}
+              </Text>
+            </View>
+
+            {/* Sezione Informazioni Personali */}
             <Text style={styles.sectionTitle}>Personal Information</Text>
-            <Input
-              icon={<Icon name="call" />}
-              placeholder="Enter your phone number"
-              value={user.phoneNumber}
-              onChangeText={(value) => setUser({ ...user, phoneNumber: value })}
-            />
+            {/* Campo per il numero di telefono con selezione del prefisso */}
+            <View style={styles.phoneInputContainer}>
+              <TouchableOpacity 
+                style={styles.prefixContainer} 
+                onPress={() => setPrefixModalVisible(true)}
+              >
+                <Text style={styles.prefixText}>{phonePrefix}</Text>
+              </TouchableOpacity>
+              <Input
+                placeholder="Enter your phone number"
+                value={phoneNumber}
+                keyboardType="phone-pad"
+                onChangeText={(value) => setPhoneNumber(value)}
+                containerStyle={styles.phoneInput}
+              />
+            </View>
+
             <Input
               placeholder="Enter your birthday (DD-MM-YYYY)"
               value={user.birthday}
               onChangeText={(value) => setUser({ ...user, birthday: value })}
             />
 
-            {/* Gender Selector */}
+            {/* Selettore per il genere */}
             <TouchableOpacity
               style={[styles.input, styles.genderSelector]}
               onPress={() => setModalVisible(true)}
@@ -171,7 +210,7 @@ const EditProfile = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Modal for Gender Selection */}
+            {/* Modal per la selezione del genere */}
             <Modal
               visible={isModalVisible}
               transparent={true}
@@ -209,6 +248,51 @@ const EditProfile = () => {
                   <TouchableOpacity
                     style={[styles.modalOption, styles.cancelButton]}
                     onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
+            {/* Modal per la selezione del prefisso */}
+            <Modal
+              visible={isPrefixModalVisible}
+              transparent={true}
+              animationType="slide"
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPhonePrefix("+39");
+                      setPrefixModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>+39 Italy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPhonePrefix("+1");
+                      setPrefixModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>+1 USA</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPhonePrefix("+44");
+                      setPrefixModalVisible(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text style={styles.modalOptionText}>+44 UK</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalOption, styles.cancelButton]}
+                    onPress={() => setPrefixModalVisible(false)}
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
@@ -274,10 +358,40 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     paddingVertical: 15,
   },
-  genderSelector: {
-    height: hp(7.2), // Altezza coerente con gli Input
+  charCount: {
+    position: "absolute",
+    bottom: 5,
+    right: 10,
+    fontSize: hp(1.5),
+    color: theme.colors.textLight,
+  },
+  phoneInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 0.4,
+    borderColor: theme.colors.text,
+    borderRadius: theme.radius.xxl,
+    backgroundColor: "white",
+    paddingHorizontal: 10,
+    height: hp(7.2),
+  },
+  prefixContainer: {
+    paddingHorizontal: 10,
     justifyContent: "center",
-    paddingHorizontal: 18, // Coerente con Input
+    alignItems: "center",
+  },
+  prefixText: {
+    fontSize: hp(2),
+    color: theme.colors.text,
+  },
+  phoneInput: {
+    flex: 1,
+    marginLeft: 5,
+  },
+  genderSelector: {
+    height: hp(7.2),
+    justifyContent: "center",
+    paddingHorizontal: 18,
     borderWidth: 0.4,
     borderColor: theme.colors.text,
     borderRadius: theme.radius.xxl,
