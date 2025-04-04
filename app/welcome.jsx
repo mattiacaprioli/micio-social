@@ -1,11 +1,67 @@
-import { StyleSheet, View, Text, Image, Pressable } from 'react-native'
+import { View, Text, Image, Pressable } from 'react-native'
 import React from 'react'
+import styled from 'styled-components/native'
 import ScreenWrapper from '../components/ScreenWrapper'
 import { StatusBar } from 'expo-status-bar'
 import { hp, wp } from '../helpers/common'
 import { theme } from '../constants/theme'
 import Button from '../components/Button'
 import { useRouter } from 'expo-router'
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  justify-content: space-around;
+  align-items: center;
+  background-color: white;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const WelcomeImage = styled.Image`
+  width: ${hp(30)}px;
+  height: ${wp(100)}px;
+  align-self: center;
+`;
+
+const Title = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(4)}px;
+  text-align: center;
+  font-weight: ${theme.fonts.extraBold};
+`;
+
+const Punchline = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(1.7)}px;
+  text-align: center;
+  padding-left: ${wp(10)}px;
+  padding-right: ${wp(10)}px;
+`;
+
+const Footer = styled.View`
+  gap: 30px;
+  width: 100%;
+`;
+
+const BottomTextContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+`;
+
+const LoginText = styled.Text`
+  color: ${theme.colors.text};
+  text-align: center;
+  font-size: ${hp(1.6)}px;
+`;
+
+const LoginLink = styled(LoginText)`
+  color: ${theme.colors.primaryDark};
+  font-weight: ${theme.fonts.semibold};
+`;
+
 
 const Welcome = () => {
 
@@ -14,81 +70,39 @@ const Welcome = () => {
   return (
     <ScreenWrapper bg="white">
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <Container>
         {/* Welcome image */}
-        <Image style={styles.image} resizeMode='contain' source={require('../assets/images/welcome.png')} />
+        <WelcomeImage resizeMode='contain' source={require('../assets/images/welcome.png')} />
       
         {/* title */}
         <View style={{gap: 20}}>
-          <Text style={styles.title}>Micio Social</Text>
-          <Text style={styles.punchline}>
+          <Title>Micio Social</Title>
+          <Punchline>
             Where every thought find a home and every image tells a story.
-          </Text>
+          </Punchline>
         </View>
 
         {/* footer */}
-        <View style={styles.footer}>
+        <Footer>
           <Button
             title='Get Started'
             buttonStyle={{marginHorizontal: wp(3)}}
             onPress={() => router.push('signUp')}
           />
-          <View style={styles.bottomTextContainer}>
-            <Text style={styles.loginText}>
+          <BottomTextContainer>
+            <LoginText>
               Already have an account!
-            </Text>
+            </LoginText>
             <Pressable onPress={() => router.push('login')}>
-              <Text style={[styles.loginText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
+              <LoginLink>
                 Login
-              </Text>
+              </LoginLink>
             </Pressable>
-          </View>
-        </View>
-      </View>
+          </BottomTextContainer>
+        </Footer>
+      </Container>
     </ScreenWrapper>
   )
 }
 
 export default Welcome
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: wp(4)
-  },
-  image: {
-    width: hp(30),
-    height: wp(100),
-    alignSelf: 'center'
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: hp(4),
-    textAlign: 'center',
-    fontWeight: theme.fonts.extraBold
-  },
-  punchline: {
-    color: theme.colors.text,
-    fontSize: hp(1.7),
-    textAlign: 'center',
-    paddingHorizontal: wp(10)
-  },
-  footer: {
-    gap: 30,
-    width: '100%',
-  },
-  bottomTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 5
-  },
-  loginText: {
-    color: theme.colors.text,
-    textAlign: 'center',
-    fontSize: hp(1.6),
-  }
-})

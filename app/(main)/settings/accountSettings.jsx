@@ -1,19 +1,63 @@
 import React, { useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   Alert,
   Switch,
   TouchableOpacity,
   ScrollView,
-} from "react-native";
+} from "react-native"; 
+import styled from "styled-components/native"; 
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  padding-horizontal: ${wp(4)}px;
+  background-color: white;
+`;
+
+const Form = styled.View`
+  margin-top: ${hp(3)}px;
+  padding-bottom: 20px;
+  gap: ${hp(2)}px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: ${hp(2)}px;
+  font-weight: 600;
+  color: ${theme.colors.textDark};
+  margin-bottom: ${hp(1)}px;
+`;
+
+const SettingItem = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-vertical: ${hp(1)}px;
+`;
+
+const SettingLabel = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.textDark};
+`;
+
+const LanguageButton = styled.TouchableOpacity`
+  padding-vertical: ${hp(0.5)}px;
+  padding-horizontal: ${wp(2)}px;
+  background-color: ${theme.colors.primary};
+  border-radius: ${theme.radius.sm}px;
+`;
+
+const LanguageText = styled.Text`
+  color: white;
+  font-size: ${hp(1.8)}px;
+`;
 
 const AccountSettings = () => {
   const [personalInfo, setPersonalInfo] = useState({ name: "", email: "" });
@@ -83,11 +127,11 @@ const AccountSettings = () => {
   return (
     <ScreenWrapper bg="white">
       <ScrollView style={{ flex: 1 }}>
-        <View style={styles.container}>
+        <Container>
           <Header title="Account Settings" />
 
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>Update Personal Information</Text>
+          <Form>
+            <SectionTitle>Update Personal Information</SectionTitle>
             <Input
               placeholder="Email"
               value={personalInfo.email}
@@ -100,10 +144,10 @@ const AccountSettings = () => {
               loading={loading}
               onPress={handleUpdatePersonalInfo}
             />
-          </View>
+          </Form>
 
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>Change Password</Text>
+          <Form>
+            <SectionTitle>Change Password</SectionTitle>
             <Input
               placeholder="Current Password"
               secureTextEntry
@@ -131,12 +175,12 @@ const AccountSettings = () => {
               loading={loading}
               onPress={handleChangePassword}
             />
-          </View>
+          </Form>
 
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>App Settings</Text>
-            <View style={styles.settingItem}>
-              <Text style={styles.settingLabel}>Dark Theme</Text>
+          <Form>
+            <SectionTitle>App Settings</SectionTitle>
+            <SettingItem>
+              <SettingLabel>Dark Theme</SettingLabel>
               <Switch
                 trackColor={{
                   false: theme.colors.border,
@@ -148,27 +192,26 @@ const AccountSettings = () => {
                 onValueChange={toggleTheme}
                 value={isDarkTheme}
               />
-            </View>
-            <View style={styles.settingItem}>
-              <Text style={styles.settingLabel}>Language</Text>
-              <TouchableOpacity
+            </SettingItem>
+            <SettingItem>
+              <SettingLabel>Language</SettingLabel>
+              <LanguageButton
                 onPress={toggleLanguage}
-                style={styles.languageButton}
               >
-                <Text style={styles.languageText}>{language}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                <LanguageText>{language}</LanguageText>
+              </LanguageButton>
+            </SettingItem>
+          </Form>
 
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>Deactivate Account</Text>
+          <Form>
+            <SectionTitle>Deactivate Account</SectionTitle>
             <Button
               title="Deactivate Account"
               danger
               onPress={handleDeactivateAccount}
             />
-          </View>
-        </View>
+          </Form>
+        </Container>
       </ScrollView>
     </ScreenWrapper>
   );
@@ -176,41 +219,3 @@ const AccountSettings = () => {
 
 export default AccountSettings;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: wp(4),
-    backgroundColor: "white",
-  },
-  form: {
-    marginTop: hp(3),
-    paddingBottom: 20,
-    gap: hp(2),
-  },
-  sectionTitle: {
-    fontSize: hp(2),
-    fontWeight: "600",
-    color: theme.colors.textDark,
-    marginBottom: hp(1),
-  },
-  settingItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: hp(1),
-  },
-  settingLabel: {
-    fontSize: hp(2),
-    color: theme.colors.textDark,
-  },
-  languageButton: {
-    paddingVertical: hp(0.5),
-    paddingHorizontal: wp(2),
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.sm,
-  },
-  languageText: {
-    color: "white",
-    fontSize: hp(1.8),
-  },
-});

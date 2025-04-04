@@ -1,13 +1,69 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from "react-native";
+import { Text, View, TouchableOpacity, Alert } from "react-native"; 
 import React from "react";
+import styled, { css } from "styled-components/native";
 import { theme } from "../constants/theme";
-import { hp, wp } from "../helpers/common";
+import { hp } from "../helpers/common"; // Removed unused wp
 import Avatar from "./Avatar";
 import moment from "moment";
 import Icon from "../assets/icons";
 
-const CommentItem = ({ 
-  item, 
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  flex-direction: row;
+  gap: 7px;
+`;
+
+const Content = styled.View`
+  background-color: rgba(0,0,0,0.06);
+  flex: 1;
+  gap: 5px;
+  padding: 10px 14px;
+  border-radius: ${theme.radius.md}px;
+
+  ${(props) =>
+    props.highlight &&
+    css`
+      border-width: 0.2px;
+      background-color: white;
+      border-color: ${theme.colors.dark};
+      shadow-color: ${theme.colors.dark};
+      shadow-offset: 0px 0px;
+      shadow-opacity: 0.3;
+      shadow-radius: 8px;
+      elevation: 5;
+    `}
+`;
+
+const HeaderRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const NameContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+`;
+
+const StyledText = styled.Text`
+  font-size: ${hp(1.6)}px;
+  font-weight: ${theme.fonts.medium};
+  color: ${theme.colors.textDark};
+`;
+
+const DateText = styled(StyledText)`
+  color: ${theme.colors.textLight};
+`;
+
+const CommentText = styled(StyledText)`
+  font-weight: normal;
+`;
+
+
+const CommentItem = ({
+  item,
   canDelete = false,
   onDelete = () => {},
   highlight = false,
@@ -30,70 +86,26 @@ const CommentItem = ({
   }
 
   return (
-    <View style={styles.container}>
+    <Container>
       <Avatar uri={item?.user?.image} />
-      <View style={[styles.content, highlight && styles.highlight]}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View style={styles.nameContainer}>
-            <Text style={styles.text}>{item?.user?.name}</Text>
-            <Text>•</Text>
-            <Text style={[styles.text, { color: theme.colors.textLight }]}>
-              {created_at}
-            </Text>
-          </View>
+      <Content highlight={highlight}>
+        <HeaderRow>
+          <NameContainer>
+            <StyledText>{item?.user?.name}</StyledText>
+            <StyledText>•</StyledText>
+            <DateText>{created_at}</DateText>
+          </NameContainer>
           {canDelete && (
             <TouchableOpacity onPress={handleDelete}>
               <Icon name="delete" size={20} color={theme.colors.rose} />
             </TouchableOpacity>
           )}
-        </View>
-        <Text style={[styles.text, {fontWeight: 'normal'}]}>{item?.text}</Text>
-      </View>
-    </View>
+        </HeaderRow>
+        <CommentText>{item?.text}</CommentText>
+      </Content>
+    </Container>
   );
 };
 
 export default CommentItem;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 7,
-  },
-  content: {
-    backgroundColor: "rgba(0,0,0,0.06)",
-    flex: 1,
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: theme.radius.md,
-    borderCurve: "continuous",
-  },
-  highlight: {
-    borderWidth: 0.2,
-    backgroundColor: "white",
-    borderColor: theme.colors.dark,
-    shadowColor: theme.colors.dark,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  nameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-  },
-  text: {
-    fontSize: hp(1.6),
-    fontWeight: theme.fonts.medium,
-    color: theme.colors.textDark,
-  },
-});

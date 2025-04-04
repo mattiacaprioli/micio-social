@@ -1,12 +1,12 @@
 import {
   Alert,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
+} from "react-native"; 
 import React, { useEffect, useState, useRef } from "react";
+import styled from "styled-components/native"; 
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   createComment,
@@ -25,6 +25,61 @@ import CommentItem from "../../components/CommentItem";
 import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
 import { createNotification } from "../../services/notificationService";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  background-color: white;
+  padding-top: ${wp(7)}px;
+  padding-bottom: ${wp(7)}px;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const List = styled.ScrollView`
+  padding-horizontal: ${wp(4)}px;
+`;
+
+const InputContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+`;
+
+const SendIcon = styled.TouchableOpacity`
+  align-items: center;
+  justify-content: center;
+  border-width: 0.8px;
+  border-color: ${theme.colors.primary};
+  border-radius: ${theme.radius.lg}px;
+  height: ${hp(5.8)}px;
+  width: ${hp(5.8)}px;
+`;
+
+const Center = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
+const NotFoundText = styled.Text`
+  font-size: ${hp(2.5)}px;
+  color: ${theme.colors.text};
+  font-weight: ${theme.fonts.medium};
+`;
+
+const LoadingContainer = styled.View`
+  height: ${hp(5.8)}px;
+  width: ${hp(5.8)}px;
+  justify-content: center;
+  align-items: center;
+  transform: scale(1.3);
+`;
+
+const BeFirstText = styled.Text`
+  color: ${theme.colors.text};
+  margin-left: 5px;
+`;
 
 const PostDetails = () => {
   const { postId, commentId } = useLocalSearchParams();
@@ -147,28 +202,22 @@ const PostDetails = () => {
 
   if (startLoading)
     return (
-      <View style={styles.center}>
+      <Center>
         <Loading />
-      </View>
+      </Center>
     );
 
   if (!post)
     return (
-      <View
-        style={[
-          styles.center,
-          { justifyContent: "flex-start", marginTop: 100 },
-        ]}
-      >
-        <Text style={styles.notFound}>Post not found!</Text>
-      </View>
+      <Center>
+        <NotFoundText>Post not found!</NotFoundText>
+      </Center>
     );
 
   return (
-    <View style={styles.container}>
+    <Container>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
       >
         <PostCard
           item={{ ...post, comments: [{ count: post?.comments?.length }] }}
@@ -182,7 +231,7 @@ const PostDetails = () => {
         />
 
         {/* Comment input */}
-        <View style={styles.inputContainer}>
+        <InputContainer>
           <Input
             inputRef={inputRef}
             placeholder="Add a comment..."
@@ -195,19 +244,19 @@ const PostDetails = () => {
             }}
           />
           {loading ? (
-            <View style={styles.loading}>
-              <Loading style={styles.loading} />
-            </View>
+            <LoadingContainer>
+              <Loading />
+            </LoadingContainer>
           ) : (
-            <TouchableOpacity style={styles.sendIcon} onPress={onNewComment}>
+            <SendIcon onPress={onNewComment}>
               <Icon
                 name="send"
                 size={hp(2.5)}
                 color={theme.colors.primaryDark}
               />
-            </TouchableOpacity>
+            </SendIcon>
           )}
-        </View>
+        </InputContainer>
 
         {/* Comment list */}
         <View style={{ marginVertical: 15, gap: 17 }}>
@@ -222,57 +271,15 @@ const PostDetails = () => {
           ))}
 
           {post?.comments?.length === 0 && (
-            <Text style={{ color: theme.colors.text, marginLeft: 5 }}>
+            <BeFirstText>
               Be first to comment!
-            </Text>
+            </BeFirstText>
           )}
         </View>
       </ScrollView>
-    </View>
+    </Container>
   );
 };
 
 export default PostDetails;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    paddingVertical: wp(7),
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  list: {
-    paddingHorizontal: wp(4),
-  },
-  sendIcon: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 0.8,
-    borderColor: theme.colors.primary,
-    borderRadius: theme.radius.lg,
-    borderCurve: "continuous",
-    height: hp(5.8),
-    width: hp(5.8),
-  },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  notFound: {
-    fontSize: hp(2.5),
-    color: theme.colors.text,
-    fontWeight: theme.fonts.medium,
-  },
-  loading: {
-    height: hp(5.8),
-    width: hp(5.8),
-    justifyContent: "center",
-    alignItems: "center",
-    transform: [{ scale: 1.3 }],
-  },
-});
