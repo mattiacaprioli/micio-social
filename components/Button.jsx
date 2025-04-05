@@ -1,60 +1,70 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
 import React from "react";
+import { View } from "react-native";
+import styled from "styled-components/native";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Loading from "./Loading";
 
+// Define styled components
+const StyledPressable = styled.Pressable`
+  background-color: ${(props) => props.disabled ? theme.colors.disabled : theme.colors.primary};
+  height: ${hp(6.6)}px;
+  justify-content: center;
+  align-items: center;
+  border-radius: ${theme.radius.xl}px;
+  ${(props) =>
+    props.hasShadow &&
+    `
+    shadow-color: ${theme.colors.dark};
+    shadow-offset: 0px 10px;
+    shadow-opacity: 0.2;
+    shadow-radius: 8px;
+    elevation: 4;
+  `}
+`;
+
+const StyledText = styled.Text`
+  color: white;
+  font-size: ${hp(2.5)}px;
+  font-weight: ${theme.fonts.bold};
+`;
+
+// Loading container needs separate styling as it replaces the button
+const LoadingContainer = styled.View`
+  background-color: white;
+  height: ${hp(6.6)}px;
+  justify-content: center;
+  align-items: center;
+  border-radius: ${theme.radius.xl}px;
+`;
+
 const Button = ({
-  buttonStyle,
-  textStyle,
+  buttonStyle, 
+  textStyle,  
   title = "",
   onPress = () => {},
   loading = false,
   hasShadow = true,
+  disabled = false, 
 }) => {
-  const shadowStyle = {
-    shadowColor: theme.colors.dark,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  };
-
   if (loading) {
     return (
-      <View style={[styles.button, buttonStyle, {backgroundColor: 'white'}]}>
+      <LoadingContainer style={buttonStyle}>
         <Loading />
-      </View>
+      </LoadingContainer>
     );
   }
 
   return (
-    <Pressable
+    <StyledPressable
       onPress={onPress}
-      style={[styles.button, buttonStyle, hasShadow && shadowStyle]}
+      style={buttonStyle} 
+      hasShadow={hasShadow && !disabled} 
+      disabled={disabled || loading} 
     >
-      <Text style={[styles.text, textStyle]}>{title}</Text>
-    </Pressable>
+      <StyledText style={textStyle}>{title}</StyledText>
+    </StyledPressable>
   );
 };
 
 export default Button;
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: theme.colors.primary,
-    height: hp(6.6),
-    justifyContent: "center",
-    alignItems: "center",
-    borderCurve: "continuous",
-    borderRadius: theme.radius.xl,
-  },
-  text: {
-    color: "white",
-    fontSize: hp(2.5),
-    fontWeight: theme.fonts.bold,
-  },
-});

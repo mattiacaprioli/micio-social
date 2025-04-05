@@ -2,13 +2,13 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
   Modal,
   TouchableOpacity,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
@@ -22,6 +22,168 @@ import Button from "../../components/Button";
 import { updateUser } from "../../services/userService";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+  padding-bottom: 20px;
+`;
+
+const AvatarContainer = styled.View`
+  height: ${hp(14)}px;
+  width: ${hp(14)}px;
+  align-self: center;
+`;
+
+const AvatarImage = styled(Image)`
+  height: 100%;
+  width: 100%;
+  border-radius: ${theme.radius.xxl * 1.8}px;
+  border-width: 1px;
+  border-color: ${theme.colors.darkLight};
+`;
+
+const CameraIcon = styled.Pressable`
+  position: absolute;
+  bottom: 0;
+  right: -10px;
+  padding: 8px;
+  border-radius: 50px;
+  background-color: white;
+  shadow-color: ${theme.colors.textLight};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.4;
+  shadow-radius: 5px;
+  elevation: 7;
+`;
+
+const Form = styled.View`
+  margin-top: 20px;
+  gap: 18px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: ${hp(2)}px;
+  font-weight: bold;
+  color: ${theme.colors.text};
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+const BioInputContainer = styled.View`
+  position: relative;
+`;
+
+// Note: Input component already uses styled-components internally or has its own styling.
+// We pass containerStyle for specific overrides like height/padding.
+const bioContainerStyle = {
+  height: hp(15),
+  alignItems: 'flex-start',
+  paddingVertical: 15,
+};
+
+const CharCount = styled.Text`
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: ${hp(1.5)}px;
+  color: ${theme.colors.textLight};
+`;
+
+const PhoneInputContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  border-width: 0.4px;
+  border-color: ${theme.colors.text};
+  border-radius: ${theme.radius.xxl}px;
+  background-color: white;
+  padding-left: 10px;
+  padding-right: 10px;
+  height: ${hp(7.2)}px;
+`;
+
+const PrefixContainer = styled.TouchableOpacity`
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const PrefixText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.text};
+`;
+
+// Note: Input component already uses styled-components internally or has its own styling.
+// We pass containerStyle for specific overrides like flex/marginLeft.
+const phoneInputContainerStyle = {
+  flex: 1,
+  marginLeft: 5,
+  borderWidth: 0, // Remove border from Input as it's on PhoneInputContainer
+  height: '100%', // Make Input fill the container height
+};
+
+const GenderSelector = styled.TouchableOpacity`
+  height: ${hp(7.2)}px;
+  justify-content: center;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-width: 0.4px;
+  border-color: ${theme.colors.text};
+  border-radius: ${theme.radius.xxl}px;
+  background-color: white;
+`;
+
+const GenderText = styled.Text`
+  color: ${(props) => props.hasValue ? theme.colors.text : theme.colors.textLight};
+  font-size: ${hp(2)}px;
+`;
+
+const ModalContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.5);
+`;
+
+const ModalContent = styled.View`
+  width: 80%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  align-items: center;
+`;
+
+const ModalOption = styled.TouchableOpacity`
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 100%;
+  align-items: center;
+`;
+
+const ModalOptionText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.text};
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  background-color: ${theme.colors.primary};
+  margin-top: 15px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: ${theme.radius.xxl}px;
+`;
+
+const CancelButtonText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: white;
+  font-weight: bold;
+`;
 
 const MAX_BIO_LENGTH = 200;
 
@@ -102,50 +264,61 @@ const EditProfile = () => {
 
     setLoading(true);
 
-    if (typeof image === "object") {
+    let uploadedImageUrl = user.image; // Keep existing remote URL if image wasn't changed
+    if (image && typeof image === "object") { // Check if image is a new local file object
       const imagesRes = await uploadFile("profiles", image.uri, true);
       if (imagesRes.success) {
-        user.image = imagesRes.data;
+        uploadedImageUrl = imagesRes.data; // Update with new remote URL
       } else {
-        user.image = null;
+        uploadedImageUrl = null; // Reset if upload failed
+        Alert.alert("Upload Error", "Failed to upload profile image.");
+        setLoading(false);
+        return;
       }
     }
+
     const updatedUser = {
-      ...user,
-      phonePrefix,
-      phoneNumber,
+      name,
+      address,
+      bio,
+      birthday,
+      gender,
+      image: uploadedImageUrl, // Use the potentially updated image URL
+      phoneNumber: phonePrefix + phoneNumber, // Combine prefix and number
     };
 
     const res = await updateUser(currentUser?.id, updatedUser);
     setLoading(false);
 
     if (res.success) {
-      setUserData({ ...currentUser, ...updatedUser });
+      setUserData({ ...currentUser, ...updatedUser }); // Update local auth context
       router.back();
+    } else {
+      Alert.alert("Update Error", "Failed to update profile.");
     }
   };
 
   const imageSource =
     user.image && typeof user.image === "object"
-      ? user.image.uri
-      : getUserImageSrc(user.image);
+      ? user.image.uri // Local file URI
+      : getUserImageSrc(user.image); // Remote file URL or default
 
   return (
     <ScreenWrapper bg="white">
       <ScrollView style={{ flex: 1 }}>
-        <View style={styles.container}>
+        <Container>
           <Header title="Edit Profile" />
 
           {/* Sezione profilo */}
-          <View style={styles.form}>
-            <View style={styles.avatarContainer}>
-              <Image source={imageSource} style={styles.avatar} />
-              <Pressable style={styles.cameraIcon} onPress={onPickImage}>
+          <Form>
+            <AvatarContainer>
+              <AvatarImage source={imageSource} />
+              <CameraIcon onPress={onPickImage}>
                 <Icon name="camera" size={20} />
-              </Pressable>
-            </View>
+              </CameraIcon>
+            </AvatarContainer>
 
-            <Text style={styles.sectionTitle}>Profile Details</Text>
+            <SectionTitle>Profile Details</SectionTitle>
             <Input
               icon={<Icon name="user" />}
               placeholder="Enter your name"
@@ -160,41 +333,40 @@ const EditProfile = () => {
             />
 
             {/* BIO con limite di 200 caratteri e contatore */}
-            <View style={{ position: "relative" }}>
+            <BioInputContainer>
               <Input
                 placeholder="Enter your bio"
                 value={user.bio}
                 multiline
-                containerStyle={styles.bio}
+                containerStyle={bioContainerStyle} // Pass style object
                 onChangeText={(value) => {
                   if (value.length <= MAX_BIO_LENGTH) {
                     setUser({ ...user, bio: value });
                   }
                 }}
               />
-              <Text style={styles.charCount}>
+              <CharCount>
                 {user.bio.length}/{MAX_BIO_LENGTH}
-              </Text>
-            </View>
+              </CharCount>
+            </BioInputContainer>
 
             {/* Sezione Informazioni Personali */}
-            <Text style={styles.sectionTitle}>Personal Information</Text>
+            <SectionTitle>Personal Information</SectionTitle>
             {/* Campo per il numero di telefono con selezione del prefisso */}
-            <View style={styles.phoneInputContainer}>
-              <TouchableOpacity
-                style={styles.prefixContainer}
+            <PhoneInputContainer>
+              <PrefixContainer
                 onPress={() => setPrefixModalVisible(true)}
               >
-                <Text style={styles.prefixText}>{phonePrefix}</Text>
-              </TouchableOpacity>
+                <PrefixText>{phonePrefix}</PrefixText>
+              </PrefixContainer>
               <Input
                 placeholder="Enter your phone number"
                 value={phoneNumber}
                 keyboardType="phone-pad"
                 onChangeText={(value) => setPhoneNumber(value)}
-                containerStyle={styles.phoneInput}
+                containerStyle={phoneInputContainerStyle} // Pass style object
               />
-            </View>
+            </PhoneInputContainer>
 
             <Input
               placeholder="Enter your birthday (DD/MM/YYYY)"
@@ -208,19 +380,13 @@ const EditProfile = () => {
             />
 
             {/* Selettore per il genere */}
-            <TouchableOpacity
-              style={[styles.input, styles.genderSelector]}
+            <GenderSelector
               onPress={() => setModalVisible(true)}
             >
-              <Text
-                style={[
-                  styles.genderText,
-                  !user.gender && styles.placeholderText,
-                ]}
-              >
+              <GenderText hasValue={!!user.gender}>
                 {user.gender ? user.gender : "Select Gender"}
-              </Text>
-            </TouchableOpacity>
+              </GenderText>
+            </GenderSelector>
 
             {/* Modal per la selezione del genere */}
             <Modal
@@ -228,43 +394,39 @@ const EditProfile = () => {
               transparent={true}
               animationType="slide"
             >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <TouchableOpacity
+              <ModalContainer>
+                <ModalContent>
+                  <ModalOption
                     onPress={() => {
                       setUser({ ...user, gender: "male" });
                       setModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>Male</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <ModalOptionText>Male</ModalOptionText>
+                  </ModalOption>
+                  <ModalOption
                     onPress={() => {
                       setUser({ ...user, gender: "female" });
                       setModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>Female</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <ModalOptionText>Female</ModalOptionText>
+                  </ModalOption>
+                  <ModalOption
                     onPress={() => {
                       setUser({ ...user, gender: "other" });
                       setModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>Other</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalOption, styles.cancelButton]}
+                    <ModalOptionText>Other</ModalOptionText>
+                  </ModalOption>
+                  <CancelButton
                     onPress={() => setModalVisible(false)}
                   >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+                    <CancelButtonText>Cancel</CancelButtonText>
+                  </CancelButton>
+                </ModalContent>
+              </ModalContainer>
             </Modal>
 
             {/* Modal per la selezione del prefisso */}
@@ -273,183 +435,47 @@ const EditProfile = () => {
               transparent={true}
               animationType="slide"
             >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <TouchableOpacity
+              <ModalContainer>
+                <ModalContent>
+                  <ModalOption
                     onPress={() => {
                       setPhonePrefix("+39");
                       setPrefixModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>+39 Italy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <ModalOptionText>+39 Italy</ModalOptionText>
+                  </ModalOption>
+                  <ModalOption
                     onPress={() => {
                       setPhonePrefix("+1");
                       setPrefixModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>+1 USA</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <ModalOptionText>+1 USA</ModalOptionText>
+                  </ModalOption>
+                  <ModalOption
                     onPress={() => {
                       setPhonePrefix("+44");
                       setPrefixModalVisible(false);
                     }}
-                    style={styles.modalOption}
                   >
-                    <Text style={styles.modalOptionText}>+44 UK</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalOption, styles.cancelButton]}
+                    <ModalOptionText>+44 UK</ModalOptionText>
+                  </ModalOption>
+                  <CancelButton
                     onPress={() => setPrefixModalVisible(false)}
                   >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+                    <CancelButtonText>Cancel</CancelButtonText>
+                  </CancelButton>
+                </ModalContent>
+              </ModalContainer>
             </Modal>
 
             <Button title="Update" loading={loading} onPress={onSubmit} />
-          </View>
-        </View>
+          </Form>
+        </Container>
       </ScrollView>
     </ScreenWrapper>
   );
 };
 
 export default EditProfile;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: wp(4),
-    paddingBottom: 20,
-  },
-  avatarContainer: {
-    height: hp(14),
-    width: hp(14),
-    alignSelf: "center",
-  },
-  avatar: {
-    height: "100%",
-    width: "100%",
-    borderRadius: theme.radius.xxl * 1.8,
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: theme.colors.darkLight,
-  },
-  cameraIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: -10,
-    padding: 8,
-    borderRadius: 50,
-    backgroundColor: "white",
-    shadowColor: theme.colors.textLight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 7,
-  },
-  form: {
-    marginTop: 20,
-    gap: 18,
-  },
-  sectionTitle: {
-    fontSize: hp(2),
-    fontWeight: "bold",
-    color: theme.colors.text,
-    marginVertical: 10,
-  },
-  bio: {
-    flexDirection: "row",
-    height: hp(15),
-    alignItems: "flex-start",
-    paddingVertical: 15,
-  },
-  charCount: {
-    position: "absolute",
-    bottom: 5,
-    right: 10,
-    fontSize: hp(1.5),
-    color: theme.colors.textLight,
-  },
-  phoneInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 0.4,
-    borderColor: theme.colors.text,
-    borderRadius: theme.radius.xxl,
-    backgroundColor: "white",
-    paddingHorizontal: 10,
-    height: hp(7.2),
-  },
-  prefixContainer: {
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  prefixText: {
-    fontSize: hp(2),
-    color: theme.colors.text,
-  },
-  phoneInput: {
-    flex: 1,
-    marginLeft: 5,
-  },
-  genderSelector: {
-    height: hp(7.2),
-    justifyContent: "center",
-    paddingHorizontal: 18,
-    borderWidth: 0.4,
-    borderColor: theme.colors.text,
-    borderRadius: theme.radius.xxl,
-    backgroundColor: "white",
-  },
-  genderText: {
-    color: theme.colors.text,
-    fontSize: hp(2),
-  },
-  placeholderText: {
-    color: theme.colors.textLight,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalOption: {
-    paddingVertical: 10,
-    width: "100%",
-    alignItems: "center",
-  },
-  modalOptionText: {
-    fontSize: hp(2),
-    color: theme.colors.text,
-  },
-  cancelButton: {
-    backgroundColor: theme.colors.primary,
-    marginTop: 15,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-    borderRadius: theme.radius.xxl,
-  },
-  cancelButtonText: {
-    fontSize: hp(2),
-    color: "white",
-    fontWeight: "bold",
-  },
-});

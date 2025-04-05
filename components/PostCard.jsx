@@ -1,25 +1,113 @@
 import {
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   Alert,
   Share,
-} from "react-native";
+} from "react-native"; 
 import React, { useEffect, useState } from "react";
+import styled, { css } from "styled-components/native";
 import { theme } from "../constants/theme";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
 import Avatar from "./Avatar";
 import moment from "moment";
 import Icon from "../assets/icons";
 import RenderHtml from "react-native-render-html";
-import { color } from "@rneui/themed/dist/config";
 import { Image } from "expo-image";
 import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video } from "expo-av";
 import { createPostLike, removePostLike } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
+
+// Styled Components
+const Container = styled.View`
+  gap: 10px;
+  margin-bottom: 15px;
+  border-radius: ${theme.radius.xxl * 1.1}px;
+  padding: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: white;
+  border-width: 0.5px;
+  border-color: ${theme.colors.gray};
+  shadow-color: #000;
+  ${(props) =>
+    props.hasShadow &&
+    css`
+      shadow-offset: 0px 2px;
+      shadow-opacity: 0.05;
+      shadow-radius: 6px;
+      elevation: 1;
+    `}
+`;
+
+const Header = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const UserInfo = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`;
+
+const UserName = styled.Text`
+  font-size: ${hp(1.7)}px;
+  color: ${theme.colors.textDark};
+  font-weight: ${theme.fonts.medium};
+`;
+
+const PostTime = styled.Text`
+  font-size: ${hp(1.4)}px;
+  color: ${theme.colors.textLight};
+  font-weight: ${theme.fonts.medium};
+`;
+
+const Content = styled.View`
+  gap: 10px;
+`;
+
+const PostMedia = styled(Image)`
+  height: ${hp(40)}px;
+  width: 100%;
+  border-radius: ${theme.radius.xl}px;
+`;
+
+const PostVideo = styled(Video)`
+  height: ${hp(30)}px;
+  width: 100%;
+  border-radius: ${theme.radius.xl}px;
+`;
+
+const PostBody = styled.View`
+  margin-left: 5px;
+`;
+
+const Footer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+`;
+
+const FooterButton = styled.View`
+  margin-left: 5px;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+`;
+
+const Actions = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+`;
+
+const Count = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(1.8)}px;
+`;
 
 const textStyles = {
   color: theme.colors.dark,
@@ -49,16 +137,6 @@ const PostCard = ({
   onDelete = () => {},
   onEdit = () => {},
 }) => {
-  const shadowStyle = {
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 1,
-  };
-
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -154,10 +232,9 @@ const PostCard = ({
     : false;
 
   return (
-    <View style={[styles.container, hasShadow && shadowStyle]}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.userInfo}
+    <Container hasShadow={hasShadow}>
+      <Header>
+        <UserInfo
           onPress={!isUserProfile ? openUserProfile : null}
           disabled={isUserProfile} 
         >
@@ -167,10 +244,10 @@ const PostCard = ({
             rounded={theme.radius.xl}
           />
           <View style={{ gap: 2 }}>
-            <Text style={styles.username}>{item?.user?.name}</Text>
-            <Text style={styles.postTime}>{createdAt}</Text>
+            <UserName>{item?.user?.name}</UserName>
+            <PostTime>{createdAt}</PostTime>
           </View>
-        </TouchableOpacity>
+        </UserInfo>
 
         {showMoreIcon && (
           <TouchableOpacity onPress={openPostDetails}>
@@ -183,20 +260,20 @@ const PostCard = ({
         )}
 
         {showDelete && currentUser.id == item?.userId && (
-          <View style={styles.actions}>
+          <Actions>
             <TouchableOpacity onPress={() => onEdit(item)}>
               <Icon name="edit" size={hp(2.4)} color={theme.colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handlePostDelete}>
               <Icon name="delete" size={hp(2.4)} color={theme.colors.rose} />
             </TouchableOpacity>
-          </View>
+          </Actions>
         )}
-      </View>
+      </Header>
 
       {/* post body & video */}
-      <View style={styles.content}>
-        <View style={styles.postBody}>
+      <Content>
+        <PostBody>
           {item?.body && (
             <RenderHtml
               source={{ html: item?.body }}
@@ -204,24 +281,22 @@ const PostCard = ({
               tagsStyles={tagsStyles}
             />
           )}
-        </View>
+        </PostBody>
 
         {/* post image */}
         {item?.file && item?.file?.includes("postImages") && (
-          <Image
+          <PostMedia
             source={getSupabaseFileUrl(item?.file)}
             transitionDuration={100}
-            style={styles.postMedia}
             contentFit="cover"
           />
         )}
 
-        {/* post image */}
+        {/* post video */}
         {item?.file && item?.file?.includes("postVideos") && (
-          <Video
+          <PostVideo
             source={getSupabaseFileUrl(item?.file)}
             transitionDuration={100}
-            style={[styles.postMedia, { height: hp(30) }]}
             useNativeControls
             resizeMode="cover"
             isLooping
@@ -229,8 +304,8 @@ const PostCard = ({
         )}
 
         {/* like, comment & share */}
-        <View style={styles.footer}>
-          <View style={styles.footerButton}>
+        <Footer>
+          <FooterButton>
             <TouchableOpacity onPress={onLike}>
               {liked ? (
                 <Icon name="heartFill" size={24} color={theme.colors.rose} />
@@ -238,15 +313,15 @@ const PostCard = ({
                 <Icon name="heart" size={24} color={theme.colors.textLight} />
               )}
             </TouchableOpacity>
-            <Text style={styles.count}>{likes?.length}</Text>
-          </View>
-          <View style={styles.footerButton}>
+            <Count>{likes?.length}</Count>
+          </FooterButton>
+          <FooterButton>
             <TouchableOpacity onPress={openPostDetails}>
               <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
-            <Text style={styles.count}>{item?.comments[0]?.count}</Text>
-          </View>
-          <View style={styles.footerButton}>
+            <Count>{item?.comments[0]?.count}</Count>
+          </FooterButton>
+          <FooterButton>
             {loading ? (
               <Loading size="small" />
             ) : (
@@ -254,78 +329,12 @@ const PostCard = ({
                 <Icon name="share" size={24} color={theme.colors.textLight} />
               </TouchableOpacity>
             )}
-          </View>
-        </View>
-      </View>
-    </View>
+          </FooterButton>
+        </Footer>
+      </Content>
+    </Container>
   );
 };
 
 export default PostCard;
 
-const styles = StyleSheet.create({
-  container: {
-    gap: 10,
-    marginBottom: 15,
-    borderRadius: theme.radius.xxl * 1.1,
-    borderCurve: "continuous",
-    padding: 10,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    borderWidth: 0.5,
-    borderColor: theme.colors.gray,
-    shadowColor: "#000",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  username: {
-    fontSize: hp(1.7),
-    color: theme.colors.textDark,
-    fontWeight: theme.fonts.medium,
-  },
-  postTime: {
-    fontSize: hp(1.4),
-    color: theme.colors.textLight,
-    fontWeight: theme.fonts.medium,
-  },
-  content: {
-    gap: 10,
-    // marginBottom: 10,
-  },
-  postMedia: {
-    height: hp(40),
-    width: "100%",
-    borderRadius: theme.radius.xl,
-    borderCurve: "continuous",
-  },
-  postBody: {
-    marginLeft: 5,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-  footerButton: {
-    marginLeft: 5,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 18,
-  },
-  count: {
-    color: theme.colors.text,
-    fontSize: hp(1.8),
-  },
-});

@@ -1,5 +1,6 @@
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import React, { useRef, useState } from "react";
+import styled from "styled-components/native";
 import ScreenWrapper from "../components/ScreenWrapper";
 import { StatusBar } from "expo-status-bar";
 import BackButton from "../components/BackButton";
@@ -10,6 +11,47 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  gap: 45px;
+  padding-horizontal: ${wp(5)}px;
+`;
+
+const WelcomeText = styled.Text`
+  font-size: ${hp(4)}px;
+  font-weight: ${theme.fonts.bold};
+  color: ${theme.colors.text};
+`;
+
+const FormContainer = styled.View`
+  gap: 25px;
+`;
+
+const FormHelperText = styled.Text`
+  font-size: ${hp(1.5)}px;
+  color: ${theme.colors.text};
+`;
+
+const FooterContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+`;
+
+const FooterText = styled.Text`
+  text-align: center;
+  color: ${theme.colors.text};
+  font-size: ${hp(1.6)}px;
+`;
+
+const LoginLink = styled(FooterText)`
+  color: ${theme.colors.primaryDark};
+  font-weight: ${theme.fonts.semibold};
+`;
+
 
 const SignUp = () => {
   const router = useRouter();
@@ -50,20 +92,20 @@ const SignUp = () => {
   return (
     <ScreenWrapper bg="white">
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <Container>
         <BackButton router={router} />
 
         {/* Welcome */}
         <View>
-          <Text style={styles.welcomeText}>Let's</Text>
-          <Text style={styles.welcomeText}>Get Started</Text>
+          <WelcomeText>Let's</WelcomeText>
+          <WelcomeText>Get Started</WelcomeText>
         </View>
 
         {/* Form */}
-        <View style={styles.form}>
-          <Text style={{ fontSize: hp(1.5), color: theme.colors.text }}>
+        <FormContainer>
+          <FormHelperText>
             Please fill the details to create an account
-          </Text>
+          </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}
             placeholder="Enter your name"
@@ -83,62 +125,19 @@ const SignUp = () => {
 
           {/* Button */}
           <Button title="Sign up" loading={loading} onPress={onSubmit} />
-        </View>
+        </FormContainer>
 
         {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account?</Text>
-          <Pressable
-          onPress={() => router.push("login")}
-          >
-            <Text
-              style={[
-                styles.footerText,
-                {
-                  color: theme.colors.primaryDark,
-                  fontWeight: theme.fonts.semibold,
-                },
-              ]}
-            >
-              Login
-            </Text>
+        <FooterContainer>
+          <FooterText>Already have an account?</FooterText>
+          <Pressable onPress={() => router.push("login")}>
+            <LoginLink>Login</LoginLink>
           </Pressable>
-        </View>
-      </View>
+        </FooterContainer>
+      </Container>
     </ScreenWrapper>
   );
 };
 
 export default SignUp;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    gap: 45,
-    paddingHorizontal: wp(5),
-  },
-  welcomeText: {
-    fontSize: hp(4),
-    fontWeight: theme.fonts.bold,
-    color: theme.colors.text,
-  },
-  form: {
-    gap: 25,
-  },
-  forgotPassword: {
-    color: theme.colors.text,
-    fontWeight: theme.fonts.semibold,
-    textAlign: "right",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 5,
-  },
-  footerText: {
-    textAlign: "center",
-    color: theme.colors.text,
-    fontSize: hp(1.6),
-  },
-});

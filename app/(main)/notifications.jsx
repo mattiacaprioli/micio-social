@@ -1,5 +1,6 @@
-import { ScrollView, StyleSheet, RefreshControl, Text, View } from "react-native";
+import { ScrollView, RefreshControl, Text, View } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
+import styled from "styled-components/native"; 
 import { fetchNotifications, deleteNotification } from "../../services/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import { hp, wp } from "../../helpers/common";
@@ -8,6 +9,27 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import NotificationItem from "../../components/NotificationItem";
 import Header from "../../components/Header";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const ListStyle = styled.ScrollView`
+  padding-top: 20px;
+  padding-bottom: 20px;
+  gap: 10px;
+`;
+
+const NoDataText = styled.Text`
+  font-size: ${hp(1.8)}px;
+  font-weight: ${theme.fonts.medium};
+  color: ${theme.colors.text};
+  text-align: center;
+`;
+
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -40,11 +62,11 @@ const Notifications = () => {
 
   return (
     <ScreenWrapper>
-      <View style={styles.container}>
+      <Container>
         <Header title="Notifications" />
-        <ScrollView
+        <ListStyle
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listStyle}
+          contentContainerStyle={{ gap: 10 }} // Inline style for contentContainerStyle
           refreshControl={
             <RefreshControl 
               refreshing={refreshing} 
@@ -60,30 +82,14 @@ const Notifications = () => {
           })}
           {
             notifications.length === 0 && (
-              <Text style={styles.noData}>No notifications yet</Text>
+              <NoDataText>No notifications yet</NoDataText>
             )
           }
-        </ScrollView>
-      </View>
+        </ListStyle>
+      </Container>
     </ScreenWrapper>
   );
 };
 
 export default Notifications;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: wp(4),
-  },
-  listStyle: {
-    paddingVertical: 20,
-    gap: 10,
-  },
-  noData: {
-    fontSize: hp(1.8),
-    fontWeight: theme.fonts.medium,
-    color: theme.colors.text,
-    textAlign: "center",
-  },
-});

@@ -1,9 +1,55 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Switch } from "react-native";
+import { Text, View, Switch } from "react-native";
+import styled from "styled-components/native"; 
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  background-color: white;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const Card = styled.View`
+  margin-top: ${hp(2)}px;
+  background-color: ${theme.colors.darkLight};
+  border-radius: ${theme.radius.xxl}px;
+  padding-top: ${hp(1.5)}px;
+  padding-bottom: ${hp(1.5)}px;
+  padding-left: ${wp(2)}px;
+  padding-right: ${wp(2)}px;
+  border-width: 0.5px;
+  border-color: ${theme.colors.border};
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.05;
+  shadow-radius: 6px;
+  elevation: 3;
+  gap: ${hp(2)}px;
+`;
+
+const Item = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: ${hp(1)}px;
+  padding-bottom: ${hp(1)}px;
+  padding-left: ${wp(3)}px;
+  padding-right: ${wp(3)}px;
+  border-radius: ${theme.radius.lg}px;
+  background-color: white;
+`;
+
+const ItemText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.textDark};
+  font-weight: 500;
+`;
+
 
 const NotificationsSettings = () => {
   const [followersEnabled, setFollowersEnabled] = useState(true);
@@ -34,61 +80,25 @@ const NotificationsSettings = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container}>
+      <Container>
         <Header title="Notifications" />
-        <View style={styles.card}>
+        <Card>
           {settingsOptions.map((option, index) => (
-            <View key={index} style={styles.item}>
-              <Text style={styles.itemText}>{option.label}</Text>
+            <Item key={index}>
+              <ItemText>{option.label}</ItemText>
               <Switch
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={option.value ? theme.colors.primary : theme.colors.textLight}
                 onValueChange={option.toggle}
                 value={option.value}
               />
-            </View>
+            </Item>
           ))}
-        </View>
-      </View>
+        </Card>
+      </Container>
     </ScreenWrapper>
   );
 };
 
 export default NotificationsSettings;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    paddingHorizontal: wp(4),
-  },
-  card: {
-    marginTop: hp(2),
-    backgroundColor: theme.colors.darkLight,
-    borderRadius: theme.radius.xxl,
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(2),
-    borderWidth: 0.5,
-    borderColor: theme.colors.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-    gap: hp(2),
-  },
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(3),
-    borderRadius: theme.radius.lg,
-    backgroundColor: "white",
-  },
-  itemText: {
-    fontSize: hp(2),
-    color: theme.colors.textDark,
-    fontWeight: "500",
-  },
-});
