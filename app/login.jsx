@@ -11,6 +11,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Styled Components
 const Container = styled.View`
@@ -63,6 +64,7 @@ const Login = () => {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation(); // Get the t function
 
   const onSubmit = async () => {
     if (!emailRef.current || !passwordRef.current) {
@@ -97,37 +99,37 @@ const Login = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>Hey,</WelcomeText>
-          <WelcomeText>Welcome Back!</WelcomeText>
+          <WelcomeText>{t('hey')},</WelcomeText>
+          <WelcomeText>{t('welcomeBack')}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            Please login to continue
+            {t('pleaseLoginToContinue')}
           </FormHelperText>
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder="Enter your email"
+            placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder="Enter your password"
+            placeholder={t('enterYourPassword')}
             secureTextEntry
             onChangeText={(value) => (passwordRef.current = value)}
           />
-          <ForgotPasswordText>Forgot Password?</ForgotPasswordText>
+          <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
 
           {/* Login Button */}
-          <Button title="Login" loading={loading} onPress={onSubmit} />
+          <Button title={t('login')} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>Don't have an account?</FooterText>
+          <FooterText>{t('dontHaveAccount')}</FooterText>
           <Pressable onPress={() => router.push("signUp")}>
-            <SignUpLink>Sign Up</SignUpLink>
+            <SignUpLink>{t('signUp')}</SignUpLink>
           </Pressable>
         </FooterContainer>
       </Container>
@@ -136,4 +138,3 @@ const Login = () => {
 };
 
 export default Login;
-

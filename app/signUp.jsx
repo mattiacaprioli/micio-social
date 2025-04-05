@@ -16,7 +16,8 @@ import { supabase } from "../lib/supabase";
 const Container = styled.View`
   flex: 1;
   gap: 45px;
-  padding-horizontal: ${wp(5)}px;
+  padding-left: ${wp(5)}px;
+  padding-right: ${wp(5)}px;
 `;
 
 const WelcomeText = styled.Text`
