@@ -5,6 +5,7 @@ import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Styled Components
 const Container = styled.View`
@@ -69,16 +70,18 @@ const FooterText = styled.Text`
 
 
 const InformationSettings = () => {
+  const { t } = useTranslation(); // Get the t function
+
   const infoOptions = [
-    { label: "Privacy Policy", action: () => console.log("Privacy Policy pressed") },
-    { label: "Terms of Service", action: () => console.log("Terms of Service pressed") },
-    { label: "Support", action: () => console.log("Support pressed") },
+    { label: t("privacyPolicy"), action: () => console.log("Privacy Policy pressed") },
+    { label: t("termsOfService"), action: () => console.log("Terms of Service pressed") },
+    { label: t("support"), action: () => console.log("Support pressed") },
   ];
 
   return (
     <ScreenWrapper bg="white">
       <Container>
-        <Header title="Information" />
+        <Header title={t("information")} />
 
         <Card>
           {infoOptions.map((option, index) => (
@@ -92,8 +95,8 @@ const InformationSettings = () => {
         </Card>
 
         <Footer>
-          <FooterText>Micio Social</FooterText>
-          <FooterText>Version 1.0.0</FooterText>
+          <FooterText>{t("micioSocial")}</FooterText>
+          <FooterText>{t("appVersion")} 1.0.0</FooterText>
         </Footer>
       </Container>
     </ScreenWrapper>
@@ -101,4 +104,3 @@ const InformationSettings = () => {
 };
 
 export default InformationSettings;
-

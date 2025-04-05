@@ -15,6 +15,7 @@ import { wp, hp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import { theme } from "../../../constants/theme";
 import { supabase } from "../../../lib/supabase";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Styled Components
 const ScreenContainer = styled.View`
@@ -93,24 +94,26 @@ const VersionText = styled.Text`
 
 const Settings = () => {
   const router = useRouter();
+  const { t } = useTranslation(); // Get the t function
+
   const onLogout = async () => {
     // setAuth(null);
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert("Logout", "error signing out!");
+      Alert.alert(t("logout"), t("errorSigningOut"));
     }
   };
 
   const handleLogout = async () => {
     // show confirm modal
-    Alert.alert("Confirm", "Are you sure you want to log out?", [
+    Alert.alert(t("confirm"), t("areYouSureLogout"), [
       {
-        text: "Cancel",
+        text: t("cancel"),
         onPress: () => console.log("Modal cancelled"),
         style: "cancel",
       },
       {
-        text: "Logout",
+        text: t("logout"),
         onPress: () => onLogout(),
         style: "destructive",
       },
@@ -119,17 +122,17 @@ const Settings = () => {
 
   const settingsOptions = [
     {
-      label: "Account",
+      label: t("account"),
       icon: "arrowRight",
       action: () => router.push("settings/accountSettings"),
     },
     {
-      label: "Notifications",
+      label: t("notifications"),
       icon: "arrowRight",
       action: () => router.push("settings/notificationsSettings"),
     },
     {
-      label: "Information",
+      label: t("information"),
       icon: "arrowRight",
       action: () => router.push("settings/informationSettings"),
     }
@@ -138,7 +141,7 @@ const Settings = () => {
   return (
     <ScreenWrapper bg="white">
       <ScreenContainer>
-        <Header title="Settings" />
+        <Header title={t("settings")} />
         <Card>
           {settingsOptions.map((option, index) => (
             <Item
@@ -150,7 +153,7 @@ const Settings = () => {
             </Item>
           ))}
           <Item onPress={handleLogout}>
-            <ItemTextLogout>Logout</ItemTextLogout>
+            <ItemTextLogout>{t("logout")}</ItemTextLogout>
             <Icon name="logout" size={20} color={theme.colors.rose} />
           </Item>
         </Card>
@@ -158,12 +161,11 @@ const Settings = () => {
           resizeMode="contain"
           source={require("../../../assets/images/welcome.png")}
         />
-        <Title>Micio Social</Title>
-        <VersionText>App Version: 1.0.0</VersionText>
+        <Title>{t("micioSocial")}</Title>
+        <VersionText>{t("appVersion")} 1.0.0</VersionText>
       </ScreenContainer>
     </ScreenWrapper>
   );
 };
 
 export default Settings;
-
