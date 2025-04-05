@@ -7,6 +7,7 @@ import { hp, wp } from '../helpers/common'
 import { theme } from '../constants/theme'
 import Button from '../components/Button'
 import { useRouter } from 'expo-router'
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Styled Components
 const Container = styled.View`
@@ -64,8 +65,8 @@ const LoginLink = styled(LoginText)`
 
 
 const Welcome = () => {
-
   const router = useRouter();
+  const { t } = useTranslation(); // Get the t function
   
   return (
     <ScreenWrapper bg="white">
@@ -76,22 +77,22 @@ const Welcome = () => {
       
         {/* title */}
         <View style={{gap: 20}}>
-          <Title>Micio Social</Title>
+          <Title>{t('micioSocial')}</Title>
           <Punchline>
-            Where every thought find a home and every image tells a story.
+            {t('welcomePunchline')}
           </Punchline>
         </View>
 
         {/* footer */}
         <Footer>
           <Button
-            title='Get Started'
+            title={t('getStarted')}
             buttonStyle={{marginHorizontal: wp(3)}}
             onPress={() => router.push('signUp')}
           />
           <BottomTextContainer>
             <LoginText>
-              Already have an account!
+              {t('alreadyHaveAccount')}
             </LoginText>
             <Pressable onPress={() => router.push('login')}>
               <LoginLink>
