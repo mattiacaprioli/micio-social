@@ -2,13 +2,13 @@ import {
   Alert,
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   TouchableOpacity,
   RefreshControl,
   View,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
+import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -24,6 +24,101 @@ import {
   getFollowersCount,
   getFollowingCount,
 } from "../../services/followsService";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+`;
+
+const HeaderContainer = styled.View`
+  flex: 1;
+  background-color: white;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const AvatarContainer = styled.View`
+  height: ${hp(12)}px;
+  width: ${hp(12)}px;
+  align-self: center;
+`;
+
+const EditIcon = styled.Pressable`
+  position: absolute;
+  bottom: 0;
+  right: -12px;
+  padding: 7px;
+  border-radius: 50px;
+  background-color: white;
+  shadow-color: ${theme.colors.textLight};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.4;
+  shadow-radius: 5px;
+  elevation: 7;
+`;
+
+const UserName = styled.Text`
+  font-size: ${hp(3)}px;
+  font-weight: 500;
+  color: ${theme.colors.textDark};
+`;
+
+const InfoContainer = styled.View`
+  gap: 10px;
+`;
+
+const InfoRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+`;
+
+const InfoText = styled.Text`
+  font-size: ${hp(1.6)}px;
+  font-weight: 500;
+  color: ${theme.colors.textLight};
+`;
+
+const SettingsButton = styled.Pressable`
+  position: absolute;
+  right: 0;
+  padding: 5px;
+  border-radius: ${theme.radius.sm}px;
+  background-color: rgba(0,0,0,0.07);
+`;
+
+const ListStyle = {
+  paddingHorizontal: wp(4),
+  paddingBottom: 30,
+};
+
+const NoPostText = styled.Text`
+  font-size: ${hp(2)}px;
+  text-align: center;
+  color: ${theme.colors.text};
+`;
+
+const FollowContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 10px;
+`;
+
+const FollowItem = styled.View`
+  align-items: center;
+`;
+
+const FollowCount = styled.Text`
+  font-size: ${hp(2.5)}px;
+  font-weight: bold;
+  color: ${theme.colors.textDark};
+`;
+
+const FollowLabel = styled.Text`
+  font-size: ${hp(1.6)}px;
+  color: ${theme.colors.textLight};
+`;
 
 var limit = 0;
 const Profile = () => {
@@ -69,7 +164,7 @@ const Profile = () => {
         ListHeaderComponent={<UserHeader user={user} router={router} />}
         ListHeaderComponentStyle={{ marginBottom: 30 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listStyle}
+        contentContainerStyle={ListStyle}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <PostCard
@@ -98,7 +193,7 @@ const Profile = () => {
             </View>
           ) : (
             <View style={{ marginVertical: 30 }}>
-              <Text style={styles.noPost}>No more posts</Text>
+              <NoPostText>No more posts</NoPostText>
             </View>
           )
         }
@@ -125,158 +220,74 @@ const UserHeader = ({ user, router }) => {
   }, [user]);
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
-    >
+    <HeaderContainer>
       <View>
         <Header title="Profile" mb={30} />
-        <Pressable
+        <SettingsButton
           onPress={() => router.push("settings/settings")}
-          style={styles.settingsButton}
         >
           <Icon name="settings" color={theme.colors.text} />
-        </Pressable>
+        </SettingsButton>
       </View>
 
-      <View style={styles.container}>
+      <Container>
         <View style={{ gap: 15 }}>
-          <View style={styles.avatarContainer}>
+          <AvatarContainer>
             <Avatar
               uri={user?.image}
               size={hp(12)}
               rounded={theme.radius.xxl}
             />
-            <Pressable
-              style={styles.editIcon}
+            <EditIcon
               onPress={() => router.push("editProfile")}
             >
               <Icon name="edit" size={20} />
-            </Pressable>
-          </View>
+            </EditIcon>
+          </AvatarContainer>
 
           {/* username and address */}
           <View style={{ alignItems: "center", gap: 4 }}>
-            <Text style={styles.userName}>{user && user.name}</Text>
-            <Text style={styles.infoText}>{user && user.address}</Text>
+            <UserName>{user && user.name}</UserName>
+            <InfoText>{user && user.address}</InfoText>
           </View>
 
           {/* follower / following section */}
-          <View style={styles.followContainer}>
+          <FollowContainer>
             <TouchableOpacity onPress={() => router.push("/followers")}>
-              <View style={styles.followItem}>
-                <Text style={styles.followCount}>{followersCount}</Text>
-                <Text style={styles.followLabel}>Followers</Text>
-              </View>
+              <FollowItem>
+                <FollowCount>{followersCount}</FollowCount>
+                <FollowLabel>Followers</FollowLabel>
+              </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push("/followings")}>
-              <View style={styles.followItem}>
-                <Text style={styles.followCount}>{followingCount}</Text>
-                <Text style={styles.followLabel}>Following</Text>
-              </View>
+              <FollowItem>
+                <FollowCount>{followingCount}</FollowCount>
+                <FollowLabel>Following</FollowLabel>
+              </FollowItem>
             </TouchableOpacity>
-          </View>
+          </FollowContainer>
 
           {/* email, phone, bio */}
-          <View style={{ gap: 10 }}>
-            <View style={styles.info}>
+          <InfoContainer>
+            <InfoRow>
               <Icon name="mail" size={20} color={theme.colors.textLight} />
-              <Text style={styles.infoText}>{user && user.email}</Text>
-            </View>
+              <InfoText>{user && user.email}</InfoText>
+            </InfoRow>
             {user && user.phoneNumber && (
-              <View style={styles.info}>
+              <InfoRow>
                 <Icon name="call" size={20} color={theme.colors.textLight} />
-                <Text style={styles.infoText}>{user.phoneNumber}</Text>
-              </View>
+                <InfoText>{user.phoneNumber}</InfoText>
+              </InfoRow>
             )}
             {user && user.bio && (
-              <Text style={styles.infoText}>{user.bio}</Text>
+              <InfoText>{user.bio}</InfoText>
             )}
-          </View>
+          </InfoContainer>
         </View>
-      </View>
-    </View>
+      </Container>
+    </HeaderContainer>
   );
 };
 
 export default Profile;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerContainer: {
-    marginHorizontal: wp(4),
-    marginBottom: 20,
-  },
-  headerShape: {
-    width: wp(100),
-    height: hp(20),
-  },
-  avatarContainer: {
-    height: hp(12),
-    width: hp(12),
-    alignSelf: "center",
-  },
-  editIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: -12,
-    padding: 7,
-    borderRadius: 50,
-    backgroundColor: "white",
-    shadowColor: theme.colors.textLight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 7,
-  },
-  userName: {
-    fontSize: hp(3),
-    fontWeight: "500",
-    color: theme.colors.textDark,
-  },
-  info: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  infoText: {
-    fontSize: hp(1.6),
-    fontWeight: "500",
-    color: theme.colors.textLight,
-  },
-  settingsButton: {
-    position: "absolute",
-    right: 0,
-    padding: 5,
-    borderRadius: theme.radius.sm,
-    backgroundColor: "rgba(0,0,0,0.07)",
-  },
-  listStyle: {
-    paddingHorizontal: wp(4),
-    paddingBottom: 30,
-  },
-  noPost: {
-    fontSize: hp(2),
-    textAlign: "center",
-    color: theme.colors.text,
-  },
-  followContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 40,
-    marginTop: 10,
-  },
-  followItem: {
-    alignItems: "center",
-  },
-  followCount: {
-    fontSize: hp(2.5),
-    fontWeight: "bold",
-    color: theme.colors.textDark,
-  },
-  followLabel: {
-    fontSize: hp(1.6),
-    color: theme.colors.textLight,
-  },
-});

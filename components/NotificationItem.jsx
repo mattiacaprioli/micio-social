@@ -1,6 +1,6 @@
-import { Text, TouchableOpacity, View } from "react-native"; // Removed StyleSheet
+import { Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import styled from "styled-components/native"; // Added styled-components
+import styled from "styled-components/native";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Avatar from "./Avatar";

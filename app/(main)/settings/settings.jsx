@@ -1,14 +1,13 @@
 import {
   Alert,
-  FlatList,
   Pressable,
-  StyleSheet,
   Text,
   TouchableOpacity,
   Image,
   View,
 } from "react-native";
 import React from "react";
+import styled from "styled-components/native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import Header from "../../../components/Header";
@@ -16,6 +15,81 @@ import { wp, hp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import { theme } from "../../../constants/theme";
 import { supabase } from "../../../lib/supabase";
+
+// Styled Components
+const ScreenContainer = styled.View`
+  flex: 1;
+  background-color: white;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const Card = styled.View`
+  margin-top: ${hp(2)}px;
+  background-color: ${theme.colors.darkLight};
+  border-radius: ${theme.radius.xxl}px;
+  padding-top: ${hp(1.5)}px;
+  padding-bottom: ${hp(1.5)}px;
+  padding-left: ${wp(2)}px;
+  padding-right: ${wp(2)}px;
+  border-width: 0.5px;
+  border-color: ${theme.colors.border};
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.05;
+  shadow-radius: 6px;
+  elevation: 3;
+  gap: ${hp(2)}px;
+`;
+
+const Item = styled.TouchableOpacity`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: ${hp(2)}px;
+  padding-bottom: ${hp(2)}px;
+  padding-left: ${wp(3)}px;
+  padding-right: ${wp(3)}px;
+  border-radius: ${theme.radius.lg}px;
+  background-color: white;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.1;
+  shadow-radius: 3px;
+  elevation: 2;
+`;
+
+const ItemText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.textDark};
+  font-weight: 500;
+`;
+
+const ItemTextLogout = styled(ItemText)`
+  color: ${theme.colors.rose};
+`;
+
+const WelcomeImage = styled(Image)`
+  width: ${hp(20)}px;
+  height: ${wp(40)}px;
+  align-self: center;
+  margin-top: auto;
+`;
+
+const Title = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(3)}px;
+  text-align: center;
+  font-weight: ${theme.fonts.extraBold};
+`;
+
+const VersionText = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(1.5)}px;
+  text-align: center;
+  font-weight: 500;
+  padding-bottom: ${hp(2)}px;
+`;
 
 const Settings = () => {
   const router = useRouter();
@@ -63,115 +137,33 @@ const Settings = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.screenContainer}>
+      <ScreenContainer>
         <Header title="Settings" />
-        <View style={styles.card}>
+        <Card>
           {settingsOptions.map((option, index) => (
-            <SettingItem
+            <Item
               key={index}
-              label={option.label}
-              iconName={option.icon}
               onPress={option.action}
-            />
+            >
+              <ItemText>{option.label}</ItemText>
+              <Icon name={option.icon} size={20} color={theme.colors.textDark} />
+            </Item>
           ))}
-          <SettingItem
-            label="Logout"
-            iconName="logout"
-            onPress={handleLogout}
-            textStyle={styles.itemTextLogout}
-            iconColor={theme.colors.rose}
-          />
-        </View>
-      </View>
-      <Image
-        style={styles.image}
-        resizeMode="contain"
-        source={require("../../../assets/images/welcome.png")}
-      />
-      <Text style={styles.title}>Micio Social</Text>
-      <Text style={styles.versionText}>App Version: 1.0.0</Text>
+          <Item onPress={handleLogout}>
+            <ItemTextLogout>Logout</ItemTextLogout>
+            <Icon name="logout" size={20} color={theme.colors.rose} />
+          </Item>
+        </Card>
+        <WelcomeImage
+          resizeMode="contain"
+          source={require("../../../assets/images/welcome.png")}
+        />
+        <Title>Micio Social</Title>
+        <VersionText>App Version: 1.0.0</VersionText>
+      </ScreenContainer>
     </ScreenWrapper>
   );
 };
 
-const SettingItem = ({
-  label,
-  iconName,
-  onPress,
-  textStyle = {},
-  iconColor = theme.colors.textDark,
-}) => (
-  <TouchableOpacity style={[styles.item, styles.shadow]} onPress={onPress}>
-    <Text style={[styles.itemText, textStyle]}>{label}</Text>
-    <Icon name={iconName} size={20} color={iconColor} />
-  </TouchableOpacity>
-);
-
 export default Settings;
 
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: "white",
-    paddingHorizontal: wp(4),
-  },
-  card: {
-    marginTop: hp(2),
-    backgroundColor: theme.colors.darkLight,
-    borderRadius: theme.radius.xxl,
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(2),
-    borderWidth: 0.5,
-    borderColor: theme.colors.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-    gap: hp(2),
-  },
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: hp(2),
-    paddingHorizontal: wp(3),
-    borderRadius: theme.radius.lg,
-    backgroundColor: "white",
-  },
-  shadow: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  itemText: {
-    fontSize: hp(2),
-    color: theme.colors.textDark,
-    fontWeight: "500",
-  },
-  itemTextLogout: {
-    fontSize: hp(2),
-    color: theme.colors.rose,
-    fontWeight: "500",
-  },
-  image: {
-    width: hp(20),
-    height: wp(40),
-    alignSelf: "center",
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: hp(3),
-    textAlign: "center",
-    fontWeight: theme.fonts.extraBold,
-  },
-  versionText: {
-    color: theme.colors.text,
-    fontSize: hp(1.5),
-    textAlign: "center",
-    fontWeight: "500",
-    paddingBottom: hp(2),
-  },
-});

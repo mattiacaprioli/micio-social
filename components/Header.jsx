@@ -1,43 +1,45 @@
-import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import styled from 'styled-components/native' 
 import { useRouter } from 'expo-router'
 import BackButton from './BackButton'
-import { hp, wp } from '../helpers/common'
+import { hp } from '../helpers/common'
 import { theme } from '../constants/theme'
+
+// Styled Components
+const Container = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
+  gap: 10px;
+  margin-bottom: ${(props) => props.mb}px;
+`;
+
+const Title = styled.Text`
+  font-size: ${hp(2.7)}px;
+  font-weight: ${theme.fonts.semibold};
+  color: ${theme.colors.textDark};
+`;
+
+const BackButtonContainer = styled.View`
+  position: absolute;
+  left: 0;
+`;
 
 const Header = ({title, showBackButton = true, mb = 10}) => {
   const router = useRouter();
   return (
-    <View style={[styles.container, {marginBottom: mb}]}>
+    <Container mb={mb}>
       {
         showBackButton && (
-          <View style={styles.backButton}>
+          <BackButtonContainer>
             <BackButton router={router} />
-          </View>
+          </BackButtonContainer>
         )
       }
-      <Text style={styles.title}>{title || ""}</Text>
-    </View>
+      <Title>{title || ""}</Title>
+    </Container>
   )
 }
 
 export default Header
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    gap: 10,
-  },
-  title: {
-    fontSize: hp(2.7),
-    fontWeight: theme.fonts.semibold,
-    color: theme.colors.textDark
-  },
-  backButton: {
-    position: 'absolute',
-    left: 0,
-  }
-})

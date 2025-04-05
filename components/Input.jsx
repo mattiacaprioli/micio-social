@@ -1,37 +1,40 @@
-import { StyleSheet, Text, TextInput, View } from 'react-native'
 import React from 'react'
+import styled from 'styled-components/native'
 import { theme } from '../constants/theme'
 import { hp } from '../helpers/common'
 
+// Styled Components
+const Container = styled.View`
+  flex-direction: row;
+  align-items: center;
+  height: ${hp(7.2)}px;
+  justify-content: center;
+  border-width: 0.4px;
+  border-color: ${theme.colors.text};
+  border-radius: ${theme.radius.xxl}px;
+  padding-left: 18px;
+  padding-right: 18px;
+  gap: 12px;
+  /* Apply containerStyle prop */
+  ${(props) => props.containerStyle}
+`;
+
+const StyledTextInput = styled.TextInput`
+  flex: 1;
+  color: ${theme.colors.textDark};
+`;
+
 const Input = (props) => {
   return (
-    <View style={[styles.container, props.containerStyle && props.containerStyle]}>
-      {
-        props.icon && props.icon
-      }
-      <TextInput
-        style={{flex: 1}}
+    <Container containerStyle={props.containerStyle}>
+      {props.icon && props.icon}
+      <StyledTextInput
         placeholderTextColor={theme.colors.textLight}
         ref={props.inputRef && props.inputRef}
         {...props}
       />
-    </View>
+    </Container>
   )
 }
 
 export default Input
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: hp(7.2),
-    justifyContent: 'center',
-    borderWidth: 0.4,
-    borderColor: theme.colors.text,
-    borderRadius: theme.radius.xxl,
-    borderCurve: 'continuous',
-    paddingHorizontal: 18,
-    gap: 12,
-  } 
-})

@@ -4,11 +4,11 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  StyleSheet,
   Text,
   View,
-} from "react-native";
+} from "react-native"; 
 import React, { useEffect, useState, useCallback } from "react";
+import styled from "styled-components/native"; 
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
@@ -22,6 +22,62 @@ import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import { getUserData } from "../../services/userService";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+`;
+
+const Header = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-left: ${wp(4)}px;
+  margin-right: ${wp(4)}px;
+`;
+
+const Title = styled.Text`
+  color: ${theme.colors.text};
+  font-size: ${hp(3.2)}px;
+  font-weight: ${theme.fonts.bold};
+`;
+
+const IconsContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+`;
+
+const ListStyle = {
+  paddingTop: 20,
+  paddingHorizontal: wp(4),
+};
+
+const NoPostText = styled.Text`
+  font-size: ${hp(2)}px;
+  text-align: center;
+  color: ${theme.colors.text};
+`;
+
+const Pill = styled.View`
+  position: absolute;
+  right: -10px;
+  top: -4px;
+  height: ${hp(2.2)}px;
+  width: ${hp(2.2)}px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  background-color: ${theme.colors.roseLight};
+`;
+
+const PillText = styled.Text`
+  color: white;
+  font-size: ${hp(1.2)}px;
+  font-weight: ${theme.fonts.bold};
+`;
 
 var limit = 0;
 
@@ -185,11 +241,11 @@ const Home = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container}>
+      <Container>
         {/* header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Micio Social</Text>
-          <View style={styles.icons}>
+        <Header>
+          <Title>Micio Social</Title>
+          <IconsContainer>
             <Pressable 
               onPress={() => {
                 setNotificationCount(0);
@@ -198,9 +254,9 @@ const Home = () => {
               <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
               {
                 notificationCount > 0 && (
-                  <View style={styles.pill}>
-                    <Text style={styles.pillText}>{notificationCount}</Text>
-                  </View>
+                  <Pill>
+                    <PillText>{notificationCount}</PillText>
+                  </Pill>
                 )
               }
             </Pressable>
@@ -215,14 +271,14 @@ const Home = () => {
                 style={{ borderWidth: 2 }}
               />
             </Pressable>
-          </View>
-        </View>
+          </IconsContainer>
+        </Header>
 
         {/* posts */}
         <FlatList
           data={posts}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listStyle}
+          contentContainerStyle={ListStyle}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <PostCard item={item} currentUser={user} router={router} />
@@ -246,12 +302,12 @@ const Home = () => {
               </View>
             ) : (
               <View style={{ marginVertical: 30 }}>
-                <Text style={styles.noPost}>No more posts</Text>
+                <NoPostText>No more posts</NoPostText>
               </View>
             )
           }
         />
-      </View>
+      </Container>
       {/* <Button title="Logout" onPress={onLogout} /> */}
     </ScreenWrapper>
   );
@@ -259,60 +315,3 @@ const Home = () => {
 
 export default Home;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // paddingHorizontal: wr(4),
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-    marginHorizontal: wp(4),
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: hp(3.2),
-    fontWeight: theme.fonts.bold,
-  },
-  avatarImage: {
-    width: hp(4.3),
-    height: hp(4.3),
-    borderRadius: theme.radius.sm,
-    borderCurve: "continuous",
-    borderColor: theme.colors.gray,
-    borderWidth: 3,
-  },
-  icons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 18,
-  },
-  listStyle: {
-    paddingTop: 20,
-    paddingHorizontal: wp(4),
-  },
-  noPost: {
-    fontSize: hp(2),
-    textAlign: "center",
-    color: theme.colors.text,
-  },
-  pill: {
-    position: "absolute",
-    right: -10,
-    top: -4,
-    height: hp(2.2),
-    width: hp(2.2),
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    backgroundColor: theme.colors.roseLight,
-  },
-  pillText: {
-    color: "white",
-    fontSize: hp(1.2),
-    fontWeight: theme.fonts.bold,
-  },
-});

@@ -1,13 +1,13 @@
 import {
-  StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
   Pressable,
   Alert,
-} from "react-native";
+} from "react-native"; 
 import React, { useState, useRef, useEffect } from "react";
+import styled from "styled-components/native"; 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Header from "../../components/Header";
 import { hp, wp } from "../../helpers/common";
@@ -23,6 +23,77 @@ import { Image } from "react-native";
 import { getSupabaseFileUrl } from "../../services/imageService";
 import { Video } from "expo-av";
 import { createOrUpdatePost } from "../../services/postService";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+  margin-bottom: 30px;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+  gap: 15px;
+`;
+
+const HeaderContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+`;
+
+const UserName = styled.Text`
+  font-size: ${hp(2.2)}px;
+  font-weight: ${theme.fonts.semibold};
+  color: ${theme.colors.text};
+`;
+
+const PublicText = styled.Text`
+  font-size: ${hp(1.7)}px;
+  font-weight: ${theme.fonts.medium};
+  color: ${theme.colors.textLight};
+`;
+
+const TextEditorContainer = styled.View`
+  /* Add styles if needed */
+`;
+
+const MediaContainer = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-width: 1.5px;
+  padding: 12px;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-radius: ${theme.radius.xl}px;
+  border-color: ${theme.colors.gray};
+`;
+
+const MediaIconsContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+`;
+
+const AddImageText = styled.Text`
+  font-size: ${hp(1.9)}px;
+  font-weight: ${theme.fonts.semibold};
+  color: ${theme.colors.text};
+`;
+
+const FileContainer = styled.View`
+  height: ${hp(30)}px;
+  width: 100%;
+  border-radius: ${theme.radius.xl}px;
+  overflow: hidden;
+`;
+
+const CloseIcon = styled.Pressable`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 7px;
+  border-radius: 50px;
+  background-color: rgba(225,0,0,0.5);
+`;
 
 const NewPost = () => {
   const post = useLocalSearchParams();
@@ -128,31 +199,31 @@ const NewPost = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container}>
+      <Container>
         <Header title="Create Post" />
         <ScrollView contentContainerStyle={{ gap: 20 }}>
           {/* avatar */}
-          <View style={styles.header}>
+          <HeaderContainer>
             <Avatar
               uri={user?.image}
               size={hp(6.5)}
               rounded={theme.radius.xl}
             />
             <View style={{ gap: 2 }}>
-              <Text style={styles.username}>{user && user.name}</Text>
-              <Text style={styles.publicText}>public</Text>
+              <UserName>{user && user.name}</UserName>
+              <PublicText>public</PublicText>
             </View>
-          </View>
+          </HeaderContainer>
 
-          <View style={styles.textEditor}>
+          <TextEditorContainer>
             <RichTextEditor
               editorRef={editorRef}
               onChange={(body) => (bodyRef.current = body)}
             />
-          </View>
+          </TextEditorContainer>
 
           {file && (
-            <View style={styles.file}>
+            <FileContainer>
               {getFileType(file) == "video" ? (
                 <Video 
                   style={{flex: 1}}
@@ -168,23 +239,23 @@ const NewPost = () => {
                   style={{ flex: 1 }}
                 />
               )}
-              <Pressable style={styles.closeIcon} onPress={() => setFile(null)}>
+              <CloseIcon onPress={() => setFile(null)}>
                 <Icon name="delete" size={20} color="white" />
-              </Pressable>
-            </View>
+              </CloseIcon>
+            </FileContainer>
           )}
 
-          <View style={styles.media}>
-            <Text style={styles.addImageText}>Add to your post</Text>
-            <View style={styles.mediaIcons}>
+          <MediaContainer>
+            <AddImageText>Add to your post</AddImageText>
+            <MediaIconsContainer>
               <TouchableOpacity onPress={() => onPick(true)}>
                 <Icon name="image" size={30} color={theme.colors.dark} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => onPick(false)}>
                 <Icon name="video" size={33} color={theme.colors.dark} />
               </TouchableOpacity>
-            </View>
-          </View>
+            </MediaIconsContainer>
+          </MediaContainer>
         </ScrollView>
         <Button
           buttonStyle={{ height: hp(6.2) }}
@@ -193,98 +264,9 @@ const NewPost = () => {
           hasShadow={false}
           onPress={onSubmit}
         />
-      </View>
+      </Container>
     </ScreenWrapper>
   );
 };
 
 export default NewPost;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: 'red',
-    marginBottom: 30,
-    paddingHorizontal: wp(4),
-    gap: 15,
-  },
-  title: {
-    // marginBottom: 10,
-    fontSize: hp(2.5),
-    fontWeight: theme.fonts.semibold,
-    color: theme.colors.text,
-    textAlign: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  username: {
-    fontSize: hp(2.2),
-    fontWeight: theme.fonts.semibold,
-    color: theme.colors.text,
-  },
-  avatar: {
-    height: hp(6.5),
-    width: hp(6.5),
-    borderRadius: theme.radius.xl,
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-  },
-  publicText: {
-    fontSize: hp(1.7),
-    fontWeight: theme.fonts.medium,
-    color: theme.colors.textLight,
-  },
-  textEditor: {
-    // marginTop: 10,
-  },
-  media: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderWidth: 1.5,
-    padding: 12,
-    paddingHorizontal: 18,
-    borderRadius: theme.radius.xl,
-    borderCurve: "continuous",
-    borderColor: theme.colors.gray,
-  },
-  mediaIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-  addImageText: {
-    fontSize: hp(1.9),
-    fontWeight: theme.fonts.semibold,
-    color: theme.colors.text,
-  },
-  imageIcon: {
-    // backgroundColor: theme.colors.gray,
-    borderRadius: theme.radius.md,
-    // padding: 6,
-  },
-  file: {
-    height: hp(30),
-    width: "100%",
-    borderRadius: theme.radius.xl,
-    overflow: "hidden",
-    borderCurve: "continuous",
-  },
-  video: {},
-  closeIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    padding: 7,
-    borderRadius: 50,
-    backgroundColor: "rgba(225,0,0,0.5)",
-    // shadowColor: theme.colors.textLight,
-    // shadowOffset: { width: 0, height: 3 },
-    // shadowOpacity: 0.6,
-    // shadowRadius: 8,
-  },
-});

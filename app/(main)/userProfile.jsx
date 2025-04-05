@@ -2,13 +2,13 @@ import {
   Alert,
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   RefreshControl,
   TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
+import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { getUserData } from "../../services/userService";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,6 +29,86 @@ import {
 } from "../../services/followsService";
 import { useAuth } from "../../context/AuthContext";
 import { createNotification } from "../../services/notificationService";
+
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+`;
+
+const HeaderContainer = styled.View`
+  flex: 1;
+  background-color: white;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
+`;
+
+const AvatarContainer = styled.View`
+  height: ${hp(12)}px;
+  width: ${hp(12)}px;
+  align-self: center;
+`;
+
+const UserName = styled.Text`
+  font-size: ${hp(3)}px;
+  font-weight: 500;
+  color: ${theme.colors.textDark};
+`;
+
+const InfoText = styled.Text`
+  font-size: ${hp(1.6)}px;
+  font-weight: 500;
+  color: ${theme.colors.textLight};
+`;
+
+const ListStyle = {
+  paddingHorizontal: wp(4),
+  paddingBottom: 30,
+};
+
+const NoPostText = styled.Text`
+  font-size: ${hp(2)}px;
+  text-align: center;
+  color: ${theme.colors.text};
+`;
+
+const FollowContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 10px;
+`;
+
+const FollowItem = styled.View`
+  align-items: center;
+`;
+
+const FollowCount = styled.Text`
+  font-size: ${hp(2.5)}px;
+  font-weight: bold;
+  color: ${theme.colors.textDark};
+`;
+
+const FollowLabel = styled.Text`
+  font-size: ${hp(1.6)}px;
+  color: ${theme.colors.textLight};
+`;
+
+const FollowButton = styled.Pressable`
+  background-color: ${theme.colors.primary};
+  align-self: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 20px;
+  margin-top: 10px;
+`;
+
+const FollowButtonText = styled.Text`
+  color: #fff;
+  font-size: ${hp(2)}px;
+  font-weight: 500;
+`;
 
 var limit = 0;
 const userProfile = () => {
@@ -83,7 +163,7 @@ const userProfile = () => {
         ListHeaderComponent={<UserHeader user={userData} router={router} />}
         ListHeaderComponentStyle={{ marginBottom: 30 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listStyle}
+        contentContainerStyle={ListStyle}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <PostCard
@@ -112,7 +192,7 @@ const userProfile = () => {
             </View>
           ) : (
             <View style={{ marginVertical: 30 }}>
-              <Text style={styles.noPost}>No more posts</Text>
+              <NoPostText>No more posts</NoPostText>
             </View>
           )
         }
@@ -182,134 +262,59 @@ const UserHeader = ({ user, router }) => {
   };  
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: "white", paddingHorizontal: wp(4) }}
-    >
+    <HeaderContainer>
       <View>
         <Header title="Profile" mb={30} />
       </View>
 
-      <View style={styles.container}>
+      <Container>
         <View style={{ gap: 15 }}>
-          <View style={styles.avatarContainer}>
+          <AvatarContainer>
             <Avatar
               uri={user?.image}
               size={hp(12)}
               rounded={theme.radius.xxl}
             />
-          </View>
+          </AvatarContainer>
 
           {/* username and address */}
           <View style={{ alignItems: "center", gap: 4 }}>
-            <Text style={styles.userName}>{user && user.name}</Text>
-            <Text style={styles.infoText}>{user && user.address}</Text>
+            <UserName>{user && user.name}</UserName>
+            <InfoText>{user && user.address}</InfoText>
             {user && user.bio && (
-              <Text style={styles.infoText}>{user.bio}</Text>
+              <InfoText>{user.bio}</InfoText>
             )}
           </View>
 
           {/* follower / following section */}
-          <View style={styles.followContainer}>
+          <FollowContainer>
           <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user.id } })}>
-              <View style={styles.followItem}>
-                <Text style={styles.followCount}>{followersCount}</Text>
-                <Text style={styles.followLabel}>Followers</Text>
-              </View>
+              <FollowItem>
+                <FollowCount>{followersCount}</FollowCount>
+                <FollowLabel>Followers</FollowLabel>
+              </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user.id } })}>
-              <View style={styles.followItem}>
-                <Text style={styles.followCount}>{followingCount}</Text>
-                <Text style={styles.followLabel}>Following</Text>
-              </View>
+              <FollowItem>
+                <FollowCount>{followingCount}</FollowCount>
+                <FollowLabel>Following</FollowLabel>
+              </FollowItem>
             </TouchableOpacity>
-          </View>
+          </FollowContainer>
 
           {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
           {currentUser?.id !== user?.id && (
-            <Pressable style={styles.followButton} onPress={handleFollowToggle}>
-              <Text style={styles.followButtonText}>
+            <FollowButton onPress={handleFollowToggle}>
+              <FollowButtonText>
                 {isFollowing ? "Unfollow" : "Follow"}
-              </Text>
-            </Pressable>
+              </FollowButtonText>
+            </FollowButton>
           )}
         </View>
-      </View>
-    </View>
+      </Container>
+    </HeaderContainer>
   );
 };
 
 export default userProfile;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  avatarContainer: {
-    height: hp(12),
-    width: hp(12),
-    alignSelf: "center",
-  },
-  editIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: -12,
-    padding: 7,
-    borderRadius: 50,
-    backgroundColor: "white",
-    shadowColor: theme.colors.textLight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 7,
-  },
-  userName: {
-    fontSize: hp(3),
-    fontWeight: "500",
-    color: theme.colors.textDark,
-  },
-  infoText: {
-    fontSize: hp(1.6),
-    fontWeight: "500",
-    color: theme.colors.textLight,
-  },
-  listStyle: {
-    paddingHorizontal: wp(4),
-    paddingBottom: 30,
-  },
-  noPost: {
-    fontSize: hp(2),
-    textAlign: "center",
-    color: theme.colors.text,
-  },
-  followContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 40,
-    marginTop: 10,
-  },
-  followItem: {
-    alignItems: "center",
-  },
-  followCount: {
-    fontSize: hp(2.5),
-    fontWeight: "bold",
-    color: theme.colors.textDark,
-  },
-  followLabel: {
-    fontSize: hp(1.6),
-    color: theme.colors.textLight,
-  },
-  followButton: {
-    backgroundColor: theme.colors.primary,
-    alignSelf: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginTop: 10,
-  },
-  followButtonText: {
-    color: "#fff",
-    fontSize: hp(2),
-    fontWeight: "500",
-  },
-});
