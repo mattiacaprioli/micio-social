@@ -19,6 +19,7 @@ import { Video } from "expo-av";
 import { createPostLike, removePostLike } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -137,6 +138,7 @@ const PostCard = ({
   onDelete = () => {},
   onEdit = () => {},
 }) => {
+  const { t } = useTranslation();
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -184,7 +186,7 @@ const PostCard = ({
           let notify = {
             senderId: currentUser.id,
             receiverId: item.user.id,
-            title: 'Liked your post',
+            title: t('likedYourPost'),
             data: JSON.stringify({ postId: item.id }),
           };
           createNotification(notify);

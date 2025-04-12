@@ -29,6 +29,7 @@ import {
 } from "../../services/followsService";
 import { useAuth } from "../../context/AuthContext";
 import { createNotification } from "../../services/notificationService";
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -112,6 +113,7 @@ const FollowButtonText = styled.Text`
 
 var limit = 0;
 const userProfile = () => {
+  const { t } = useTranslation();
   const { userId } = useLocalSearchParams();
   const router = useRouter();
   const [userData, setUserData] = useState(null);
@@ -120,12 +122,10 @@ const userProfile = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const getPosts = async (isRefreshing = false) => {
-    // call the api here
-
     if (!hasMore && !isRefreshing) return null;
 
     if (isRefreshing) {
-      limit = 10; // Resetta il limite durante il refresh
+      limit = 10;
     } else {
       limit += 10;
     }
@@ -192,7 +192,7 @@ const userProfile = () => {
             </View>
           ) : (
             <View style={{ marginVertical: 30 }}>
-              <NoPostText>No more posts</NoPostText>
+              <NoPostText>{t('noMorePosts')}</NoPostText>
             </View>
           )
         }
@@ -202,13 +202,13 @@ const userProfile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    // 1. Aggiorniamo il conteggio dei follower/following
     const fetchCounts = async () => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
@@ -218,7 +218,6 @@ const UserHeader = ({ user, router }) => {
       }
     };
 
-    // 2. Controlliamo se l'utente corrente segue già l'utente del profilo
     const checkFollowingStatus = async () => {
       if (currentUser?.id && user?.id && currentUser.id !== user.id) {
         const followingStatus = await isUserFollowing(currentUser.id, user.id);
@@ -234,18 +233,15 @@ const UserHeader = ({ user, router }) => {
     if (!currentUser?.id || !user?.id) return;
   
     if (isFollowing) {
-      // Se l'utente sta già seguendo, esegui l'unfollow
       await unfollowUser(currentUser.id, user.id);
     } else {
-      // Esegui il follow e, se l'operazione va a buon fine, invia la notifica
       let res = await followUser(currentUser.id, user.id);
       if (res.success) {
-        // Evita di notificare se l'utente sta seguendo se stesso (opzionale)
         if (currentUser.id !== user.id) {
           let notify = {
             senderId: currentUser.id,
             receiverId: user.id,
-            title: 'Started following you',
+            title: t('startedFollowingYou'),
             data: JSON.stringify({ userId: currentUser.id }),
           };
           createNotification(notify);
@@ -253,7 +249,6 @@ const UserHeader = ({ user, router }) => {
       }
     }
   
-    // Ricalcola lo stato di follow e aggiorna i conteggi
     const followingStatus = await isUserFollowing(currentUser.id, user.id);
     setIsFollowing(followingStatus);
   
@@ -264,7 +259,7 @@ const UserHeader = ({ user, router }) => {
   return (
     <HeaderContainer>
       <View>
-        <Header title="Profile" mb={30} />
+        <Header title={t('profile')} mb={30} />
       </View>
 
       <Container>
@@ -277,7 +272,6 @@ const UserHeader = ({ user, router }) => {
             />
           </AvatarContainer>
 
-          {/* username and address */}
           <View style={{ alignItems: "center", gap: 4 }}>
             <UserName>{user && user.name}</UserName>
             <InfoText>{user && user.address}</InfoText>
@@ -286,27 +280,25 @@ const UserHeader = ({ user, router }) => {
             )}
           </View>
 
-          {/* follower / following section */}
           <FollowContainer>
-          <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user.id } })}>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user.id } })}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>Followers</FollowLabel>
+                <FollowLabel>{t('followers')}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user.id } })}>
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>Following</FollowLabel>
+                <FollowLabel>{t('following')}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
           </FollowContainer>
 
-          {/* Bottone Follow/Unfollow se NON è il profilo dell’utente loggato */}
           {currentUser?.id !== user?.id && (
             <FollowButton onPress={handleFollowToggle}>
               <FollowButtonText>
-                {isFollowing ? "Unfollow" : "Follow"}
+                {isFollowing ? t('unfollow') : t('follow')}
               </FollowButtonText>
             </FollowButton>
           )}

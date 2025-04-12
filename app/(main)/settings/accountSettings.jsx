@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -6,19 +6,21 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-} from "react-native"; 
-import styled from "styled-components/native"; 
+} from "react-native";
+import styled from "styled-components/native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
+import { useTranslation } from 'react-i18next'; 
 
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  padding-horizontal: ${wp(4)}px;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
   background-color: white;
 `;
 
@@ -39,7 +41,8 @@ const SettingItem = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-vertical: ${hp(1)}px;
+  padding-top: ${hp(1)}px;
+  padding-bottom: ${hp(1)}px;
 `;
 
 const SettingLabel = styled.Text`
@@ -48,8 +51,10 @@ const SettingLabel = styled.Text`
 `;
 
 const LanguageButton = styled.TouchableOpacity`
-  padding-vertical: ${hp(0.5)}px;
-  padding-horizontal: ${wp(2)}px;
+  padding-top: ${hp(0.5)}px;
+  padding-bottom: ${hp(0.5)}px;
+  padding-left: ${wp(2)}px;
+  padding-right: ${wp(2)}px;
   background-color: ${theme.colors.primary};
   border-radius: ${theme.radius.sm}px;
 `;
@@ -68,7 +73,14 @@ const AccountSettings = () => {
   });
   const [loading, setLoading] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const [language, setLanguage] = useState("English");
+  const { i18n, t } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
+
+  // Aggiungi questo useEffect per debug
+  useEffect(() => {
+    console.log('Current language:', i18n.language);
+    console.log('Available translations:', i18n.store.data);
+  }, []);
 
   const handleUpdatePersonalInfo = () => {
     if (!personalInfo.name || !personalInfo.email) {
@@ -120,36 +132,39 @@ const AccountSettings = () => {
 
   const toggleLanguage = () => {
     const newLanguage = language === "English" ? "Italian" : "English";
+    const newLanguageCode = newLanguage === "English" ? "en" : "it";
     setLanguage(newLanguage);
-    Alert.alert("Language Changed", `Language set to ${newLanguage}`);
+    i18n.changeLanguage(newLanguageCode);
+    Alert.alert(t("languageChanged"), `${t("languageSetTo")} ${newLanguage}`);
+    console.log('Language changed to:', newLanguageCode); // Per debug
   };
 
   return (
     <ScreenWrapper bg="white">
       <ScrollView style={{ flex: 1 }}>
         <Container>
-          <Header title="Account Settings" />
+          <Header title={t("accountSettings")} />
 
           <Form>
-            <SectionTitle>Update Personal Information</SectionTitle>
+            <SectionTitle>{t("updatePersonalInfo")}</SectionTitle>
             <Input
-              placeholder="Email"
+              placeholder={t("email")}
               value={personalInfo.email}
               onChangeText={(text) =>
                 setPersonalInfo({ ...personalInfo, email: text })
               }
             />
             <Button
-              title="Update Information"
+              title={t("updateInformation")}
               loading={loading}
               onPress={handleUpdatePersonalInfo}
             />
           </Form>
 
           <Form>
-            <SectionTitle>Change Password</SectionTitle>
+            <SectionTitle>{t("changePassword")}</SectionTitle>
             <Input
-              placeholder="Current Password"
+              placeholder={t("currentPassword")}
               secureTextEntry
               value={password.current}
               onChangeText={(text) =>
@@ -157,13 +172,13 @@ const AccountSettings = () => {
               }
             />
             <Input
-              placeholder="New Password"
+              placeholder={t("newPassword")}
               secureTextEntry
               value={password.new}
               onChangeText={(text) => setPassword({ ...password, new: text })}
             />
             <Input
-              placeholder="Confirm New Password"
+              placeholder={t("confirmNewPassword")}
               secureTextEntry
               value={password.confirm}
               onChangeText={(text) =>
@@ -171,16 +186,16 @@ const AccountSettings = () => {
               }
             />
             <Button
-              title="Change Password"
+              title={t("changePassword")}
               loading={loading}
               onPress={handleChangePassword}
             />
           </Form>
 
           <Form>
-            <SectionTitle>App Settings</SectionTitle>
+            <SectionTitle>{t("appSettings")}</SectionTitle>
             <SettingItem>
-              <SettingLabel>Dark Theme</SettingLabel>
+              <SettingLabel>{t("darkTheme")}</SettingLabel>
               <Switch
                 trackColor={{
                   false: theme.colors.border,
@@ -194,7 +209,7 @@ const AccountSettings = () => {
               />
             </SettingItem>
             <SettingItem>
-              <SettingLabel>Language</SettingLabel>
+              <SettingLabel>{t("language")}</SettingLabel>
               <LanguageButton
                 onPress={toggleLanguage}
               >
@@ -204,9 +219,9 @@ const AccountSettings = () => {
           </Form>
 
           <Form>
-            <SectionTitle>Deactivate Account</SectionTitle>
+            <SectionTitle>{t("deactivateAccount")}</SectionTitle>
             <Button
-              title="Deactivate Account"
+              title={t("deactivateAccount")}
               danger
               onPress={handleDeactivateAccount}
             />
@@ -218,4 +233,3 @@ const AccountSettings = () => {
 };
 
 export default AccountSettings;
-

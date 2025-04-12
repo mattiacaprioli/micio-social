@@ -11,6 +11,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Styled Components
 const Container = styled.View`
@@ -60,6 +61,7 @@ const SignUp = () => {
   const nameRef = useRef(null);
   const passwordRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation(); // Get the t function
 
   const onSubmit = async () => {
     if (!emailRef.current || !passwordRef.current) {
@@ -98,41 +100,41 @@ const SignUp = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>Let's</WelcomeText>
-          <WelcomeText>Get Started</WelcomeText>
+          <WelcomeText>{t('lets')}</WelcomeText>
+          <WelcomeText>{t('getStarted')}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            Please fill the details to create an account
+            {t('pleaseFillDetails')}
           </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}
-            placeholder="Enter your name"
+            placeholder={t('enterYourName')}
             onChangeText={(value) => (nameRef.current = value)}
           />
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder="Enter your email"
+            placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder="Enter your password"
+            placeholder={t('enterYourPassword')}
             secureTextEntry
             onChangeText={(value) => (passwordRef.current = value)}
           />
 
           {/* Button */}
-          <Button title="Sign up" loading={loading} onPress={onSubmit} />
+          <Button title={t('signUp')} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>Already have an account?</FooterText>
+          <FooterText>{t('alreadyHaveAccount')}</FooterText>
           <Pressable onPress={() => router.push("login")}>
-            <LoginLink>Login</LoginLink>
+            <LoginLink>{t('login')}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>
@@ -141,4 +143,3 @@ const SignUp = () => {
 };
 
 export default SignUp;
-

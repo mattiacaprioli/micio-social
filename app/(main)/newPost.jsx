@@ -7,6 +7,7 @@ import {
   Alert,
 } from "react-native"; 
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import styled from "styled-components/native"; 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Header from "../../components/Header";
@@ -98,6 +99,7 @@ const CloseIcon = styled.Pressable`
 const NewPost = () => {
   const post = useLocalSearchParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const bodyRef = useRef("");
   const editorRef = useRef(null);
   const router = useRouter();
@@ -168,11 +170,11 @@ const NewPost = () => {
 
   const onSubmit = async () => {
     if(!bodyRef.current && !file){
-      Alert.alert('Post', 'Please choose an image of add post body');
+      Alert.alert(t('post'), t('pleaseChooseImageOrAddBody'));
       return;
     }
 
-    let data ={
+    let data = {
       file,
       body: bodyRef.current,
       userId: user?.id,
@@ -182,7 +184,6 @@ const NewPost = () => {
       data.id = post.id;
     }
 
-    // create post
     setLoading(true);
     let res = await createOrUpdatePost(data);
     setLoading(false);
@@ -192,15 +193,14 @@ const NewPost = () => {
       editorRef.current?.setContentHTML("");
       router.back();
     }else{
-      Alert.alert('Post', res.msg);
+      Alert.alert(t('post'), res.msg);
     }
-
   };
 
   return (
     <ScreenWrapper bg="white">
       <Container>
-        <Header title="Create Post" />
+        <Header title={post && post.id ? t('editPost') : t('createPost')} />
         <ScrollView contentContainerStyle={{ gap: 20 }}>
           {/* avatar */}
           <HeaderContainer>
@@ -211,7 +211,7 @@ const NewPost = () => {
             />
             <View style={{ gap: 2 }}>
               <UserName>{user && user.name}</UserName>
-              <PublicText>public</PublicText>
+              <PublicText>{t('public')}</PublicText>
             </View>
           </HeaderContainer>
 
@@ -246,7 +246,7 @@ const NewPost = () => {
           )}
 
           <MediaContainer>
-            <AddImageText>Add to your post</AddImageText>
+            <AddImageText>{t('addToYourPost')}</AddImageText>
             <MediaIconsContainer>
               <TouchableOpacity onPress={() => onPick(true)}>
                 <Icon name="image" size={30} color={theme.colors.dark} />
@@ -259,7 +259,7 @@ const NewPost = () => {
         </ScrollView>
         <Button
           buttonStyle={{ height: hp(6.2) }}
-          title={post && post.id ? "Update" : "Post"}
+          title={post && post.id ? t('update') : t('post')}
           loading={loading}
           hasShadow={false}
           onPress={onSubmit}

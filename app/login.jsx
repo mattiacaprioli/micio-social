@@ -11,13 +11,14 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next'; 
 
 // Styled Components
 const Container = styled.View`
   flex: 1;
   gap: 45px;
-  padding-horizontal: ${wp(5)}px;
+  padding-left: ${wp(5)}px;
+  padding-right: ${wp(5)}px;
 `;
 
 const WelcomeText = styled.Text`
@@ -64,7 +65,7 @@ const Login = () => {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation(); // Get the t function
+  const { t } = useTranslation(); 
 
   const onSubmit = async () => {
     if (!emailRef.current || !passwordRef.current) {

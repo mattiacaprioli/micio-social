@@ -4,18 +4,19 @@ import { Stack, useRouter } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { getUserData } from "../services/userService";
-import i18n from '../lib/i18n'; // Import the i18n configuration
-import { I18nextProvider } from 'react-i18next'; // Import I18nextProvider
+import '../lib/i18n'; // Importa prima il setup di i18n
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../lib/i18n';
 
 LogBox.ignoreLogs(['Warning: TNodeChildrenRenderer', 'Warning: MemoizedTNodeRenderer', 'Warning: TRenderEngineProvider'])
 
 const _layout = () => {
   return (
-    <AuthProvider>
-      <I18nextProvider i18n={i18n}>
+    <I18nextProvider i18n={i18n}>
+      <AuthProvider>
         <MainLayout />
-      </I18nextProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </I18nextProvider>
   );
 };
 

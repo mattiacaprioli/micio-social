@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Text, View, Switch } from "react-native";
-import styled from "styled-components/native"; 
+import styled from "styled-components/native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -55,6 +56,7 @@ const NotificationsSettings = () => {
   const [followersEnabled, setFollowersEnabled] = useState(true);
   const [likesEnabled, setLikesEnabled] = useState(true);
   const [commentsEnabled, setCommentsEnabled] = useState(true);
+  const { t } = useTranslation(); // Get the t function
 
   const toggleFollowers = () => setFollowersEnabled((previousState) => !previousState);
   const toggleLikes = () => setLikesEnabled((previousState) => !previousState);
@@ -62,17 +64,17 @@ const NotificationsSettings = () => {
 
   const settingsOptions = [
     {
-      label: "New Followers",
+      label: t("newFollowers"),
       value: followersEnabled,
       toggle: toggleFollowers,
     },
     {
-      label: "Likes",
+      label: t("likes"),
       value: likesEnabled,
       toggle: toggleLikes,
     },
     {
-      label: "Comments",
+      label: t("comments"),
       value: commentsEnabled,
       toggle: toggleComments,
     },
@@ -81,7 +83,7 @@ const NotificationsSettings = () => {
   return (
     <ScreenWrapper bg="white">
       <Container>
-        <Header title="Notifications" />
+        <Header title={t("notifications")} />
         <Card>
           {settingsOptions.map((option, index) => (
             <Item key={index}>
@@ -101,4 +103,3 @@ const NotificationsSettings = () => {
 };
 
 export default NotificationsSettings;
-
