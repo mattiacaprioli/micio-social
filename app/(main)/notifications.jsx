@@ -9,6 +9,7 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import NotificationItem from "../../components/NotificationItem";
 import Header from "../../components/Header";
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -36,6 +37,7 @@ const Notifications = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     getNotifications();
@@ -63,7 +65,7 @@ const Notifications = () => {
   return (
     <ScreenWrapper>
       <Container>
-        <Header title="Notifications" />
+        <Header title={t('notifications')} />
         <ListStyle
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 10 }} // Inline style for contentContainerStyle
@@ -82,7 +84,7 @@ const Notifications = () => {
           })}
           {
             notifications.length === 0 && (
-              <NoDataText>No notifications yet</NoDataText>
+              <NoDataText>{t('noNotificationsYet')}</NoDataText>
             )
           }
         </ListStyle>

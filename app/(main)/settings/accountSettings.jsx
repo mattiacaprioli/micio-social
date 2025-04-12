@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -73,8 +73,14 @@ const AccountSettings = () => {
   });
   const [loading, setLoading] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const [language, setLanguage] = useState("English");
   const { i18n, t } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
+
+  // Aggiungi questo useEffect per debug
+  useEffect(() => {
+    console.log('Current language:', i18n.language);
+    console.log('Available translations:', i18n.store.data);
+  }, []);
 
   const handleUpdatePersonalInfo = () => {
     if (!personalInfo.name || !personalInfo.email) {
@@ -126,10 +132,11 @@ const AccountSettings = () => {
 
   const toggleLanguage = () => {
     const newLanguage = language === "English" ? "Italian" : "English";
-    setLanguage(newLanguage);
     const newLanguageCode = newLanguage === "English" ? "en" : "it";
-    i18n.changeLanguage(newLanguageCode); // Change the language in i18next
+    setLanguage(newLanguage);
+    i18n.changeLanguage(newLanguageCode);
     Alert.alert(t("languageChanged"), `${t("languageSetTo")} ${newLanguage}`);
+    console.log('Language changed to:', newLanguageCode); // Per debug
   };
 
   return (

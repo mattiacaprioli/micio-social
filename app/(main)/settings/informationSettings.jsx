@@ -5,7 +5,7 @@ import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next'; 
 
 // Styled Components
 const Container = styled.View`
@@ -70,7 +70,7 @@ const FooterText = styled.Text`
 
 
 const InformationSettings = () => {
-  const { t } = useTranslation(); // Get the t function
+  const { t } = useTranslation();
 
   const infoOptions = [
     { label: t("privacyPolicy"), action: () => console.log("Privacy Policy pressed") },

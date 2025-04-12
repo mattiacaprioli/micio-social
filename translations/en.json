@@ -1,4 +1,5 @@
 {
+  "whatsOnYourMind": "What's on your mind?",
   "micioSocial": "Micio Social",
   "welcomePunchline": "Where every thought find a home and every image tells a story.",
   "getStarted": "Get Started",
@@ -30,6 +31,7 @@
   "languageChanged": "Language Changed",
   "languageSetTo": "Language set to",
   "notifications": "Notifications",
+  "noNotificationsYet": "No notifications yet",
   "newFollowers": "New Followers",
   "likes": "Likes",
   "comments": "Comments",
@@ -44,5 +46,23 @@
   "appVersion": "App Version:",
   "privacyPolicy": "Privacy Policy",
   "termsOfService": "Terms of Service",
-  "support": "Support"
+  "support": "Support",
+  "profile": "Profile",
+  "followers": "Followers",
+  "following": "Following",
+  "follow": "Follow",
+  "unfollow": "Unfollow",
+  "noMorePosts": "No more posts",
+  "startedFollowingYou": "Started following you",
+  "post": "Post",
+  "editPost": "Edit Post",
+  "createPost": "Create Post",
+  "public": "Public",
+  "addToYourPost": "Add to your post",
+  "update": "Update",
+  "pleaseChooseImageOrAddBody": "Please choose an image or add post body",
+  "likedYourPost": "Liked your post",
+  "commentedOnYourPost": "Commented on your post",
+  "addAComment": "Add a comment...",
+  "beFirstToComment": "Be first to comment!"
 }

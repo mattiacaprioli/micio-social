@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
+import { useTranslation } from 'react-i18next';
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -124,6 +125,7 @@ var limit = 0;
 const Profile = () => {
   const { user, setAuth } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -193,7 +195,7 @@ const Profile = () => {
             </View>
           ) : (
             <View style={{ marginVertical: 30 }}>
-              <NoPostText>No more posts</NoPostText>
+              <NoPostText>{t('noMorePosts')}</NoPostText>
             </View>
           )
         }
@@ -203,6 +205,7 @@ const Profile = () => {
 };
 
 const UserHeader = ({ user, router }) => {
+  const { t } = useTranslation();
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
@@ -222,7 +225,7 @@ const UserHeader = ({ user, router }) => {
   return (
     <HeaderContainer>
       <View>
-        <Header title="Profile" mb={30} />
+        <Header title={t('profile')} mb={30} />
         <SettingsButton
           onPress={() => router.push("settings/settings")}
         >
@@ -256,13 +259,13 @@ const UserHeader = ({ user, router }) => {
             <TouchableOpacity onPress={() => router.push("/followers")}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>Followers</FollowLabel>
+                <FollowLabel>{t('followers')}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push("/followings")}>
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>Following</FollowLabel>
+                <FollowLabel>{t('following')}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
           </FollowContainer>

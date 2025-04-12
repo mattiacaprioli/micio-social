@@ -25,6 +25,7 @@ import CommentItem from "../../components/CommentItem";
 import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
 import { createNotification } from "../../services/notificationService";
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -82,6 +83,7 @@ const BeFirstText = styled.Text`
 `;
 
 const PostDetails = () => {
+  const { t } = useTranslation();
   const { postId, commentId } = useLocalSearchParams();
   const { user } = useAuth();
   const router = useRouter();
@@ -155,9 +157,9 @@ const PostDetails = () => {
         let notify = {
           senderId: user.id,
           receiverId: post.userId,
-          title: 'Commented on your post',
+          title: t('commentedOnYourPost'),
           data: JSON.stringify({ postId: post.id, commentId: res?.data?.id }),
-        }
+        };
         createNotification(notify);
       }
       inputRef?.current?.clear();
@@ -234,7 +236,7 @@ const PostDetails = () => {
         <InputContainer>
           <Input
             inputRef={inputRef}
-            placeholder="Add a comment..."
+            placeholder={t('addAComment')}
             onChangeText={(value) => (commentRef.current = value)}
             placeholderTextColor={theme.colors.textLight}
             containerStyle={{
@@ -272,7 +274,7 @@ const PostDetails = () => {
 
           {post?.comments?.length === 0 && (
             <BeFirstText>
-              Be first to comment!
+              {t('beFirstToComment')}
             </BeFirstText>
           )}
         </View>
