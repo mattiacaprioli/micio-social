@@ -1,7 +1,16 @@
+
+export interface SupabaseError {
+  message: string;
+  details?: string;
+  hint?: string;
+  code?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   msg?: string;
+  error?: SupabaseError;
 }
 
 export interface CreatePostData {
@@ -13,3 +22,4 @@ export interface CreatePostData {
   userId: string;
   id?: string;
 }
+
