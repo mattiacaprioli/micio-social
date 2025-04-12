@@ -3,7 +3,11 @@ import { decode } from "base64-arraybuffer";
 import { supabase } from "../lib/supabase";
 import { SUPABASE_URL } from "../env";
 
-export const getUserImageSrc = (imagePath) => {
+interface ImageSource {
+  uri: string;
+}
+
+export const getUserImageSrc = (imagePath?: string): ImageSource | number => {
   if (imagePath) {
     return getSupabaseFileUrl(imagePath);
   } else {
@@ -11,37 +15,43 @@ export const getUserImageSrc = (imagePath) => {
   }
 };
 
-export  const getSupabaseFileUrl = filePath => {
-  if(filePath){
-    return {uri: `${SUPABASE_URL}/storage/v1/object/public/uploads/${filePath}`}
-  }
-  return null;
+export const getSupabaseFileUrl = (filePath?: string): ImageSource => {
+  return { uri: `${SUPABASE_URL}/storage/v1/object/public/uploads/${filePath || ""}` };
 };
 
-export const downloadFile = async (url) => {
+export const downloadFile = async (url: string): Promise<string | null> => {
   try {
     const { uri } = await FileSystem.downloadAsync(url, getLocalFilePath(url));
     console.log("Downloaded file URI:", uri);
     return uri;
   } catch (error) {
     console.error("Error downloading file:", error);
-    return null; // Restituisci null se il download fallisce
+    return null;
   }
 };
 
-
-export const getLocalFilePath = filePath => {
-  let fileName = filePath.split('/').pop()
+export const getLocalFilePath = (filePath: string): string => {
+  const fileName = filePath.split('/').pop() as string;
   return `${FileSystem.documentDirectory}${fileName}`;
+};
+
+interface UploadResult {
+  success: boolean;
+  data?: string;
+  msg?: string;
 }
 
-export const uploadFile = async (folderName, filePath, isImage = true) => {
+export const uploadFile = async (
+  folderName: string, 
+  filePath: string, 
+  isImage: boolean = true
+): Promise<UploadResult> => {
   try {
     const fileBase64 = await FileSystem.readAsStringAsync(filePath, {
       encoding: FileSystem.EncodingType.Base64,
     });
 
-    const imageData = decode(fileBase64); // convert base64 to binary
+    const imageData = decode(fileBase64);
     const fileName = getFilePath(folderName, isImage);
 
     const { data, error } = await supabase.storage
@@ -57,15 +67,15 @@ export const uploadFile = async (folderName, filePath, isImage = true) => {
       return { success: false, msg: "Could not upload media" };
     }
 
-    return { success: true, data: data.path };
+    return { success: true, data: fileName };
   } catch (error) {
-    console.error("File upload error:", error);
-    return { success: false, msg: "Could not upload media" };
+    console.error("Upload error:", error);
+    return { success: false, msg: "Upload failed" };
   }
 };
 
-export const getFilePath = (folderName, isImage) => {
-  return `${folderName}/${new Date().getTime()}.${isImage ? "png" : "mp4"}`;
-  // profile/1234567890.png    if you upload image in profile folder
-  // images/1234567890.png    if you upload image in images folder
+const getFilePath = (folderName: string, isImage: boolean): string => {
+  const timestamp = new Date().getTime();
+  const extension = isImage ? "png" : "mp4";
+  return `${folderName}/${timestamp}.${extension}`;
 };
