@@ -7,7 +7,7 @@ interface ImageSource {
   uri: string;
 }
 
-export const getUserImageSrc = (imagePath?: string): ImageSource | number => {
+export const getUserImageSrc = (imagePath?: string | null): ImageSource | number => {
   if (imagePath) {
     return getSupabaseFileUrl(imagePath);
   } else {
@@ -15,8 +15,8 @@ export const getUserImageSrc = (imagePath?: string): ImageSource | number => {
   }
 };
 
-export const getSupabaseFileUrl = (filePath?: string): ImageSource => {
-  return { uri: `${SUPABASE_URL}/storage/v1/object/public/uploads/${filePath || ""}` };
+export const getSupabaseFileUrl = (filePath: string): ImageSource => {
+  return { uri: `${SUPABASE_URL}/storage/v1/object/public/uploads/${filePath}` };
 };
 
 export const downloadFile = async (url: string): Promise<string | null> => {

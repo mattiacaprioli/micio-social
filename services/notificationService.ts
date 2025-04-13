@@ -7,7 +7,7 @@ export interface NotificationUser {
   image: string | null;
 }
 
-interface Notification {
+export interface Notification {
   id: string;
   senderId: string;
   receiverId: string;
@@ -17,7 +17,7 @@ interface Notification {
   sender?: NotificationUser;
 }
 
-interface CreateNotificationData {
+export interface CreateNotificationData {
   senderId: string;
   receiverId: string;
   title: string;
