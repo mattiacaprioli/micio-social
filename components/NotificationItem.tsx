@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity } from "react-native";
 import React from "react";
 import styled from "styled-components/native";
 import { theme } from "../constants/theme";
@@ -6,8 +6,27 @@ import { hp } from "../helpers/common";
 import Avatar from "./Avatar";
 import moment from "moment";
 import Icon from "../assets/icons";
+import { Router } from "expo-router";
+import { NotificationUser } from "../services/notificationService";
 
-// Styled Components
+interface NotificationItemProps {
+  item: {
+    id: string;
+    data: string;
+    title: string;
+    created_at: string;
+    sender?: NotificationUser;
+  };
+  router: Router;
+  onDelete: () => void;
+}
+
+interface ParsedNotificationData {
+  userId?: string;
+  postId?: string;
+  commentId?: string;
+}
+
 const Container = styled.TouchableOpacity`
   flex: 1;
   flex-direction: row;
@@ -40,20 +59,30 @@ const DateText = styled(StyledText)`
   color: ${theme.colors.textLight};
 `;
 
-
-const NotificationItem = ({ item, router, onDelete }) => {
+const NotificationItem: React.FC<NotificationItemProps> = ({ item, router, onDelete }) => {
   const handleClick = () => {
-    const parsedData = JSON.parse(item?.data);
-    if (parsedData.userId) {
-      // Notifica di follow: naviga al profilo dell'utente che ha iniziato a seguire
-      router.push({ pathname: "userProfile", params: { userId: parsedData.userId } });
-    } else if (parsedData.postId) {
-      // Notifica di like o altro: naviga ai dettagli del post
-      router.push({ pathname: "postDetails", params: { postId: parsedData.postId, commentId: parsedData.commentId } });
-    } else {
-      console.warn("Formato dei dati della notifica non riconosciuto:", parsedData);
+    try {
+      const parsedData: ParsedNotificationData = JSON.parse(item?.data);
+      if (parsedData.userId) {
+        router.push({
+          pathname: "/(main)/userProfile",
+          params: { userId: parsedData.userId }
+        });
+      } else if (parsedData.postId) {
+        router.push({
+          pathname: "/(main)/postDetails",
+          params: { 
+            postId: parsedData.postId,
+            commentId: parsedData.commentId 
+          }
+        });
+      } else {
+        console.warn("Formato dei dati della notifica non riconosciuto:", parsedData);
+      }
+    } catch (error) {
+      console.error("Errore nel parsing dei dati della notifica:", error);
     }
-  };  
+  };
 
   const createdAt = moment(item?.created_at).format("MMM DD");
 

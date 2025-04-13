@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { ApiResponse } from "./types";
 
-interface NotificationUser {
+export interface NotificationUser {
   id: string;
   name: string;
   image: string | null;
