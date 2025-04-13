@@ -1,12 +1,12 @@
 import React from 'react'
-import styled from 'styled-components/native' 
-import { useRouter } from 'expo-router'
+import styled from 'styled-components/native'
+import { useRouter, Router } from 'expo-router'
 import BackButton from './BackButton'
 import { hp } from '../helpers/common'
 import { theme } from '../constants/theme'
 
 // Styled Components
-const Container = styled.View`
+const Container = styled.View<{ mb: number }>`
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -26,17 +26,26 @@ const BackButtonContainer = styled.View`
   left: 0;
 `;
 
-const Header = ({title, showBackButton = true, mb = 10}) => {
+interface HeaderProps {
+  title?: string;
+  showBackButton?: boolean;
+  mb?: number;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  title,
+  showBackButton = true,
+  mb = 10
+}) => {
   const router = useRouter();
+
   return (
     <Container mb={mb}>
-      {
-        showBackButton && (
-          <BackButtonContainer>
-            <BackButton router={router} />
-          </BackButtonContainer>
-        )
-      }
+      {showBackButton && (
+        <BackButtonContainer>
+          <BackButton router={router} />
+        </BackButtonContainer>
+      )}
       <Title>{title || ""}</Title>
     </Container>
   )
