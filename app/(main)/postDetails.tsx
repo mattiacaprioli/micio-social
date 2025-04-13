@@ -1,12 +1,11 @@
 import {
   Alert,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
-} from "react-native"; 
+} from "react-native";
 import React, { useEffect, useState, useRef } from "react";
-import styled from "styled-components/native"; 
+import styled from "styled-components/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   createComment,
@@ -26,6 +25,8 @@ import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
 import { createNotification } from "../../services/notificationService";
 import { useTranslation } from 'react-i18next';
+import { TextInput } from "react-native";
+import { Post, Comment, User } from "../../src/types";
 
 // Styled Components
 const Container = styled.View`
@@ -37,8 +38,21 @@ const Container = styled.View`
   padding-right: ${wp(4)}px;
 `;
 
-const List = styled.ScrollView`
-  padding-horizontal: ${wp(4)}px;
+const Center = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const NotFoundText = styled.Text`
+  font-size: ${hp(2)}px;
+  color: ${theme.colors.textDark};
+`;
+
+const BeFirstText = styled.Text`
+  text-align: center;
+  color: ${theme.colors.textLight};
+  font-size: ${hp(1.8)}px;
 `;
 
 const InputContainer = styled.View`
@@ -48,70 +62,61 @@ const InputContainer = styled.View`
 `;
 
 const SendIcon = styled.TouchableOpacity`
-  align-items: center;
-  justify-content: center;
-  border-width: 0.8px;
-  border-color: ${theme.colors.primary};
-  border-radius: ${theme.radius.lg}px;
-  height: ${hp(5.8)}px;
-  width: ${hp(5.8)}px;
-`;
-
-const Center = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-`;
-
-const NotFoundText = styled.Text`
-  font-size: ${hp(2.5)}px;
-  color: ${theme.colors.text};
-  font-weight: ${theme.fonts.medium};
+  padding: 8px;
 `;
 
 const LoadingContainer = styled.View`
-  height: ${hp(5.8)}px;
-  width: ${hp(5.8)}px;
-  justify-content: center;
-  align-items: center;
-  transform: scale(1.3);
+  padding: 8px;
 `;
 
-const BeFirstText = styled.Text`
-  color: ${theme.colors.text};
-  margin-left: 5px;
-`;
+interface PostWithComments extends Omit<Post, 'createdAt'> {
+  created_at: string;  // dal backend arriva come created_at invece di createdAt
+  user_id: string;     // dal backend arriva come user_id invece di userId
+  comments: Comment[];
+}
 
-const PostDetails = () => {
+const PostDetails: React.FC = () => {
   const { t } = useTranslation();
-  const { postId, commentId } = useLocalSearchParams();
+  const params = useLocalSearchParams<{ postId: string; commentId: string }>();
   const { user } = useAuth();
   const router = useRouter();
-  const inputRef = useRef(null);
-  const commentRef = useRef("");
+  const inputRef = useRef<TextInput>(null);
+  const commentRef = useRef<string>("");
 
-  const [startLoading, setStartLoading] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [post, setPost] = useState(null);
-  console.log("post detail", post);
+  const [startLoading, setStartLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [post, setPost] = useState<PostWithComments | null>(null);
 
-  const handleNewComment = async (payload) => {
-    console.log("new comment: ", payload.new);
-    if(payload.new){
-      let newComment = {...payload.new};
-      let res = await getUserData(newComment.userId);
-      newComment.user = res.success ? res.data : {};
+  const handleNewComment = async (payload: { new: Comment }) => {
+    if (payload.new) {
+      let newComment = { ...payload.new };
+      const res = await getUserData(newComment.user_id);
+      
+      // Verifica che res.data sia di tipo UserRow prima di assegnarlo
+      newComment.user = res.success && res.data ? {
+        id: res.data.id,
+        name: res.data.name,
+        email: res.data.email,
+        image: res.data.image,
+        bio: res.data.bio,
+        address: res.data.address,
+        birthday: res.data.birthday,
+        gender: res.data.gender,
+        phoneNumber: res.data.phone_number
+      } : undefined;
+
       setPost(prevPost => {
+        if (!prevPost) return null;
         return {
           ...prevPost,
           comments: [newComment, ...prevPost.comments]
-        }
+        };
       });
     }
   };
 
   useEffect(() => {
-    let commentChannel = supabase
+    const commentChannel = supabase
       .channel("comments")
       .on(
         "postgres_changes",
@@ -119,7 +124,7 @@ const PostDetails = () => {
           event: "INSERT",
           schema: "public",
           table: "comments",
-          filter: `postId=eq.${postId}`,
+          filter: `postId=eq.${params.postId}`,
         },
         handleNewComment
       )
@@ -133,28 +138,31 @@ const PostDetails = () => {
   }, []);
 
   const getPostDetails = async () => {
-    // fetch post details here
-    let res = await fetchPostDetails(postId);
-    if (res.success) setPost(res.data);
+    const res = await fetchPostDetails(params.postId);
+    if (res.success && res.data) {
+      setPost(res.data);
+    } else {
+      setPost(null);
+    }
     setStartLoading(false);
   };
 
   const onNewComment = async () => {
-    if (!commentRef.current) return null;
-    let data = {
-      userId: user?.id,
-      postId: post?.id,
+    if (!commentRef.current || !user || !post) return null;
+    
+    const data = {
+      userId: user.id,
+      postId: post.id,
       text: commentRef.current,
     };
-    // create comment
+
     setLoading(true);
-    let res = await createComment(data);
+    const res = await createComment(data);
     setLoading(false);
+
     if (res.success) {
-      // send notification
-      if(user.id != post.userId){
-        // send notification
-        let notify = {
+      if (user.id !== post.userId) {
+        const notify = {
           senderId: user.id,
           receiverId: post.userId,
           title: t('commentedOnYourPost'),
@@ -169,58 +177,64 @@ const PostDetails = () => {
     }
   };
 
-  const onDeleteComment = async (comment) => {
-    // delete comment
-    console.log("delete comment: ", comment);
-    let res = await removeComment(comment?.id);
+  const onDeleteComment = async (comment: Comment) => {
+    const res = await removeComment(comment?.id);
     if (res.success) {
       setPost((prevPost) => {
-        let updatedPost = { ...prevPost };
-        updatedPost.comments = updatedPost.comments.filter(
-          (c) => c.id != comment.id
-        );
-        return updatedPost;
+        if (!prevPost) return null;
+        return {
+          ...prevPost,
+          comments: prevPost.comments.filter(
+            (c) => c.id !== comment.id
+          )
+        };
       });
     } else {
       Alert.alert("Comment", res.msg);
     }
   };
 
-  const onDeletePost = async (item) => {
-    // delete post
-    let res = await removePost(post.id);
-    if(res.success){
+  const onDeletePost = async () => {
+    if (!post) return;
+    const res = await removePost(post.id);
+    if (res.success) {
       router.back();
-    }else{
+    } else {
       Alert.alert("Post", res.msg);
     }
   };
 
-  const onEditPost = async (item) => {
-    // edit post
+  const onEditPost = async (item: Post) => {
     router.back();
-    router.push({ pathname: "newPost", params: {...item} });
+    router.push({ 
+      pathname: "/newPost", 
+      params: { 
+        ...item, 
+        file: typeof item.file === "string" ? item.file : undefined,
+        user: item.user ? JSON.stringify(item.user) : undefined
+      } 
+    });
   };
 
-  if (startLoading)
+  if (startLoading) {
     return (
       <Center>
         <Loading />
       </Center>
     );
+  }
 
-  if (!post)
+  if (!post) {
     return (
       <Center>
         <NotFoundText>Post not found!</NotFoundText>
       </Center>
     );
+  }
 
   return (
     <Container>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView showsVerticalScrollIndicator={false}>
         <PostCard
           item={{ ...post, comments: [{ count: post?.comments?.length }] }}
           currentUser={user}
@@ -229,10 +243,9 @@ const PostDetails = () => {
           showMoreIcon={false}
           showDelete={true}
           onDelete={onDeletePost}
-          onEdit={onEditPost}
+          onEdit={() => onEditPost({ ...post, createdAt: post.created_at })}
         />
 
-        {/* Comment input */}
         <InputContainer>
           <Input
             inputRef={inputRef}
@@ -247,7 +260,7 @@ const PostDetails = () => {
           />
           {loading ? (
             <LoadingContainer>
-              <Loading />
+              <Loading size="small" />
             </LoadingContainer>
           ) : (
             <SendIcon onPress={onNewComment}>
@@ -260,15 +273,14 @@ const PostDetails = () => {
           )}
         </InputContainer>
 
-        {/* Comment list */}
         <View style={{ marginVertical: 15, gap: 17 }}>
           {post?.comments?.map((comment) => (
             <CommentItem
               key={comment?.id?.toString()}
               item={comment}
               onDelete={onDeleteComment}
-              highlight={commentId == comment.id}
-              canDelete={user.id == comment.userId || user.id == post.userId}
+              highlight={params.commentId === comment.id}
+              canDelete={user?.id === comment.user_id || user?.id === post.userId}
             />
           ))}
 
@@ -284,4 +296,8 @@ const PostDetails = () => {
 };
 
 export default PostDetails;
+
+
+
+
 

@@ -6,6 +6,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   View,
+  ListRenderItem,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
@@ -30,6 +31,8 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { createNotification } from "../../services/notificationService";
 import { useTranslation } from 'react-i18next';
+import { User } from "../../src/types";
+import type { PostWithRelations } from "../../services/postService";
 
 // Styled Components
 const Container = styled.View`
@@ -111,18 +114,24 @@ const FollowButtonText = styled.Text`
   font-weight: 500;
 `;
 
-var limit = 0;
-const userProfile = () => {
+interface UserHeaderProps {
+  user: User | null;
+  router: ReturnType<typeof useRouter>;
+}
+
+let limit = 0;
+
+const UserProfile: React.FC = () => {
   const { t } = useTranslation();
   const { userId } = useLocalSearchParams();
   const router = useRouter();
-  const [userData, setUserData] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
+  const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const getPosts = async (isRefreshing = false) => {
-    if (!hasMore && !isRefreshing) return null;
+  const getPosts = async (isRefreshing = false): Promise<void> => {
+    if (!hasMore && !isRefreshing) return;
 
     if (isRefreshing) {
       limit = 10;
@@ -130,31 +139,43 @@ const userProfile = () => {
       limit += 10;
     }
 
-    console.log("fetching post: ", limit);
-    let res = await fetchPost(limit, userId);
+    if (!userId) return;
+
+    const res = await fetchPost(limit, userId as string);
     if (res.success) {
-      if (posts.length == res.data.length) {
+      if (posts.length === (res.data?.length ?? 0)) {
         setHasMore(false);
       }
-      setPosts(res.data);
+      setPosts(res.data ? res.data : []);
     }
     if (isRefreshing) {
       setRefreshing(false);
     }
   };
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback((): void => {
     setRefreshing(true);
     getPosts(true);
   }, []);
 
   useEffect(() => {
-    getUserData(userId).then((res) => {
-      if (res.success) {
-        setUserData(res.data);
-      }
-    });
-  }, []);
+    if (userId) {
+      getUserData(userId as string).then((res) => {
+        if (res.success) {
+          setUserData(res.data ? res.data : null);
+        }
+      });
+    }
+  }, [userId]);
+
+  const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
+    <PostCard
+      item={item}
+      currentUser={userData}
+      router={router}
+      isUserProfile={true}
+    />
+  );
 
   return (
     <ScreenWrapper bg="white">
@@ -165,18 +186,8 @@ const userProfile = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={ListStyle}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <PostCard
-            item={item}
-            currentUser={userData}
-            router={router}
-            isUserProfile={true}
-          />
-        )}
-        onEndReached={() => {
-          getPosts();
-          console.log("got to the end");
-        }}
+        renderItem={renderItem}
+        onEndReached={() => getPosts()}
         onEndReachedThreshold={0}
         refreshControl={
           <RefreshControl
@@ -187,7 +198,7 @@ const userProfile = () => {
         }
         ListFooterComponent={
           hasMore ? (
-            <View style={{ marginVertical: posts.length == 0 ? 100 : 30 }}>
+            <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
               <Loading />
             </View>
           ) : (
@@ -201,15 +212,15 @@ const userProfile = () => {
   );
 };
 
-const UserHeader = ({ user, router }) => {
+const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { t } = useTranslation();
   const { user: currentUser } = useAuth();
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchCounts = async () => {
+    const fetchCounts = async (): Promise<void> => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
         const following = await getFollowingCount(user.id);
@@ -218,7 +229,7 @@ const UserHeader = ({ user, router }) => {
       }
     };
 
-    const checkFollowingStatus = async () => {
+    const checkFollowingStatus = async (): Promise<void> => {
       if (currentUser?.id && user?.id && currentUser.id !== user.id) {
         const followingStatus = await isUserFollowing(currentUser.id, user.id);
         setIsFollowing(followingStatus);
@@ -229,22 +240,22 @@ const UserHeader = ({ user, router }) => {
     checkFollowingStatus();
   }, [user, currentUser]);
 
-  const handleFollowToggle = async () => {
+  const handleFollowToggle = async (): Promise<void> => {
     if (!currentUser?.id || !user?.id) return;
   
     if (isFollowing) {
       await unfollowUser(currentUser.id, user.id);
     } else {
-      let res = await followUser(currentUser.id, user.id);
+      const res = await followUser(currentUser.id, user.id);
       if (res.success) {
         if (currentUser.id !== user.id) {
-          let notify = {
+          const notify = {
             senderId: currentUser.id,
             receiverId: user.id,
             title: t('startedFollowingYou'),
             data: JSON.stringify({ userId: currentUser.id }),
           };
-          createNotification(notify);
+          await createNotification(notify);
         }
       }
     }
@@ -254,7 +265,7 @@ const UserHeader = ({ user, router }) => {
   
     const followers = await getFollowersCount(user.id);
     setFollowersCount(followers);
-  };  
+  };
 
   return (
     <HeaderContainer>
@@ -273,21 +284,21 @@ const UserHeader = ({ user, router }) => {
           </AvatarContainer>
 
           <View style={{ alignItems: "center", gap: 4 }}>
-            <UserName>{user && user.name}</UserName>
-            <InfoText>{user && user.address}</InfoText>
-            {user && user.bio && (
+            <UserName>{user?.name}</UserName>
+            <InfoText>{user?.address}</InfoText>
+            {user?.bio && (
               <InfoText>{user.bio}</InfoText>
             )}
           </View>
 
           <FollowContainer>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user.id } })}>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
                 <FollowLabel>{t('followers')}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user.id } })}>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
                 <FollowLabel>{t('following')}</FollowLabel>
@@ -308,5 +319,5 @@ const UserHeader = ({ user, router }) => {
   );
 };
 
-export default userProfile;
+export default UserProfile;
 

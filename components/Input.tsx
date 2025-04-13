@@ -1,7 +1,14 @@
 import React from 'react'
+import { TextInputProps, ViewStyle } from 'react-native'
 import styled from 'styled-components/native'
 import { theme } from '../constants/theme'
 import { hp } from '../helpers/common'
+
+interface InputProps extends TextInputProps {
+  containerStyle?: ViewStyle;
+  icon?: React.ReactNode;
+  inputRef?: React.RefObject<any>;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -15,8 +22,6 @@ const Container = styled.View`
   padding-left: 18px;
   padding-right: 18px;
   gap: 12px;
-  /* Apply containerStyle prop */
-  ${(props) => props.containerStyle}
 `;
 
 const StyledTextInput = styled.TextInput`
@@ -24,13 +29,18 @@ const StyledTextInput = styled.TextInput`
   color: ${theme.colors.textDark};
 `;
 
-const Input = (props) => {
+const Input: React.FC<InputProps> = ({
+  containerStyle,
+  icon,
+  inputRef,
+  ...props
+}) => {
   return (
-    <Container containerStyle={props.containerStyle}>
-      {props.icon && props.icon}
+    <Container style={containerStyle}>
+      {icon}
       <StyledTextInput
         placeholderTextColor={theme.colors.textLight}
-        ref={props.inputRef && props.inputRef}
+        ref={inputRef}
         {...props}
       />
     </Container>

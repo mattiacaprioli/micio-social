@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   image?: string;
   bio?: string;
   address?: string;
@@ -32,3 +32,5 @@ export interface Comment {
   created_at: string;
   user?: User;
 }
+
+

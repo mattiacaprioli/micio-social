@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   View,
+  ListRenderItem,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
@@ -25,6 +26,8 @@ import {
   getFollowersCount,
   getFollowingCount,
 } from "../../services/followsService";
+import { Post, User } from "../../src/types";
+import type { PostWithRelations } from "../../services/postService";
 
 // Styled Components
 const Container = styled.View`
@@ -121,30 +124,35 @@ const FollowLabel = styled.Text`
   color: ${theme.colors.textLight};
 `;
 
-var limit = 0;
-const Profile = () => {
+interface UserHeaderProps {
+  user: User;
+  router: ReturnType<typeof useRouter>;
+}
+
+let limit = 0;
+
+const Profile: React.FC = () => {
   const { user, setAuth } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
-  const [posts, setPosts] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const getPosts = async (isRefreshing = false) => {
-    // call the api here
-
-    if (!hasMore && !isRefreshing) return null;
+  const getPosts = async (isRefreshing = false): Promise<void> => {
+    if (!hasMore && !isRefreshing) return;
 
     if (isRefreshing) {
-      limit = 10; // Resetta il limite durante il refresh
+      limit = 10;
     } else {
       limit += 10;
     }
 
-    console.log("fetching post: ", limit);
-    let res = await fetchPost(limit, user.id);
-    if (res.success) {
-      if (posts.length == res.data.length) {
+    if (!user?.id) return;
+
+    const res = await fetchPost(limit, user.id);
+    if (res.success && res.data) {
+      if (posts.length === res.data.length) {
         setHasMore(false);
       }
       setPosts(res.data);
@@ -154,10 +162,31 @@ const Profile = () => {
     }
   };
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback((): void => {
     setRefreshing(true);
     getPosts(true);
   }, []);
+
+  const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
+    <PostCard
+      item={item}
+      currentUser={user}
+      router={router}
+      isUserProfile={true}
+    />
+  );
+
+  const renderFooter = (): React.ReactElement => (
+    hasMore ? (
+      <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
+        <Loading />
+      </View>
+    ) : (
+      <View style={{ marginVertical: 30 }}>
+        <NoPostText>{t('noMorePosts')}</NoPostText>
+      </View>
+    )
+  );
 
   return (
     <ScreenWrapper bg="white">
@@ -168,18 +197,8 @@ const Profile = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={ListStyle}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <PostCard
-            item={item}
-            currentUser={user}
-            router={router}
-            isUserProfile={true}
-          />
-        )}
-        onEndReached={() => {
-          getPosts();
-          console.log("got to the end");
-        }}
+        renderItem={renderItem}
+        onEndReached={() => getPosts()}
         onEndReachedThreshold={0}
         refreshControl={
           <RefreshControl
@@ -188,29 +207,19 @@ const Profile = () => {
             colors={[theme.colors.primary]}
           />
         }
-        ListFooterComponent={
-          hasMore ? (
-            <View style={{ marginVertical: posts.length == 0 ? 100 : 30 }}>
-              <Loading />
-            </View>
-          ) : (
-            <View style={{ marginVertical: 30 }}>
-              <NoPostText>{t('noMorePosts')}</NoPostText>
-            </View>
-          )
-        }
+        ListFooterComponent={renderFooter}
       />
     </ScreenWrapper>
   );
 };
 
-const UserHeader = ({ user, router }) => {
+const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { t } = useTranslation();
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
 
   useEffect(() => {
-    const fetchCounts = async () => {
+    const fetchCounts = async (): Promise<void> => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
         const following = await getFollowingCount(user.id);
@@ -227,67 +236,61 @@ const UserHeader = ({ user, router }) => {
       <View>
         <Header title={t('profile')} mb={30} />
         <SettingsButton
-          onPress={() => router.push("settings/settings")}
+          onPress={() => router.push("/settings/settings")}
         >
-          <Icon name="settings" color={theme.colors.text} />
+          <Icon
+            name="settings"
+            size={hp(2.5)}
+            color={theme.colors.textDark}
+          />
         </SettingsButton>
-      </View>
 
-      <Container>
-        <View style={{ gap: 15 }}>
-          <AvatarContainer>
-            <Avatar
-              uri={user?.image}
-              size={hp(12)}
-              rounded={theme.radius.xxl}
+        <AvatarContainer>
+          <Avatar
+            size={hp(12)}
+            uri={user?.image}
+            rounded={theme.radius.xl}
+          />
+          <EditIcon onPress={() => router.push("/editProfile")}>
+            <Icon
+              name="edit"
+              size={hp(2.2)}
+              color={theme.colors.primary}
             />
-            <EditIcon
-              onPress={() => router.push("editProfile")}
-            >
-              <Icon name="edit" size={20} />
-            </EditIcon>
-          </AvatarContainer>
+          </EditIcon>
+        </AvatarContainer>
 
-          {/* username and address */}
-          <View style={{ alignItems: "center", gap: 4 }}>
-            <UserName>{user && user.name}</UserName>
-            <InfoText>{user && user.address}</InfoText>
-          </View>
+        <View style={{ alignItems: "center", marginTop: 15, gap: 15 }}>
+          <UserName>{user?.name}</UserName>
+          {user?.bio && (
+            <InfoText>{user.bio}</InfoText>
+          )}
 
-          {/* follower / following section */}
-          <FollowContainer>
-            <TouchableOpacity onPress={() => router.push("/followers")}>
-              <FollowItem>
-                <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>{t('followers')}</FollowLabel>
-              </FollowItem>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/followings")}>
-              <FollowItem>
-                <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>{t('following')}</FollowLabel>
-              </FollowItem>
-            </TouchableOpacity>
-          </FollowContainer>
-
-          {/* email, phone, bio */}
           <InfoContainer>
-            <InfoRow>
-              <Icon name="mail" size={20} color={theme.colors.textLight} />
-              <InfoText>{user && user.email}</InfoText>
-            </InfoRow>
-            {user && user.phoneNumber && (
+            {user?.address && (
               <InfoRow>
-                <Icon name="call" size={20} color={theme.colors.textLight} />
-                <InfoText>{user.phoneNumber}</InfoText>
+                <Icon
+                  name="location"
+                  size={hp(2)}
+                  color={theme.colors.textLight}
+                />
+                <InfoText>{user.address}</InfoText>
               </InfoRow>
             )}
-            {user && user.bio && (
-              <InfoText>{user.bio}</InfoText>
-            )}
           </InfoContainer>
+
+          <FollowContainer>
+            <FollowItem>
+              <FollowCount>{followersCount}</FollowCount>
+              <FollowLabel>{t('followers')}</FollowLabel>
+            </FollowItem>
+            <FollowItem>
+              <FollowCount>{followingCount}</FollowCount>
+              <FollowLabel>{t('following')}</FollowLabel>
+            </FollowItem>
+          </FollowContainer>
         </View>
-      </Container>
+      </View>
     </HeaderContainer>
   );
 };

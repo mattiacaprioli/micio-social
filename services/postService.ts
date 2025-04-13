@@ -15,7 +15,7 @@ interface CreatePostInput {
   file?: PostFile | string;
 }
 
-interface PostWithRelations extends PostRow {
+export interface PostWithRelations extends PostRow {
   user?: {
     id: string;
     name: string;
