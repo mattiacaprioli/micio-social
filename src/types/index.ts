@@ -26,9 +26,9 @@ export interface Post {
 
 export interface Comment {
   id: string;
-  postId: string;
-  userId: string;
+  post_id: string;
+  user_id: string;
   text: string;
-  createdAt: string;
+  created_at: string;
   user?: User;
 }
