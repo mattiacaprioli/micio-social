@@ -1,14 +1,13 @@
 import {
-  Text,
   View,
   ScrollView,
   TouchableOpacity,
-  Pressable,
   Alert,
-} from "react-native"; 
+  Image,
+} from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import styled from "styled-components/native"; 
+import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Header from "../../components/Header";
 import { hp, wp } from "../../helpers/common";
@@ -20,10 +19,27 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Icon from "../../assets/icons";
 import Button from "../../components/Button";
 import * as ImagePicker from "expo-image-picker";
-import { Image } from "react-native";
 import { getSupabaseFileUrl } from "../../services/imageService";
 import { Video } from "expo-av";
 import { createOrUpdatePost } from "../../services/postService";
+import { RichEditor } from "react-native-pell-rich-editor";
+
+// Interfacce per i tipi
+interface PostParams {
+  id?: string;
+  body?: string;
+  file?: string;
+  [key: string]: any;
+}
+
+// Definizione dell'interfaccia MediaFile
+interface MediaFile {
+  uri: string;
+  type: "image" | "video" | "livePhoto" | "pairedVideo";
+  width?: number;
+  height?: number;
+  [key: string]: any;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -96,89 +112,100 @@ const CloseIcon = styled.Pressable`
   background-color: rgba(225,0,0,0.5);
 `;
 
-const NewPost = () => {
-  const post = useLocalSearchParams();
+const NewPost: React.FC = () => {
+  const post = useLocalSearchParams<PostParams>();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const bodyRef = useRef("");
-  const editorRef = useRef(null);
+  const bodyRef = useRef<string>("");
+  const editorRef = useRef<RichEditor | null>(null);
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(file);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [file, setFile] = useState<MediaFile | string | null>(null);
 
   useEffect(() => {
     if(post && post.id){
-      bodyRef.current = post.body;
+      bodyRef.current = post.body || "";
       setFile(post.file || null);
       setTimeout(() => {
-        editorRef.current?.setContentHTML(post.body);
+        editorRef.current?.setContentHTML(post.body || "");
       }, 300);
     }
   }, []);
 
-  const onPick = async (isImage) => {
-    let mediaConfig = {
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  const onPick = async (isImage: boolean): Promise<void> => {
+    let mediaConfig: ImagePicker.ImagePickerOptions = {
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.7,
     };
     if (!isImage) {
       mediaConfig = {
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        mediaTypes: ['videos'],
         allowsEditing: true,
         quality: 0.7,
       };
     }
     let result = await ImagePicker.launchImageLibraryAsync(mediaConfig);
 
-    console.log("file: ", result.assets[0]);
-    if (!result.canceled) {
-      setFile(result.assets[0]);
+    console.log("file: ", result.assets?.[0]);
+    if (!result.canceled && result.assets?.[0]) {
+      // Converti l'asset in un oggetto MediaFile
+      const asset = result.assets[0];
+      // Assicurati che il tipo sia compatibile con PostFile
+      const fileType = asset.type === 'image' || asset.type === 'video' ? asset.type : 'image';
+      setFile({
+        uri: asset.uri,
+        type: fileType,
+        width: asset.width,
+        height: asset.height,
+        // Aggiungi altre proprietà se necessario
+      });
     }
   };
 
-  const isLocalFile = (file) => {
+  const isLocalFile = (file: MediaFile | string | null): boolean | null => {
     if (!file) return null;
     if (typeof file === "object") return true;
 
     return false;
   };
 
-  const getFileType = (file) => {
+  const getFileType = (file: MediaFile | string | null): string | null => {
     if (!file) return null;
     if (isLocalFile(file)) {
-      return file.type;
+      return (file as MediaFile).type || null;
     }
 
-    // check image or video fro remote file
-    if (file.includes("postImages")) {
+    // check image or video for remote file
+    if (typeof file === 'string' && file.includes("postImages")) {
       return "image";
     }
 
     return "video";
   };
 
-  const getFileUri = (file) => {
+  const getFileUri = (file: MediaFile | string | null): string | null => {
     if (!file) return null;
     if (isLocalFile(file)) {
-      return file.uri;
+      return (file as MediaFile).uri;
     }
 
-    return getSupabaseFileUrl(file)?.uri;
+    return getSupabaseFileUrl(file as string)?.uri;
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (): Promise<void> => {
     if(!bodyRef.current && !file){
       Alert.alert(t('post'), t('pleaseChooseImageOrAddBody'));
       return;
     }
 
+    // Crea l'oggetto dati con il tipo corretto
     let data = {
-      file,
+      file: file,
       body: bodyRef.current,
       userId: user?.id,
-    }
+    } as any; // Utilizziamo any per evitare problemi di tipo
 
     if(post && post.id){
       data.id = post.id;
@@ -193,7 +220,7 @@ const NewPost = () => {
       editorRef.current?.setContentHTML("");
       router.back();
     }else{
-      Alert.alert(t('post'), res.msg);
+      Alert.alert(t('post'), res.msg || "Error creating post");
     }
   };
 
@@ -224,17 +251,18 @@ const NewPost = () => {
 
           {file && (
             <FileContainer>
-              {getFileType(file) == "video" ? (
-                <Video 
+              {getFileType(file) === "video" ? (
+                <Video
                   style={{flex: 1}}
-                  source={{uri: getFileUri(file)}}
+                  source={{uri: getFileUri(file) || ''}}
                   useNativeControls
-                  resizeMode="cover"
+                  // @ts-ignore - Ignora l'errore di tipo per resizeMode
+                  resizeMode="contain"
                   isLooping
                 />
               ) : (
                 <Image
-                  source={{ uri: getFileUri(file) }}
+                  source={{ uri: getFileUri(file) || '' }}
                   resizeMode="cover"
                   style={{ flex: 1 }}
                 />
