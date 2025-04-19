@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Text,
-  View,
   Alert,
   Switch,
-  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import styled from "styled-components/native";
@@ -14,7 +11,19 @@ import Input from "../../../components/Input";
 import Button from "../../../components/Button";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
-import { useTranslation } from 'react-i18next'; 
+import { useTranslation } from 'react-i18next';
+
+// Interfacce per i tipi
+interface PersonalInfo {
+  name: string;
+  email: string;
+}
+
+interface PasswordData {
+  current: string;
+  new: string;
+  confirm: string;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -64,17 +73,17 @@ const LanguageText = styled.Text`
   font-size: ${hp(1.8)}px;
 `;
 
-const AccountSettings = () => {
-  const [personalInfo, setPersonalInfo] = useState({ name: "", email: "" });
-  const [password, setPassword] = useState({
+const AccountSettings: React.FC = () => {
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({ name: "", email: "" });
+  const [password, setPassword] = useState<PasswordData>({
     current: "",
     new: "",
     confirm: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [loading] = useState<boolean>(false);
+  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
   const { i18n, t } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
+  const [language, setLanguage] = useState<string>(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
 
   // Aggiungi questo useEffect per debug
   useEffect(() => {
@@ -82,39 +91,39 @@ const AccountSettings = () => {
     console.log('Available translations:', i18n.store.data);
   }, []);
 
-  const handleUpdatePersonalInfo = () => {
+  const handleUpdatePersonalInfo = (): void => {
     if (!personalInfo.name || !personalInfo.email) {
       Alert.alert(
-        "Error",
-        "All fields are required to update personal information."
+        t("error"),
+        t("allFieldsRequired")
       );
       return;
     }
     console.log("Updated personal information:", personalInfo);
-    Alert.alert("Success", "Personal information updated successfully!");
+    Alert.alert(t("success"), t("personalInfoUpdated"));
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = (): void => {
     if (!password.current || !password.new || !password.confirm) {
-      Alert.alert("Error", "All fields are required to change password.");
+      Alert.alert(t("error"), t("allFieldsRequired"));
       return;
     }
     if (password.new !== password.confirm) {
-      Alert.alert("Error", "New passwords do not match.");
+      Alert.alert(t("error"), t("passwordsDoNotMatch"));
       return;
     }
     console.log("Password changed successfully.");
-    Alert.alert("Success", "Password updated successfully!");
+    Alert.alert(t("success"), t("passwordUpdated"));
   };
 
-  const handleDeactivateAccount = () => {
+  const handleDeactivateAccount = (): void => {
     Alert.alert(
-      "Deactivate Account",
-      "Are you sure you want to deactivate your account? This action cannot be undone.",
+      t("deactivateAccount"),
+      t("deactivateAccountConfirm"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Deactivate",
+          text: t("deactivate"),
           onPress: () => console.log("Account deactivated"),
           style: "destructive",
         },
@@ -122,15 +131,15 @@ const AccountSettings = () => {
     );
   };
 
-  const toggleTheme = () => {
+  const toggleTheme = (): void => {
     setIsDarkTheme((prev) => !prev);
     Alert.alert(
-      "Theme Changed",
-      `Theme set to ${!isDarkTheme ? "Dark" : "Light"}`
+      t("themeChanged"),
+      `${t("themeSetTo")} ${!isDarkTheme ? t("dark") : t("light")}`
     );
   };
 
-  const toggleLanguage = () => {
+  const toggleLanguage = (): void => {
     const newLanguage = language === "English" ? "Italian" : "English";
     const newLanguageCode = newLanguage === "English" ? "en" : "it";
     setLanguage(newLanguage);
@@ -198,7 +207,7 @@ const AccountSettings = () => {
               <SettingLabel>{t("darkTheme")}</SettingLabel>
               <Switch
                 trackColor={{
-                  false: theme.colors.border,
+                  false: theme.colors.dark,
                   true: theme.colors.primary,
                 }}
                 thumbColor={
@@ -222,7 +231,7 @@ const AccountSettings = () => {
             <SectionTitle>{t("deactivateAccount")}</SectionTitle>
             <Button
               title={t("deactivateAccount")}
-              danger
+              buttonStyle={{ backgroundColor: theme.colors.rose }}
               onPress={handleDeactivateAccount}
             />
           </Form>

@@ -1,13 +1,13 @@
-import { View, Text, Image, Pressable } from 'react-native'
-import React from 'react'
-import styled from 'styled-components/native'
-import ScreenWrapper from '../components/ScreenWrapper'
-import { StatusBar } from 'expo-status-bar'
-import { hp, wp } from '../helpers/common'
-import { theme } from '../constants/theme'
-import Button from '../components/Button'
-import { useRouter } from 'expo-router'
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { View, Pressable, ViewStyle } from 'react-native';
+import React from 'react';
+import styled from 'styled-components/native';
+import ScreenWrapper from '../components/ScreenWrapper';
+import { StatusBar } from 'expo-status-bar';
+import { hp, wp } from '../helpers/common';
+import { theme } from '../constants/theme';
+import Button from '../components/Button';
+import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -63,18 +63,21 @@ const LoginLink = styled(LoginText)`
   font-weight: ${theme.fonts.semibold};
 `;
 
-
-const Welcome = () => {
+const Welcome: React.FC = () => {
   const router = useRouter();
-  const { t } = useTranslation(); // Get the t function
-  
+  const { t } = useTranslation();
+
+  const buttonStyle: ViewStyle = {
+    marginHorizontal: wp(3)
+  };
+
   return (
     <ScreenWrapper bg="white">
       <StatusBar style="dark" />
       <Container>
         {/* Welcome image */}
         <WelcomeImage resizeMode='contain' source={require('../assets/images/welcome.png')} />
-      
+
         {/* title */}
         <View style={{gap: 20}}>
           <Title>{t('micioSocial')}</Title>
@@ -87,14 +90,14 @@ const Welcome = () => {
         <Footer>
           <Button
             title={t('getStarted')}
-            buttonStyle={{marginHorizontal: wp(3)}}
-            onPress={() => router.push('signUp')}
+            buttonStyle={buttonStyle}
+            onPress={() => router.push('signUp' as any)}
           />
           <BottomTextContainer>
             <LoginText>
               {t('alreadyHaveAccount')}
             </LoginText>
-            <Pressable onPress={() => router.push('login')}>
+            <Pressable onPress={() => router.push('login' as any)}>
               <LoginLink>
                 Login
               </LoginLink>
@@ -103,7 +106,7 @@ const Welcome = () => {
         </Footer>
       </Container>
     </ScreenWrapper>
-  )
-}
+  );
+};
 
-export default Welcome
+export default Welcome;
