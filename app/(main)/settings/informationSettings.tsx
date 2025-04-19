@@ -1,11 +1,16 @@
 import React from "react";
-import { Text, View, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
-import { useTranslation } from 'react-i18next'; 
+import { useTranslation } from 'react-i18next';
+
+// Interfacce per i tipi
+interface InfoOption {
+  label: string;
+  action: () => void;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -24,12 +29,8 @@ const Card = styled.View`
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
   border-width: 0.5px;
-  border-color: ${theme.colors.border};
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.05;
-  shadow-radius: 6px;
-  elevation: 3;
+  border-color: ${theme.colors.dark};
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
   gap: ${hp(2)}px;
 `;
 
@@ -44,11 +45,7 @@ const Item = styled.TouchableOpacity`
   border-radius: ${theme.radius.lg}px;
   background-color: white;
   /* Shadow styles integrated */
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 3px;
-  elevation: 2;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
 `;
 
 const ItemText = styled.Text`
@@ -68,11 +65,10 @@ const FooterText = styled.Text`
   font-weight: 400;
 `;
 
-
-const InformationSettings = () => {
+const InformationSettings: React.FC = () => {
   const { t } = useTranslation();
 
-  const infoOptions = [
+  const infoOptions: InfoOption[] = [
     { label: t("privacyPolicy"), action: () => console.log("Privacy Policy pressed") },
     { label: t("termsOfService"), action: () => console.log("Terms of Service pressed") },
     { label: t("support"), action: () => console.log("Support pressed") },

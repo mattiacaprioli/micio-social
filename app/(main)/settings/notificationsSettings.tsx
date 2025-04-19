@@ -1,11 +1,18 @@
 import React, { useState } from "react";
-import { Text, View, Switch } from "react-native";
+import { Switch } from "react-native";
 import styled from "styled-components/native";
 import ScreenWrapper from "../../../components/ScreenWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { theme } from "../../../constants/theme";
 import { useTranslation } from 'react-i18next';
+
+// Interfacce per i tipi
+interface NotificationOption {
+  label: string;
+  value: boolean;
+  toggle: () => void;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -24,12 +31,8 @@ const Card = styled.View`
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
   border-width: 0.5px;
-  border-color: ${theme.colors.border};
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.05;
-  shadow-radius: 6px;
-  elevation: 3;
+  border-color: ${theme.colors.dark};
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
   gap: ${hp(2)}px;
 `;
 
@@ -51,18 +54,17 @@ const ItemText = styled.Text`
   font-weight: 500;
 `;
 
+const NotificationsSettings: React.FC = () => {
+  const [followersEnabled, setFollowersEnabled] = useState<boolean>(true);
+  const [likesEnabled, setLikesEnabled] = useState<boolean>(true);
+  const [commentsEnabled, setCommentsEnabled] = useState<boolean>(true);
+  const { t } = useTranslation();
 
-const NotificationsSettings = () => {
-  const [followersEnabled, setFollowersEnabled] = useState(true);
-  const [likesEnabled, setLikesEnabled] = useState(true);
-  const [commentsEnabled, setCommentsEnabled] = useState(true);
-  const { t } = useTranslation(); // Get the t function
+  const toggleFollowers = (): void => setFollowersEnabled((previousState) => !previousState);
+  const toggleLikes = (): void => setLikesEnabled((previousState) => !previousState);
+  const toggleComments = (): void => setCommentsEnabled((previousState) => !previousState);
 
-  const toggleFollowers = () => setFollowersEnabled((previousState) => !previousState);
-  const toggleLikes = () => setLikesEnabled((previousState) => !previousState);
-  const toggleComments = () => setCommentsEnabled((previousState) => !previousState);
-
-  const settingsOptions = [
+  const settingsOptions: NotificationOption[] = [
     {
       label: t("newFollowers"),
       value: followersEnabled,
@@ -89,7 +91,7 @@ const NotificationsSettings = () => {
             <Item key={index}>
               <ItemText>{option.label}</ItemText>
               <Switch
-                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                trackColor={{ false: theme.colors.dark, true: theme.colors.primary }}
                 thumbColor={option.value ? theme.colors.primary : theme.colors.textLight}
                 onValueChange={option.toggle}
                 value={option.value}
