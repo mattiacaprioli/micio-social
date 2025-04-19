@@ -280,14 +280,18 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           </InfoContainer>
 
           <FollowContainer>
-            <FollowItem>
-              <FollowCount>{followersCount}</FollowCount>
-              <FollowLabel>{t('followers')}</FollowLabel>
-            </FollowItem>
-            <FollowItem>
-              <FollowCount>{followingCount}</FollowCount>
-              <FollowLabel>{t('following')}</FollowLabel>
-            </FollowItem>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
+              <FollowItem>
+                <FollowCount>{followersCount}</FollowCount>
+                <FollowLabel>{t('followers')}</FollowLabel>
+              </FollowItem>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
+              <FollowItem>
+                <FollowCount>{followingCount}</FollowCount>
+                <FollowLabel>{t('following')}</FollowLabel>
+              </FollowItem>
+            </TouchableOpacity>
           </FollowContainer>
         </View>
       </View>

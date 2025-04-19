@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
-  Text,
-  TouchableOpacity,
   RefreshControl,
   View,
 } from "react-native"; 
@@ -10,11 +8,18 @@ import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSearchParams } from "expo-router";
-import { getFollowersList } from "../../services/followsService";
+import { getFollowersList, FollowerInfo } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
+import { useTranslation } from 'react-i18next';
+
+// Interfacce per i tipi
+interface RouteParams {
+  userId?: string;
+  [key: string]: any;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -50,14 +55,15 @@ const EmptyListContainer = styled.View`
 
 const EmptyListText = styled.Text``;
 
-const Followers = () => {
+const Followers: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { userId } = useLocalSearchParams();
+  const { userId } = useLocalSearchParams<RouteParams>();
+  const { t } = useTranslation();
   const targetUserId = userId || currentUser?.id;
-  const [followers, setFollowers] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [followers, setFollowers] = useState<FollowerInfo[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const fetchFollowers = async () => {
+  const fetchFollowers = async (): Promise<void> => {
     if (targetUserId) {
       setRefreshing(true);
       const data = await getFollowersList(targetUserId);
@@ -70,7 +76,7 @@ const Followers = () => {
     fetchFollowers();
   }, [targetUserId]);
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: FollowerInfo }): React.ReactElement => (
     <Item>
       <Avatar
         uri={item.follower.image}
@@ -84,7 +90,7 @@ const Followers = () => {
   return (
     <ScreenWrapper bg="white">
       <Container>
-        <Header title="Followers" />
+        <Header title={t('followers')} />
         <FlatList
           data={followers}
           keyExtractor={(item) => item.follower_id.toString()}
@@ -98,7 +104,7 @@ const Followers = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>No followers found</EmptyListText>
+              <EmptyListText>{t('noFollowersFound')}</EmptyListText>
             </EmptyListContainer>
           }
         />
@@ -108,4 +114,3 @@ const Followers = () => {
 };
 
 export default Followers;
-

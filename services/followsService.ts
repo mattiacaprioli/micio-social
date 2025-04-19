@@ -8,19 +8,19 @@ interface FollowUser {
   following_id: string;
 }
 
-interface UserBasicInfo {
+export interface UserBasicInfo {
   id: string;
   name: string;
   image: string | null;
 }
 
 // Interfacce per i dati restituiti da Supabase
-interface FollowerInfo {
+export interface FollowerInfo {
   follower_id: string;
   follower: UserBasicInfo;  // Ora è un singolo oggetto, non un array
 }
 
-interface FollowingInfo {
+export interface FollowingInfo {
   following_id: string;
   following: UserBasicInfo;  // Ora è un singolo oggetto, non un array
 }

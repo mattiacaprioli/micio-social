@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
-  Text,
-  TouchableOpacity,
   RefreshControl,
   View,
 } from "react-native"; 
@@ -10,11 +8,19 @@ import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useLocalSearchParams } from "expo-router";
-import { getFollowingList } from "../../services/followsService";
+import { getFollowingList, FollowingInfo } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
+import { useTranslation } from 'react-i18next';
+import { User } from "../../src/types";
+
+// Interfacce per i tipi
+interface RouteParams {
+  userId?: string;
+  [key: string]: any;
+}
 
 // Styled Components
 const Container = styled.View`
@@ -50,14 +56,15 @@ const EmptyListContainer = styled.View`
 
 const EmptyListText = styled.Text``;
 
-const Followings = () => {
+const Followings: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { userId } = useLocalSearchParams();
+  const { userId } = useLocalSearchParams<RouteParams>();
+  const { t } = useTranslation();
   const targetUserId = userId || currentUser?.id;
-  const [followings, setFollowings] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [followings, setFollowings] = useState<FollowingInfo[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const fetchFollowings = async () => {
+  const fetchFollowings = async (): Promise<void> => {
     if (targetUserId) {
       setRefreshing(true);
       const data = await getFollowingList(targetUserId);
@@ -70,7 +77,7 @@ const Followings = () => {
     fetchFollowings();
   }, [targetUserId]);
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }: { item: FollowingInfo }): React.ReactElement => {
     return (
       <Item>
         <Avatar
@@ -86,7 +93,7 @@ const Followings = () => {
   return (
     <ScreenWrapper bg="white">
       <Container>
-        <Header title="Followings" />
+        <Header title={t('followings')} />
         <FlatList
           data={followings}
           keyExtractor={(item) => item.following_id.toString()}
@@ -100,7 +107,7 @@ const Followings = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>No followers found</EmptyListText>
+              <EmptyListText>{t('noFollowingsFound')}</EmptyListText>
             </EmptyListContainer>
           }
         />
@@ -110,4 +117,3 @@ const Followings = () => {
 };
 
 export default Followings;
-
