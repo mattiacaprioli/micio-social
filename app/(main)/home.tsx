@@ -1,14 +1,11 @@
 import {
-  Alert,
-  Button,
   FlatList,
   Pressable,
   RefreshControl,
-  Text,
   View,
-} from "react-native"; 
+} from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
-import styled from "styled-components/native"; 
+import styled from "styled-components/native";
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
@@ -18,10 +15,41 @@ import { theme } from "../../constants/theme";
 import Icon from "../../assets/icons";
 import { useRouter } from "expo-router";
 import Avatar from "../../components/Avatar";
-import { fetchPost } from "../../services/postService";
+import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import { getUserData } from "../../services/userService";
+// Importiamo solo i tipi che utilizziamo effettivamente
+
+// Interfacce per i payload degli eventi Supabase
+interface PostEventPayload {
+  eventType: "INSERT" | "UPDATE" | "DELETE";
+  new?: PostWithRelations;
+  old?: {
+    id: string;
+    [key: string]: any;
+  };
+}
+
+interface CommentEventPayload {
+  eventType: "INSERT";
+  new: {
+    id: string;
+    post_id: string;
+    user_id: string;
+    postId?: string; // Per compatibilità con il codice esistente
+    userId?: string; // Per compatibilità con il codice esistente
+    [key: string]: any;
+  };
+}
+
+interface NotificationEventPayload {
+  eventType: "INSERT";
+  new: {
+    id: string;
+    [key: string]: any;
+  };
+}
 
 // Styled Components
 const Container = styled.View`
@@ -81,37 +109,42 @@ const PillText = styled.Text`
 
 var limit = 0;
 
-const Home = () => {
-  const { user, setAuth } = useAuth();
+const Home: React.FC = () => {
+  const { user } = useAuth();
   const router = useRouter();
 
-  const [posts, setPosts] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+  const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const handlePostEvent = async (payload) => {
+  const handlePostEvent = async (payload: PostEventPayload): Promise<void> => {
     // console.log('payload: ', payload);
-    if (payload.eventType == "INSERT" && payload?.new?.id) {
+    if (payload.eventType === "INSERT" && payload?.new?.id) {
       let newPost = { ...payload.new };
-      let res = await getUserData(newPost.userId);
+      let res = await getUserData(newPost.user_id);
       newPost.postLikes = [];
       newPost.comments = [{ count: 0 }];
-      newPost.user = res.success ? res.data : {};
+      // Convertiamo il tipo per evitare errori di tipo
+      newPost.user = res.success && res.data ? {
+        id: res.data.id,
+        name: res.data.name,
+        image: res.data.image || null
+      } : undefined;
       setPosts((prevPosts) => [newPost, ...prevPosts]);
     }
-    if (payload.eventType == "DELETE" && payload?.old?.id) {
+    if (payload.eventType === "DELETE" && payload?.old?.id) {
       setPosts((prevPosts) => {
         let updatedPosts = prevPosts.filter(
-          (post) => post.id != payload.old.id
+          (post) => post.id !== payload.old?.id
         );
         return updatedPosts;
       });
     }
-    if (payload.eventType == "UPDATE" && payload?.new?.id) {
+    if (payload.eventType === "UPDATE" && payload?.new?.id) {
       setPosts((prevPosts) => {
         let updatedPosts = prevPosts.map((post) => {
-          if (post.id == payload.new.id) {
+          if (post.id === payload.new?.id) {
             post.body = payload.new.body;
             post.file = payload.new.file;
           }
@@ -122,18 +155,30 @@ const Home = () => {
     }
   };
 
-  const handleNewComment = async (payload) => {
-    if (payload.eventType == "INSERT" && payload.new.id) {
+  const handleNewComment = async (payload: CommentEventPayload): Promise<void> => {
+    if (payload.eventType === "INSERT" && payload.new.id) {
       let newComment = { ...payload.new };
-      let res = await getUserData(newComment.userId);
-      newComment.user = res.success ? res.data : {};
-  
+      // Usa user_id se disponibile, altrimenti fallback su userId per compatibilità
+      const userId = newComment.user_id || newComment.userId;
+      if (!userId) return;
+      let res = await getUserData(userId);
+      // Convertiamo il tipo per evitare errori di tipo
+      newComment.user = res.success && res.data ? {
+        id: res.data.id,
+        name: res.data.name,
+        image: res.data.image || null
+      } : undefined;
+
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
-          if (post.id == newComment.postId) {
+          // Usa post_id se disponibile, altrimenti fallback su postId per compatibilità
+          const postId = newComment.post_id || newComment.postId;
+          if (post.id === postId) {
             return {
               ...post,
-              comments: [newComment, ...post.comments], // O incrementa il conteggio
+              comments: Array.isArray(post.comments)
+                ? [newComment, ...post.comments]
+                : [newComment, { count: post.comments.count }], // Gestisce sia array che oggetto count
             };
           }
           return post;
@@ -141,20 +186,23 @@ const Home = () => {
       );
     }
   };
-  
-  const handleNewNotification = async (payload) => {
-    if(payload.eventType == "INSERT" && payload.new.id){
+
+  const handleNewNotification = async (payload: NotificationEventPayload): Promise<void> => {
+    if(payload.eventType === "INSERT" && payload.new.id){
       setNotificationCount((prevCount) => prevCount + 1);
     }
   }
 
   useEffect(() => {
+    if (!user) return;
+
+    // Utilizziamo any per evitare errori di tipo con l'API di Supabase
     let postChannel = supabase
       .channel("posts")
       .on(
-        "postgres_changes",
+        "postgres_changes" as any,
         { event: "*", schema: "public", table: "posts" },
-        handlePostEvent
+        handlePostEvent as any
       )
       .subscribe();
 
@@ -163,28 +211,28 @@ const Home = () => {
     let commentChannel = supabase
       .channel("*")
       .on(
-        "postgres_changes",
+        "postgres_changes" as any,
         {
           event: "INSERT",
           schema: "public",
           table: "comments",
-          filter: `postId=in.${posts.map((post) => post.id).join(",")}`,
+          filter: `post_id=in.${posts.map((post) => post.id).join(",")}`,
         },
-        handleNewComment
+        handleNewComment as any
       )
       .subscribe();
 
     let notificationChannel = supabase
       .channel("notifications")
       .on(
-        "postgres_changes",
+        "postgres_changes" as any,
         {
           event: "INSERT",
           schema: "public",
           table: "notifications",
-          filter: `receiverId=eq.${user.id}`,
+          filter: `receiverId=eq.${user?.id}`,
         },
-        handleNewNotification
+        handleNewNotification as any
       )
       .subscribe();
 
@@ -193,11 +241,11 @@ const Home = () => {
       supabase.removeChannel(commentChannel);
       supabase.removeChannel(notificationChannel);
     };
-  }, []);
+  }, [user, posts]);
 
-  const getPosts = async (isRefreshing = false) => {
+  const getPosts = async (isRefreshing = false): Promise<void> => {
     // call the api here
-    if (!hasMore && !isRefreshing) return null;
+    if (!hasMore && !isRefreshing) return;
 
     if (isRefreshing) {
       limit = 10; // Resetta il limite durante il refresh
@@ -207,8 +255,8 @@ const Home = () => {
 
     console.log("fetching post: ", limit);
     let res = await fetchPost(limit);
-    if (res.success) {
-      if (posts.length == res.data.length) {
+    if (res.success && res.data) {
+      if (posts.length === res.data.length) {
         setHasMore(false);
       }
       setPosts(res.data);
@@ -224,9 +272,9 @@ const Home = () => {
     }, [])
   );
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback((): void => {
     setRefreshing(true);
-    getPosts(true); 
+    getPosts(true);
   }, []);
 
   // console.log('user: ', user);
@@ -246,10 +294,10 @@ const Home = () => {
         <Header>
           <Title>Micio Social</Title>
           <IconsContainer>
-            <Pressable 
+            <Pressable
               onPress={() => {
                 setNotificationCount(0);
-                router.push("notifications")}
+                router.push("/notifications")}
               }>
               <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
               {
@@ -260,10 +308,10 @@ const Home = () => {
                 )
               }
             </Pressable>
-            <Pressable onPress={() => router.push("newPost")}>
+            <Pressable onPress={() => router.push("/newPost")}>
               <Icon name="plus" size={hp(3.2)} color={theme.colors.text} />
             </Pressable>
-            <Pressable onPress={() => router.push("profile")}>
+            <Pressable onPress={() => router.push("/profile")}>
               <Avatar
                 uri={user?.image}
                 size={hp(4.3)}
@@ -289,15 +337,15 @@ const Home = () => {
           }}
           onEndReachedThreshold={0}
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
+            <RefreshControl
+              refreshing={refreshing}
               onRefresh={onRefresh}
               colors={[theme.colors.primary]}
             />
           }
           ListFooterComponent={
             hasMore ? (
-              <View style={{ marginVertical: posts.length == 0 ? 200 : 30 }}>
+              <View style={{ marginVertical: posts.length === 0 ? 200 : 30 }}>
                 <Loading />
               </View>
             ) : (
@@ -314,4 +362,3 @@ const Home = () => {
 };
 
 export default Home;
-
