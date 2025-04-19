@@ -11,7 +11,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
-import { useTranslation } from 'react-i18next'; 
+import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -36,12 +36,6 @@ const FormHelperText = styled.Text`
   color: ${theme.colors.text};
 `;
 
-const ForgotPasswordText = styled.Text`
-  color: ${theme.colors.text};
-  font-weight: ${theme.fonts.semibold};
-  text-align: right;
-`;
-
 const FooterContainer = styled.View`
   flex-direction: row;
   justify-content: center;
@@ -55,41 +49,44 @@ const FooterText = styled.Text`
   font-size: ${hp(1.6)}px;
 `;
 
-const SignUpLink = styled(FooterText)`
+const LoginLink = styled(FooterText)`
   color: ${theme.colors.primaryDark};
   font-weight: ${theme.fonts.semibold};
 `;
 
-const Login = () => {
+const SignUp: React.FC = () => {
   const router = useRouter();
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-  const [loading, setLoading] = useState(false);
-  const { t } = useTranslation(); 
+  const emailRef = useRef<string>("");
+  const nameRef = useRef<string>("");
+  const passwordRef = useRef<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const { t } = useTranslation();
 
-  const onSubmit = async () => {
+  const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      Alert.alert("Login", "Please fill all fields!");
+      Alert.alert(t("signUp"), t("pleaseFillAllFields"));
       return;
     }
-
+    let name = nameRef.current.trim();
     let email = emailRef.current.trim();
     let password = passwordRef.current.trim();
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: { 
+        data: { 
+          name 
+        } 
+      }
     });
-    
     setLoading(false);
 
-    console.log('error: ', error);
     if (error) {
-      Alert.alert("Login", error.message);
+      Alert.alert(t("signUp"), error.message);
     }
-
   };
 
   return (
@@ -100,15 +97,20 @@ const Login = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>{t('hey')},</WelcomeText>
-          <WelcomeText>{t('welcomeBack')}</WelcomeText>
+          <WelcomeText>{t('lets')}</WelcomeText>
+          <WelcomeText>{t('getStarted')}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            {t('pleaseLoginToContinue')}
+            {t('pleaseFillDetails')}
           </FormHelperText>
+          <Input
+            icon={<Icon name="user" size={26} />}
+            placeholder={t('enterYourName')}
+            onChangeText={(value) => (nameRef.current = value)}
+          />
           <Input
             icon={<Icon name="mail" size={26} />}
             placeholder={t('enterYourEmail')}
@@ -120,17 +122,16 @@ const Login = () => {
             secureTextEntry
             onChangeText={(value) => (passwordRef.current = value)}
           />
-          <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
 
-          {/* Login Button */}
-          <Button title={t('login')} loading={loading} onPress={onSubmit} />
+          {/* Button */}
+          <Button title={t('signUp')} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>{t('dontHaveAccount')}</FooterText>
-          <Pressable onPress={() => router.push("signUp")}>
-            <SignUpLink>{t('signUp')}</SignUpLink>
+          <FooterText>{t('alreadyHaveAccount')}</FooterText>
+          <Pressable onPress={() => router.push("/(auth)/login" as any)}>
+            <LoginLink>{t('login')}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>
@@ -138,4 +139,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
