@@ -1,13 +1,10 @@
 import {
   Alert,
-  Pressable,
   ScrollView,
-  Text,
-  View,
   Modal,
-  TouchableOpacity,
+  ViewStyle,
 } from "react-native";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { wp, hp } from "../../helpers/common";
@@ -22,6 +19,26 @@ import Button from "../../components/Button";
 import { updateUser } from "../../services/userService";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { useTranslation } from 'react-i18next';
+import { UserRow } from "../../src/types/supabase";
+
+// Interfacce per i tipi
+interface UserFormData {
+  name: string;
+  address?: string;
+  bio?: string;
+  phoneNumber?: string;
+  birthday?: string;
+  gender?: string;
+  image?: ImagePicker.ImagePickerAsset | string | null;
+  [key: string]: any;
+}
+
+// Utilizziamo il tipo definito in userService.ts
+type UpdateUserData = Partial<Omit<UserRow, 'id' | 'created_at'>> & {
+  // Aggiungiamo phoneNumber che è phone_number in UserRow
+  phoneNumber?: string;
+};
 
 // Styled Components
 const Container = styled.View`
@@ -52,11 +69,8 @@ const CameraIcon = styled.Pressable`
   padding: 8px;
   border-radius: 50px;
   background-color: white;
-  shadow-color: ${theme.colors.textLight};
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.4;
-  shadow-radius: 5px;
-  elevation: 7;
+  /* Utilizziamo le proprietà corrette per React Native */
+  box-shadow: 0px 4px 5px ${theme.colors.textLight};
 `;
 
 const Form = styled.View`
@@ -80,7 +94,7 @@ const BioInputContainer = styled.View`
 // We pass containerStyle for specific overrides like height/padding.
 const bioContainerStyle = {
   height: hp(15),
-  alignItems: 'flex-start',
+  alignItems: 'flex-start' as const,
   paddingVertical: 15,
 };
 
@@ -118,11 +132,11 @@ const PrefixText = styled.Text`
 
 // Note: Input component already uses styled-components internally or has its own styling.
 // We pass containerStyle for specific overrides like flex/marginLeft.
-const phoneInputContainerStyle = {
+const phoneInputContainerStyle: ViewStyle = {
   flex: 1,
   marginLeft: 5,
   borderWidth: 0, // Remove border from Input as it's on PhoneInputContainer
-  height: '100%', // Make Input fill the container height
+  height: '100%' as any, // Make Input fill the container height
 };
 
 const GenderSelector = styled.TouchableOpacity`
@@ -136,7 +150,11 @@ const GenderSelector = styled.TouchableOpacity`
   background-color: white;
 `;
 
-const GenderText = styled.Text`
+interface GenderTextProps {
+  hasValue: boolean;
+}
+
+const GenderText = styled.Text<GenderTextProps>`
   color: ${(props) => props.hasValue ? theme.colors.text : theme.colors.textLight};
   font-size: ${hp(2)}px;
 `;
@@ -187,13 +205,14 @@ const CancelButtonText = styled.Text`
 
 const MAX_BIO_LENGTH = 200;
 
-const EditProfile = () => {
+const EditProfile: React.FC = () => {
   const router = useRouter();
   const { user: currentUser, setUserData } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<UserFormData>({
     name: "",
-    city: "",
+    address: "",
     bio: "",
     phoneNumber: "",
     birthday: "",
@@ -202,11 +221,11 @@ const EditProfile = () => {
   });
 
   // Nuove variabili di stato per gestire prefisso e numero separatamente
-  const [phonePrefix, setPhonePrefix] = useState("+39");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [isPrefixModalVisible, setPrefixModalVisible] = useState(false);
+  const [phonePrefix, setPhonePrefix] = useState<string>("+39");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [isPrefixModalVisible, setPrefixModalVisible] = useState<boolean>(false);
 
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -234,7 +253,7 @@ const EditProfile = () => {
     }
   }, [currentUser]);
 
-  const formatBirthday = (input) => {
+  const formatBirthday = (input: string): string => {
     const digits = input.replace(/\D/g, '');
     if (digits.length === 0) return '';
     if (digits.length <= 2) return digits;
@@ -242,42 +261,42 @@ const EditProfile = () => {
     return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
   };
 
-  const onPickImage = async () => {
+  const onPickImage = async (): Promise<void> => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.7,
     });
 
-    if (!result.cancelled) {
+    if (!result.canceled && result.assets?.[0]) {
       setUser({ ...user, image: result.assets[0] });
     }
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (): Promise<void> => {
     const { name, address, bio, birthday, gender, image } = user;
     if (!name || !address || !bio || !phoneNumber || !birthday || !gender) {
-      Alert.alert("Profile", "Please fill all fields");
+      Alert.alert(t('profile'), t('pleaseFillAllFields'));
       return;
     }
 
     setLoading(true);
 
-    let uploadedImageUrl = user.image; // Keep existing remote URL if image wasn't changed
+    let uploadedImageUrl: string | undefined = typeof image === 'string' ? image : undefined; // Keep existing remote URL if image wasn't changed
     if (image && typeof image === "object") { // Check if image is a new local file object
       const imagesRes = await uploadFile("profiles", image.uri, true);
       if (imagesRes.success) {
         uploadedImageUrl = imagesRes.data; // Update with new remote URL
       } else {
-        uploadedImageUrl = null; // Reset if upload failed
-        Alert.alert("Upload Error", "Failed to upload profile image.");
+        uploadedImageUrl = undefined; // Reset if upload failed
+        Alert.alert(t('uploadError'), t('failedToUploadProfileImage'));
         setLoading(false);
         return;
       }
     }
 
-    const updatedUser = {
+    const updatedUser: UpdateUserData = {
       name,
       address,
       bio,
@@ -287,27 +306,33 @@ const EditProfile = () => {
       phoneNumber: phonePrefix + phoneNumber, // Combine prefix and number
     };
 
-    const res = await updateUser(currentUser?.id, updatedUser);
+    if (!currentUser?.id) {
+      setLoading(false);
+      Alert.alert(t('updateError'), t('userNotFound'));
+      return;
+    }
+
+    const res = await updateUser(currentUser.id, updatedUser);
     setLoading(false);
 
     if (res.success) {
       setUserData({ ...currentUser, ...updatedUser }); // Update local auth context
       router.back();
     } else {
-      Alert.alert("Update Error", "Failed to update profile.");
+      Alert.alert(t('updateError'), t('failedToUpdateProfile'));
     }
   };
 
   const imageSource =
     user.image && typeof user.image === "object"
-      ? user.image.uri // Local file URI
-      : getUserImageSrc(user.image); // Remote file URL or default
+      ? { uri: user.image.uri } // Local file URI
+      : getUserImageSrc(typeof user.image === 'string' ? user.image : undefined); // Remote file URL or default
 
   return (
     <ScreenWrapper bg="white">
       <ScrollView style={{ flex: 1 }}>
         <Container>
-          <Header title="Edit Profile" />
+          <Header title={t('editProfile')} />
 
           {/* Sezione profilo */}
           <Form>
@@ -318,16 +343,16 @@ const EditProfile = () => {
               </CameraIcon>
             </AvatarContainer>
 
-            <SectionTitle>Profile Details</SectionTitle>
+            <SectionTitle>{t('profileDetails')}</SectionTitle>
             <Input
               icon={<Icon name="user" />}
-              placeholder="Enter your name"
+              placeholder={t('enterYourName')}
               value={user.name}
               onChangeText={(value) => setUser({ ...user, name: value })}
             />
             <Input
               icon={<Icon name="location" />}
-              placeholder="Enter your city"
+              placeholder={t('enterYourCity')}
               value={user.address}
               onChangeText={(value) => setUser({ ...user, address: value })}
             />
@@ -335,8 +360,8 @@ const EditProfile = () => {
             {/* BIO con limite di 200 caratteri e contatore */}
             <BioInputContainer>
               <Input
-                placeholder="Enter your bio"
-                value={user.bio}
+                placeholder={t('enterYourBio')}
+                value={user.bio || ''}
                 multiline
                 containerStyle={bioContainerStyle} // Pass style object
                 onChangeText={(value) => {
@@ -346,12 +371,12 @@ const EditProfile = () => {
                 }}
               />
               <CharCount>
-                {user.bio.length}/{MAX_BIO_LENGTH}
+                {(user.bio || '').length}/{MAX_BIO_LENGTH}
               </CharCount>
             </BioInputContainer>
 
             {/* Sezione Informazioni Personali */}
-            <SectionTitle>Personal Information</SectionTitle>
+            <SectionTitle>{t('personalInformation')}</SectionTitle>
             {/* Campo per il numero di telefono con selezione del prefisso */}
             <PhoneInputContainer>
               <PrefixContainer
@@ -360,7 +385,7 @@ const EditProfile = () => {
                 <PrefixText>{phonePrefix}</PrefixText>
               </PrefixContainer>
               <Input
-                placeholder="Enter your phone number"
+                placeholder={t('enterYourPhoneNumber')}
                 value={phoneNumber}
                 keyboardType="phone-pad"
                 onChangeText={(value) => setPhoneNumber(value)}
@@ -369,7 +394,7 @@ const EditProfile = () => {
             </PhoneInputContainer>
 
             <Input
-              placeholder="Enter your birthday (DD/MM/YYYY)"
+              placeholder={t('enterYourBirthday')}
               value={user.birthday}
               keyboardType="numeric"
               maxLength={10}
@@ -384,7 +409,7 @@ const EditProfile = () => {
               onPress={() => setModalVisible(true)}
             >
               <GenderText hasValue={!!user.gender}>
-                {user.gender ? user.gender : "Select Gender"}
+                {user.gender ? user.gender : t('selectGender')}
               </GenderText>
             </GenderSelector>
 
@@ -402,7 +427,7 @@ const EditProfile = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Male</ModalOptionText>
+                    <ModalOptionText>{t('male')}</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -410,7 +435,7 @@ const EditProfile = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Female</ModalOptionText>
+                    <ModalOptionText>{t('female')}</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -418,12 +443,12 @@ const EditProfile = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Other</ModalOptionText>
+                    <ModalOptionText>{t('other')}</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setModalVisible(false)}
                   >
-                    <CancelButtonText>Cancel</CancelButtonText>
+                    <CancelButtonText>{t('cancel')}</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
@@ -443,7 +468,7 @@ const EditProfile = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+39 Italy</ModalOptionText>
+                    <ModalOptionText>+39 {t('italy')}</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -451,7 +476,7 @@ const EditProfile = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+1 USA</ModalOptionText>
+                    <ModalOptionText>+1 {t('usa')}</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -459,18 +484,18 @@ const EditProfile = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+44 UK</ModalOptionText>
+                    <ModalOptionText>+44 {t('uk')}</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setPrefixModalVisible(false)}
                   >
-                    <CancelButtonText>Cancel</CancelButtonText>
+                    <CancelButtonText>{t('cancel')}</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
             </Modal>
 
-            <Button title="Update" loading={loading} onPress={onSubmit} />
+            <Button title={t('update')} loading={loading} onPress={onSubmit} />
           </Form>
         </Container>
       </ScrollView>

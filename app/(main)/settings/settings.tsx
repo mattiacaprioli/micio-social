@@ -1,10 +1,7 @@
 import {
   Alert,
-  Pressable,
-  Text,
-  TouchableOpacity,
   Image,
-  View,
+  ViewStyle,
 } from "react-native";
 import React from "react";
 import styled from "styled-components/native";
@@ -15,7 +12,14 @@ import { wp, hp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import { theme } from "../../../constants/theme";
 import { supabase } from "../../../lib/supabase";
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
+
+// Interfacce per i tipi
+interface SettingsOption {
+  label: string;
+  icon: string;
+  action: () => void;
+}
 
 // Styled Components
 const ScreenContainer = styled.View`
@@ -34,12 +38,8 @@ const Card = styled.View`
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
   border-width: 0.5px;
-  border-color: ${theme.colors.border};
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.05;
-  shadow-radius: 6px;
-  elevation: 3;
+  border-color: ${theme.colors.dark};
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
   gap: ${hp(2)}px;
 `;
 
@@ -53,11 +53,7 @@ const Item = styled.TouchableOpacity`
   padding-right: ${wp(3)}px;
   border-radius: ${theme.radius.lg}px;
   background-color: white;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 3px;
-  elevation: 2;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
 `;
 
 const ItemText = styled.Text`
@@ -92,19 +88,18 @@ const VersionText = styled.Text`
   padding-bottom: ${hp(2)}px;
 `;
 
-const Settings = () => {
+const Settings: React.FC = () => {
   const router = useRouter();
-  const { t } = useTranslation(); // Get the t function
+  const { t } = useTranslation();
 
-  const onLogout = async () => {
-    // setAuth(null);
+  const onLogout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       Alert.alert(t("logout"), t("errorSigningOut"));
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     // show confirm modal
     Alert.alert(t("confirm"), t("areYouSureLogout"), [
       {
@@ -120,21 +115,21 @@ const Settings = () => {
     ]);
   };
 
-  const settingsOptions = [
+  const settingsOptions: SettingsOption[] = [
     {
       label: t("account"),
       icon: "arrowRight",
-      action: () => router.push("settings/accountSettings"),
+      action: () => router.push("/settings/accountSettings"),
     },
     {
       label: t("notifications"),
       icon: "arrowRight",
-      action: () => router.push("settings/notificationsSettings"),
+      action: () => router.push("/settings/notificationsSettings"),
     },
     {
       label: t("information"),
       icon: "arrowRight",
-      action: () => router.push("settings/informationSettings"),
+      action: () => router.push("/settings/informationSettings"),
     }
   ];
 
