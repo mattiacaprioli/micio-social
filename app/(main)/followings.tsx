@@ -7,7 +7,7 @@ import {
 import styled from "styled-components/native"; 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { getFollowingList, FollowingInfo } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
@@ -60,6 +60,7 @@ const Followings: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { userId } = useLocalSearchParams<RouteParams>();
   const { t } = useTranslation();
+    const router = useRouter();
   const targetUserId = userId || currentUser?.id;
   const [followings, setFollowings] = useState<FollowingInfo[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -77,9 +78,20 @@ const Followings: React.FC = () => {
     fetchFollowings();
   }, [targetUserId]);
 
+  const openUserProfile = (followerId: string): void => {
+    if (followerId === currentUser?.id) {
+      router.push("/profile");
+    } else {
+      router.push({
+        pathname: "/userProfile",
+        params: { userId: followerId },
+      });
+    }
+  };
+
   const renderItem = ({ item }: { item: FollowingInfo }): React.ReactElement => {
     return (
-      <Item>
+      <Item onPress={() => openUserProfile(item.following.id)}>
         <Avatar
           uri={item.following.image}
           size={hp(8)}

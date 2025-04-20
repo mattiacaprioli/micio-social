@@ -3,11 +3,11 @@ import {
   FlatList,
   RefreshControl,
   View,
-} from "react-native"; 
+} from "react-native";
 import styled from "styled-components/native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../context/AuthContext";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { getFollowersList, FollowerInfo } from "../../services/followsService";
 import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
@@ -59,6 +59,7 @@ const Followers: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { userId } = useLocalSearchParams<RouteParams>();
   const { t } = useTranslation();
+  const router = useRouter();
   const targetUserId = userId || currentUser?.id;
   const [followers, setFollowers] = useState<FollowerInfo[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -76,8 +77,19 @@ const Followers: React.FC = () => {
     fetchFollowers();
   }, [targetUserId]);
 
+  const openUserProfile = (followerId: string): void => {
+    if (followerId === currentUser?.id) {
+      router.push("/profile");
+    } else {
+      router.push({
+        pathname: "/userProfile",
+        params: { userId: followerId },
+      });
+    }
+  };
+
   const renderItem = ({ item }: { item: FollowerInfo }): React.ReactElement => (
-    <Item>
+    <Item onPress={() => openUserProfile(item.follower.id)}>
       <Avatar
         uri={item.follower.image}
         size={hp(8)}

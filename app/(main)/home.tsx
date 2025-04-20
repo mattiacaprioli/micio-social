@@ -13,11 +13,12 @@ import { supabase } from "../../lib/supabase";
 import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Icon from "../../assets/icons";
-import { useRouter } from "expo-router";
-import Avatar from "../../components/Avatar";
+import { useRouter, usePathname } from "expo-router";
+// import Avatar from "../../components/Avatar";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import TabBar from "../../components/TabBar";
 import { getUserData } from "../../services/userService";
 // Importiamo solo i tipi che utilizziamo effettivamente
 
@@ -54,6 +55,7 @@ interface NotificationEventPayload {
 // Styled Components
 const Container = styled.View`
   flex: 1;
+  padding-bottom: ${hp(5)}px;
 `;
 
 const Header = styled.View`
@@ -112,6 +114,7 @@ var limit = 0;
 const Home: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -308,17 +311,7 @@ const Home: React.FC = () => {
                 )
               }
             </Pressable>
-            <Pressable onPress={() => router.push("/newPost")}>
-              <Icon name="plus" size={hp(3.2)} color={theme.colors.text} />
-            </Pressable>
-            <Pressable onPress={() => router.push("/profile")}>
-              <Avatar
-                uri={user?.image}
-                size={hp(4.3)}
-                rounded={theme.radius.sm}
-                style={{ borderWidth: 2 }}
-              />
-            </Pressable>
+
           </IconsContainer>
         </Header>
 
@@ -357,6 +350,7 @@ const Home: React.FC = () => {
         />
       </Container>
       {/* <Button title="Logout" onPress={onLogout} /> */}
+      <TabBar currentRoute={pathname} />
     </ScreenWrapper>
   );
 };
