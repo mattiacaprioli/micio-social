@@ -33,7 +33,7 @@ const MainLayout: React.FC = () => {
 
     const res = await getUserData(user.id);
     if (res.success && res.data) {
-      setUserData({ ...res.data, email });
+      setUserData({ ...res.data, email: email ?? '' });
     }
   };
 
