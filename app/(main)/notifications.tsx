@@ -75,7 +75,7 @@ const Notifications: React.FC = () => {
   return (
     <ScreenWrapper bg={"white"}>
       <Container>
-        <Header title={t('notificationsss')} />
+        <Header title={t('notifications')} />
         <ListStyle
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 10 }}

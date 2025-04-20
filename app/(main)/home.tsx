@@ -55,7 +55,7 @@ interface NotificationEventPayload {
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  padding-bottom: ${hp(6)}px;
+  padding-bottom: ${hp(5)}px;
 `;
 
 const Header = styled.View`
