@@ -14,7 +14,7 @@ import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Icon from "../../assets/icons";
 import { useRouter, usePathname } from "expo-router";
-// import Avatar from "../../components/Avatar";
+import Avatar from "../../components/Avatar";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
@@ -55,7 +55,7 @@ interface NotificationEventPayload {
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  padding-bottom: ${hp(6)}px;
+  padding-bottom: ${hp(8)}px;
 `;
 
 const Header = styled.View`
@@ -280,16 +280,6 @@ const Home: React.FC = () => {
     getPosts(true);
   }, []);
 
-  // console.log('user: ', user);
-
-  // const onLogout = async () => {
-  //   // setAuth(null);
-  //   const {error} = await supabase.auth.signOut();
-  //   if(error){
-  //     Alert.alert("Logout", "error signing out!");
-  //   }
-  // }
-
   return (
     <ScreenWrapper bg="white">
       <Container>
@@ -311,7 +301,6 @@ const Home: React.FC = () => {
                 )
               }
             </Pressable>
-
           </IconsContainer>
         </Header>
 
@@ -349,8 +338,7 @@ const Home: React.FC = () => {
           }
         />
       </Container>
-      {/* <Button title="Logout" onPress={onLogout} /> */}
-      <TabBar currentRoute={pathname} />
+      <TabBar user={user} currentRoute={pathname} />
     </ScreenWrapper>
   );
 };
