@@ -350,7 +350,7 @@ const Home: React.FC = () => {
         />
       </Container>
       {/* <Button title="Logout" onPress={onLogout} /> */}
-      <TabBar currentRoute={pathname} />
+      <TabBar currentRoute={pathname} onRefresh={onRefresh} />
     </ScreenWrapper>
   );
 };

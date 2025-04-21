@@ -10,6 +10,7 @@ import { theme } from "../constants/theme";
 
 interface TabBarProps {
   currentRoute?: string;
+  onRefresh?: () => void;
 }
 
 // Colori per la TabBar
@@ -89,7 +90,7 @@ const RightSide = styled.View`
   border-top-left-radius: 100%;
 `;
 
-const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home" }) => {
+const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) => {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -120,7 +121,14 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home" }) => {
         <RightSide />
 
         <TabButton
-          onPress={() => router.push("/home")}
+          onPress={() => {
+            if (currentRoute === "/home" && onRefresh) {
+              // Se siamo già nella home, eseguiamo il refresh invece di navigare
+              onRefresh();
+            } else {
+              router.push("/home");
+            }
+          }}
           isActive={currentRoute === "/home"}
         >
           <Icon
