@@ -4,7 +4,7 @@ import {
   View,
   Alert,
   Share,
-} from "react-native"; 
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import styled, { css } from "styled-components/native";
 import { theme } from "../constants/theme";
@@ -52,6 +52,23 @@ const UserInfo = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
   gap: 8px;
+`;
+
+const CategoryBadge = styled.View`
+  background-color: ${theme.colors.primary};
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-radius: ${theme.radius.md}px;
+  margin-left: 5px;
+  align-self: flex-start;
+`;
+
+const CategoryText = styled.Text`
+  color: white;
+  font-size: ${hp(1.3)}px;
+  font-weight: ${theme.fonts.medium};
 `;
 
 const UserName = styled.Text`
@@ -192,7 +209,7 @@ const PostCard = ({
           createNotification(notify);
         }
       }
-  
+
       console.log("added like: ", res);
       if (!res.success) {
         Alert.alert("Post", "Something went wrong!");
@@ -238,7 +255,7 @@ const PostCard = ({
       <Header>
         <UserInfo
           onPress={!isUserProfile ? openUserProfile : null}
-          disabled={isUserProfile} 
+          disabled={isUserProfile}
         >
           <Avatar
             size={hp(4.5)}
@@ -246,7 +263,14 @@ const PostCard = ({
             rounded={theme.radius.xl}
           />
           <View style={{ gap: 2 }}>
-            <UserName>{item?.user?.name}</UserName>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <UserName>{item?.user?.name}</UserName>
+              {item?.category && (
+                <CategoryBadge>
+                  <CategoryText>{item.category}</CategoryText>
+                </CategoryBadge>
+              )}
+            </View>
             <PostTime>{createdAt}</PostTime>
           </View>
         </UserInfo>

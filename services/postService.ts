@@ -13,6 +13,7 @@ interface CreatePostInput {
   userId: string;
   body?: string;
   file?: PostFile | string;
+  category?: string;
 }
 
 export interface PostWithRelations extends PostRow {
@@ -43,7 +44,7 @@ export const createOrUpdatePost = async (post: CreatePostInput): Promise<ApiResp
       const isImage = post.file.type === "image";
       const folderName = isImage ? "postImages" : "postVideos";
       const fileResult = await uploadFile(folderName, post.file.uri, isImage);
-      
+
       if (fileResult.success && fileResult.data) {
         post.file = fileResult.data;
       } else {
@@ -57,7 +58,9 @@ export const createOrUpdatePost = async (post: CreatePostInput): Promise<ApiResp
         id: post.id,
         userId: post.userId,
         body: post.body,
-        file: post.file
+        file: post.file,
+        // La colonna 'category' ora esiste nel database
+        category: post.category
       })
       .select()
       .single();
@@ -73,7 +76,7 @@ export const createOrUpdatePost = async (post: CreatePostInput): Promise<ApiResp
   }
 };
 
-export const fetchPost = async (limit = 10, userId?: string): Promise<ApiResponse<PostWithRelations[]>> => {
+export const fetchPost = async (limit = 10, userId?: string, category?: string, searchQuery?: string): Promise<ApiResponse<PostWithRelations[]>> => {
   try {
     let query = supabase
       .from("posts")
@@ -87,7 +90,16 @@ export const fetchPost = async (limit = 10, userId?: string): Promise<ApiRespons
       .limit(limit);
 
     if (userId) {
-      query = query.eq("userId", userId);
+      query = query.eq("userId", userId); // Utilizziamo userId (camelCase) invece di user_id (snake_case)
+    }
+
+    // La colonna 'category' ora esiste nel database
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    if (searchQuery) {
+      query = query.or(`body.ilike.%${searchQuery}%, userId.eq.${searchQuery}`); // Utilizziamo userId (camelCase) invece di user_id (snake_case)
     }
 
     const { data, error } = await query;
@@ -127,7 +139,8 @@ export const fetchPostDetails = async (postId: string): Promise<ApiResponse<Post
         comments (*, user: users (id, name, image))
       `)
       .eq("id", postId)
-      .order("created_at", { ascending: false, foreignTable: "comments" })
+      // Utilizziamo una query più moderna per ordinare i commenti
+      .order("created_at", { ascending: false })
       .single();
 
     if (error) {

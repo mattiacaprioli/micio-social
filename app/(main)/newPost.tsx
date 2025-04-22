@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  Text,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,7 @@ interface PostParams {
   id?: string;
   body?: string;
   file?: string;
+  category?: string;
   [key: string]: any;
 }
 
@@ -82,6 +84,7 @@ const MediaContainer = styled.View`
   padding-right: 18px;
   border-radius: ${theme.radius.xl}px;
   border-color: ${theme.colors.gray};
+  margin-bottom: 15px;
 `;
 
 const MediaIconsContainer = styled.View`
@@ -112,6 +115,39 @@ const CloseIcon = styled.Pressable`
   background-color: rgba(225,0,0,0.5);
 `;
 
+// Componenti per la selezione della categoria
+const CategoryContainer = styled.View`
+  margin-bottom: 15px;
+`;
+
+const CategoryLabel = styled.Text`
+  font-size: ${hp(1.9)}px;
+  font-weight: ${theme.fonts.semibold};
+  color: ${theme.colors.text};
+  margin-bottom: 10px;
+`;
+
+const CategoryOptionsContainer = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+const CategoryOption = styled.TouchableOpacity<{ isSelected?: boolean }>`
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: ${theme.radius.md}px;
+  background-color: ${props => props.isSelected ? theme.colors.primary : 'rgba(0,0,0,0.05)'};
+`;
+
+const CategoryText = styled.Text<{ isSelected?: boolean }>`
+  font-size: ${hp(1.6)}px;
+  font-weight: ${theme.fonts.medium};
+  color: ${props => props.isSelected ? 'white' : theme.colors.text};
+`;
+
 const NewPost: React.FC = () => {
   const post = useLocalSearchParams<PostParams>();
   const { user } = useAuth();
@@ -121,11 +157,22 @@ const NewPost: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [file, setFile] = useState<MediaFile | string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+
+  // Categorie disponibili (manteniamo le stesse della home)
+  const categories = [
+    { id: 'funny', label: 'Funny' },
+    { id: 'cute', label: 'Cute' },
+    { id: 'amazing', label: 'Amazing' },
+    { id: 'pets', label: 'Pets' },
+    { id: 'nature', label: 'Nature' },
+  ];
 
   useEffect(() => {
     if(post && post.id){
       bodyRef.current = post.body || "";
       setFile(post.file || null);
+      setSelectedCategory(post.category);
       setTimeout(() => {
         editorRef.current?.setContentHTML(post.body || "");
       }, 300);
@@ -205,6 +252,7 @@ const NewPost: React.FC = () => {
       file: file,
       body: bodyRef.current,
       userId: user?.id,
+      category: selectedCategory,
     } as any; // Utilizziamo any per evitare problemi di tipo
 
     if(post && post.id){
@@ -284,6 +332,23 @@ const NewPost: React.FC = () => {
               </TouchableOpacity>
             </MediaIconsContainer>
           </MediaContainer>
+
+          {/* Selezione della categoria */}
+          <CategoryContainer>
+            <CategoryLabel>{t('selectCategory')}</CategoryLabel>
+            {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
+            <CategoryOptionsContainer>
+              {categories.map(category => (
+                <CategoryOption
+                  key={category.id}
+                  isSelected={selectedCategory === category.id}
+                  onPress={() => setSelectedCategory(category.id)}
+                >
+                  <CategoryText isSelected={selectedCategory === category.id}>{category.label}</CategoryText>
+                </CategoryOption>
+              ))}
+            </CategoryOptionsContainer>
+          </CategoryContainer>
         </ScrollView>
         <Button
           buttonStyle={{ height: hp(6.2) }}

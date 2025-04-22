@@ -39,6 +39,7 @@ export interface PostRow {
   user_id: string;
   body?: string;
   file?: string;
+  category?: string;
 }
 
 export interface CommentRow {
