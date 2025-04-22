@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native'
 import React from 'react'
-import { 
+import {
   HomeIcon,
   MailIcon,
   LockIcon,
@@ -25,6 +25,7 @@ import {
   ImageIcon,
   VideoIcon,
   SettingsIcon,
+  XIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -53,12 +54,13 @@ const icons = {
   image: ImageIcon,
   video: VideoIcon,
   settings: SettingsIcon,
+  x: XIcon,
 }
 
 const Icon = ({name, ...props}) => {
   const IconComponent = icons[name];
   return (
-    <IconComponent 
+    <IconComponent
       size={props.size || 24}
       color={theme.colors.textLight}
       {...props}

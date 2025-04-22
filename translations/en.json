@@ -71,6 +71,16 @@
   "all": "All",
   "categories": "Categories",
   "category": "Category",
+  "error": "Error",
+  "errorSearchingPosts": "There was an error searching for posts. Please try again later.",
+  "ok": "OK",
   "noSearchResults": "No results found. Try a different search or category.",
-  "categoryFilterDisabled": "Category filtering is temporarily disabled. Please check back later."
+  "categoryFilterDisabled": "Category filtering is temporarily disabled. Please check back later.",
+  "posts": "Posts",
+  "users": "Users",
+  "searchPostsPlaceholder": "Search posts...",
+  "searchUsersPlaceholder": "Search users...",
+  "noPostsFound": "No posts found. Try a different search or category.",
+  "noUsersFound": "No users found. Try a different search term.",
+  "errorSearchingUsers": "There was an error searching for users. Please try again later."
 }

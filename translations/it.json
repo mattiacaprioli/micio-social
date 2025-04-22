@@ -71,6 +71,16 @@
   "all": "Tutti",
   "categories": "Categorie",
   "category": "Categoria",
+  "error": "Errore",
+  "errorSearchingPosts": "Si è verificato un errore durante la ricerca dei post. Riprova più tardi.",
+  "ok": "OK",
   "noSearchResults": "Nessun risultato trovato. Prova una ricerca o una categoria diversa.",
-  "categoryFilterDisabled": "Il filtro per categoria è temporaneamente disabilitato. Riprova più tardi."
+  "categoryFilterDisabled": "Il filtro per categoria è temporaneamente disabilitato. Riprova più tardi.",
+  "posts": "Post",
+  "users": "Utenti",
+  "searchPostsPlaceholder": "Cerca post...",
+  "searchUsersPlaceholder": "Cerca utenti...",
+  "noPostsFound": "Nessun post trovato. Prova una ricerca o una categoria diversa.",
+  "noUsersFound": "Nessun utente trovato. Prova un termine di ricerca diverso.",
+  "errorSearchingUsers": "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi."
 }
