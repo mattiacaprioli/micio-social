@@ -15,10 +15,11 @@ interface TabBarProps {
 
 // Colori per la TabBar
 const tabBarColors = {
-  background: theme.colors.textDark, // Colore scuro per lo sfondo
+  background: "white", // Sfondo bianco per coerenza con l'header
   plusButton: theme.colors.primary, // Arancione primario per il bottone plus
   active: theme.colors.primary, // Arancione primario per le icone attive
-  inactive: "rgba(255,255,255,0.7)" // Bianco semi-trasparente per le icone inattive
+  inactive: theme.colors.textLight, // Colore grigio per le icone inattive
+  border: theme.colors.darkLight // Colore del bordo superiore
 };
 
 // Styled Components
@@ -27,14 +28,18 @@ const Container = styled.View`
   bottom: 0;
   left: 0;
   right: 0;
-  height: ${hp(5)}px;
+  height: ${hp(6)}px;
   background-color: ${tabBarColors.background};
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
+  padding-top: ${hp(1)}px;
   padding-bottom: ${hp(1)}px;
-  /* Ombra per iOS e Android */
-  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
+  /* Bordo superiore */
+  border-top-width: 1px;
+  border-top-color: ${tabBarColors.border};
+  /* Ombra sottile per iOS e Android */
+  box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.05);
 `;
 
 const TabButton = styled(Pressable)<{ isActive?: boolean }>`
@@ -47,7 +52,7 @@ const TabButton = styled(Pressable)<{ isActive?: boolean }>`
 
 const PlusButtonContainer = styled.View`
   position: relative;
-  top: -${hp(2)}px;
+  top: -${hp(1.5)}px;
   width: ${hp(6)}px;
   height: ${hp(6)}px;
   z-index: 10;
@@ -56,39 +61,7 @@ const PlusButtonContainer = styled.View`
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-// Componente per creare l'effetto curvo nella parte superiore della tabbar
-const CurveEffect = styled.View`
-  position: absolute;
-  top: -${hp(1)}px;
-  left: 50%;
-  width: ${wp(30)}px;
-  height: ${hp(4)}px;
-  margin-left: -${wp(15)}px;
-  background-color: ${tabBarColors.background};
-  border-top-left-radius: ${hp(5)}px;
-  border-top-right-radius: ${hp(5)}px;
-  z-index: 5;
-`;
 
-const LeftSide = styled.View`
-  position: absolute;
-  top: -${hp(1.1)}px;
-  left: 0;
-  width: 43%;
-  height: ${hp(1.3)}px;
-  background-color: ${tabBarColors.background};
-  border-top-right-radius: 100%;
-`;
-
-const RightSide = styled.View`
-  position: absolute;
-  top: -${hp(1.1)}px;
-  right: 0;
-  width: 43%;
-  height: ${hp(1.3)}px;
-  background-color: ${tabBarColors.background};
-  border-top-left-radius: 100%;
-`;
 
 const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) => {
   const router = useRouter();
@@ -116,9 +89,6 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
   return (
     <>
       <Container>
-        {/* Componenti per creare la forma speciale della tabbar */}
-        <LeftSide />
-        <RightSide />
 
         <TabButton
           onPress={() => {
@@ -134,7 +104,8 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
           <Icon
             name="home"
             size={hp(3)}
-            color={currentRoute === "/home" ? tabBarColors.active : tabBarColors.inactive}
+            // color={currentRoute === "/home" ? tabBarColors.active : tabBarColors.inactive}
+            color={theme.colors.text}
           />
         </TabButton>
 
@@ -157,7 +128,9 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
                 shadowRadius: 8,
-                elevation: 8,
+                elevation: 5,
+                borderWidth: 3,
+                borderColor: 'white',
               }
             ]}
           >
