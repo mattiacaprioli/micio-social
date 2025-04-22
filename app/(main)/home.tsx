@@ -3,8 +3,10 @@ import {
   Pressable,
   RefreshControl,
   View,
+  Animated,
 } from "react-native";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -14,6 +16,7 @@ import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Icon from "../../assets/icons";
 import { useRouter, usePathname } from "expo-router";
+import { useTranslation } from "react-i18next";
 // import Avatar from "../../components/Avatar";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
@@ -91,6 +94,41 @@ const NoPostText = styled.Text`
   color: ${theme.colors.text};
 `;
 
+const CategoriesContainer = styled.View`
+  flex-direction: row;
+  margin-left: ${wp(4)}px;
+  margin-right: ${wp(4)}px;
+  margin-bottom: 15px;
+  align-items: center;
+`;
+
+const CategoryLabel = styled.Text`
+  font-size: ${hp(1.8)}px;
+  font-weight: ${theme.fonts.bold};
+  color: ${theme.colors.textLight};
+  margin-right: 10px;
+`;
+
+const CategoryScroll = styled.ScrollView`
+  flex-grow: 0;
+`;
+
+const CategoryButton = styled.TouchableOpacity<{ isActive?: boolean }>`
+  padding-left: ${wp(3)}px;
+  padding-right: ${wp(3)}px;
+  padding-top: ${hp(1)}px;
+  padding-bottom: ${hp(1)}px;
+  border-radius: ${theme.radius.md}px;
+  margin-right: 8px;
+  background-color: ${props => props.isActive ? theme.colors.primary : 'rgba(0,0,0,0.05)'};
+`;
+
+const CategoryText = styled.Text<{ isActive?: boolean }>`
+  font-size: ${hp(1.6)}px;
+  font-weight: ${theme.fonts.medium};
+  color: ${props => props.isActive ? 'white' : theme.colors.text};
+`;
+
 const Pill = styled.View`
   position: absolute;
   right: -10px;
@@ -115,11 +153,40 @@ const Home: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current; // Valore iniziale per l'opacità: 1
+
+  // Carica la categoria selezionata da AsyncStorage all'avvio
+  useEffect(() => {
+    const loadSelectedCategory = async () => {
+      try {
+        const savedCategory = await AsyncStorage.getItem('selectedCategory');
+        if (savedCategory !== null) {
+          setSelectedCategory(savedCategory === 'undefined' ? undefined : savedCategory);
+        }
+      } catch (error) {
+        console.error('Error loading selected category:', error);
+      }
+    };
+
+    loadSelectedCategory();
+  }, []);
+
+  // Categorie disponibili
+  const categories = [
+    { id: 'funny', label: 'Funny' },
+    { id: 'cute', label: 'Cute' },
+    { id: 'amazing', label: 'Amazing' },
+    { id: 'pets', label: 'Pets' },
+    { id: 'nature', label: 'Nature' },
+  ];
 
   const handlePostEvent = async (payload: PostEventPayload): Promise<void> => {
     // console.log('payload: ', payload);
@@ -246,21 +313,53 @@ const Home: React.FC = () => {
     };
   }, [user, posts]);
 
+  // Funzione per animare il cambio di categoria
+  const animateCategoryChange = async (isRefreshing = false): Promise<void> => {
+    // Imposta lo stato di caricamento
+    setCategoryLoading(true);
+
+    // Animazione di dissolvenza in uscita
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(async () => {
+      // Carica i nuovi post mentre l'animazione è completata
+      await getPosts(isRefreshing);
+
+      // Rimuovi lo stato di caricamento
+      setCategoryLoading(false);
+
+      // Animazione di dissolvenza in entrata
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
   const getPosts = async (isRefreshing = false): Promise<void> => {
     // call the api here
     if (!hasMore && !isRefreshing) return;
 
     if (isRefreshing) {
       limit = 10; // Resetta il limite durante il refresh
+      // Svuota i post durante il caricamento di una nuova categoria
+      if (categoryLoading) {
+        setPosts([]);
+      }
     } else {
       limit += 10;
     }
 
-    console.log("fetching post: ", limit);
-    let res = await fetchPost(limit);
+    console.log("fetching post: ", limit, "category:", selectedCategory);
+    let res = await fetchPost(limit, undefined, selectedCategory);
     if (res.success && res.data) {
-      if (posts.length === res.data.length) {
+      if (posts.length === res.data.length && !isRefreshing) {
         setHasMore(false);
+      } else {
+        setHasMore(true);
       }
       setPosts(res.data);
     }
@@ -271,14 +370,14 @@ const Home: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      getPosts(true);
-    }, [])
+      animateCategoryChange(true);
+    }, [selectedCategory])
   );
 
   const onRefresh = useCallback((): void => {
     setRefreshing(true);
-    getPosts(true);
-  }, []);
+    animateCategoryChange(true);
+  }, [selectedCategory]); // Aggiungiamo selectedCategory come dipendenza
 
   // console.log('user: ', user);
 
@@ -298,6 +397,12 @@ const Home: React.FC = () => {
           <Title>Micio Social</Title>
           <IconsContainer>
             <Pressable
+              onPress={() => router.push("/search" as any)}
+              style={{ marginRight: 15 }}
+            >
+              <Icon name="search" size={hp(3.2)} color={theme.colors.text} />
+            </Pressable>
+            <Pressable
               onPress={() => {
                 setNotificationCount(0);
                 router.push("/notifications")}
@@ -315,15 +420,68 @@ const Home: React.FC = () => {
           </IconsContainer>
         </Header>
 
+        {/* Categorie */}
+        <CategoriesContainer>
+          <CategoryLabel>{t("categories")}</CategoryLabel>
+          {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
+          <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
+            <CategoryButton
+              isActive={selectedCategory === undefined}
+              disabled={categoryLoading}
+              style={{ opacity: categoryLoading ? 0.6 : 1 }}
+              onPress={() => {
+                if (selectedCategory !== undefined && !categoryLoading) {
+                  setSelectedCategory(undefined);
+                  // Salva la categoria selezionata in AsyncStorage
+                  AsyncStorage.setItem('selectedCategory', 'undefined');
+                  setRefreshing(true);
+                  // Svuota immediatamente i post per evitare di vedere i post vecchi
+                  setPosts([]);
+                  animateCategoryChange(true);
+                }
+              }}
+            >
+              <CategoryText isActive={selectedCategory === undefined}>{t("all")}</CategoryText>
+            </CategoryButton>
+            {categories.map(category => (
+              <CategoryButton
+                key={category.id}
+                isActive={selectedCategory === category.id}
+                disabled={categoryLoading}
+                style={{ opacity: categoryLoading ? 0.6 : 1 }}
+                onPress={() => {
+                  if (selectedCategory !== category.id && !categoryLoading) {
+                    setSelectedCategory(category.id);
+                    // Salva la categoria selezionata in AsyncStorage
+                    AsyncStorage.setItem('selectedCategory', category.id);
+                    setRefreshing(true);
+                    // Svuota immediatamente i post per evitare di vedere i post vecchi
+                    setPosts([]);
+                    animateCategoryChange(true);
+                  }
+                }}
+              >
+                <CategoryText isActive={selectedCategory === category.id}>{category.label}</CategoryText>
+              </CategoryButton>
+            ))}
+          </CategoryScroll>
+        </CategoriesContainer>
+
         {/* posts */}
-        <FlatList
-          data={posts}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={ListStyle}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <PostCard item={item} currentUser={user} router={router} />
-          )}
+        {categoryLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
+            <Loading />
+          </View>
+        ) : (
+          <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
+            <FlatList
+            data={posts}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={ListStyle}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <PostCard item={item} currentUser={user} router={router} />
+            )}
           onEndReached={() => {
             getPosts();
             console.log("got to the end");
@@ -348,6 +506,8 @@ const Home: React.FC = () => {
             )
           }
         />
+          </Animated.View>
+        )}
       </Container>
       {/* <Button title="Logout" onPress={onLogout} /> */}
       <TabBar currentRoute={pathname} onRefresh={onRefresh} />

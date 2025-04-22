@@ -61,8 +61,16 @@
   "addToYourPost": "Add to your post",
   "update": "Update",
   "pleaseChooseImageOrAddBody": "Please choose an image or add post body",
+  "selectCategory": "Select Category",
   "likedYourPost": "Liked your post",
   "commentedOnYourPost": "Commented on your post",
   "addAComment": "Add a comment...",
-  "beFirstToComment": "Be first to comment!"
+  "beFirstToComment": "Be first to comment!",
+  "search": "Search",
+  "searchPlaceholder": "Search posts...",
+  "all": "All",
+  "categories": "Categories",
+  "category": "Category",
+  "noSearchResults": "No results found. Try a different search or category.",
+  "categoryFilterDisabled": "Category filtering is temporarily disabled. Please check back later."
 }

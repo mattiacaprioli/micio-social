@@ -61,8 +61,16 @@
   "addToYourPost": "Aggiungi al tuo post",
   "update": "Aggiorna",
   "pleaseChooseImageOrAddBody": "Scegli un'immagine o aggiungi il contenuto del post",
+  "selectCategory": "Seleziona Categoria",
   "likedYourPost": "Ha messo mi piace al tuo post",
   "commentedOnYourPost": "Ha commentato il tuo post",
   "addAComment": "Aggiungi un commento...",
-  "beFirstToComment": "Sii il primo a commentare!"
+  "beFirstToComment": "Sii il primo a commentare!",
+  "search": "Cerca",
+  "searchPlaceholder": "Cerca post...",
+  "all": "Tutti",
+  "categories": "Categorie",
+  "category": "Categoria",
+  "noSearchResults": "Nessun risultato trovato. Prova una ricerca o una categoria diversa.",
+  "categoryFilterDisabled": "Il filtro per categoria è temporaneamente disabilitato. Riprova più tardi."
 }

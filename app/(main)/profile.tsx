@@ -192,7 +192,7 @@ const Profile: React.FC = () => {
     <ScreenWrapper bg="white">
       <FlatList
         data={posts}
-        ListHeaderComponent={<UserHeader user={user} router={router} />}
+        ListHeaderComponent={user && 'name' in user ? <UserHeader user={user} router={router} /> : null}
         ListHeaderComponentStyle={{ marginBottom: 30 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={ListStyle}

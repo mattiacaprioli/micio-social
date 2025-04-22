@@ -69,6 +69,34 @@ const LoadingContainer = styled.View`
   padding: 8px;
 `;
 
+const CategoryContainer = styled.View`
+  margin-top: 10px;
+  margin-bottom: 15px;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const CategoryLabel = styled.Text`
+  font-size: ${hp(1.8)}px;
+  color: ${theme.colors.textLight};
+  margin-right: 10px;
+`;
+
+const CategoryBadge = styled.View`
+  background-color: ${theme.colors.primary};
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: ${theme.radius.md}px;
+`;
+
+const CategoryText = styled.Text`
+  color: white;
+  font-size: ${hp(1.6)}px;
+  font-weight: ${theme.fonts.medium};
+`;
+
 interface PostWithComments extends Omit<Post, 'createdAt'> {
   created_at: string;  // dal backend arriva come created_at invece di createdAt
   user_id: string;     // dal backend arriva come user_id invece di userId
@@ -91,7 +119,7 @@ const PostDetails: React.FC = () => {
     if (payload.new) {
       let newComment = { ...payload.new };
       const res = await getUserData(newComment.user_id);
-      
+
       // Verifica che res.data sia di tipo UserRow prima di assegnarlo
       newComment.user = res.success && res.data ? {
         id: res.data.id,
@@ -149,7 +177,7 @@ const PostDetails: React.FC = () => {
 
   const onNewComment = async () => {
     if (!commentRef.current || !user || !post) return null;
-    
+
     const data = {
       userId: user.id,
       postId: post.id,
@@ -206,13 +234,13 @@ const PostDetails: React.FC = () => {
 
   const onEditPost = async (item: Post) => {
     router.back();
-    router.push({ 
-      pathname: "/newPost", 
-      params: { 
-        ...item, 
+    router.push({
+      pathname: "/newPost",
+      params: {
+        ...item,
         file: typeof item.file === "string" ? item.file : undefined,
         user: item.user ? JSON.stringify(item.user) : undefined
-      } 
+      }
     });
   };
 
@@ -245,6 +273,15 @@ const PostDetails: React.FC = () => {
           onDelete={onDeletePost}
           onEdit={() => onEditPost({ ...post, createdAt: post.created_at })}
         />
+
+        {post.category && (
+          <CategoryContainer>
+            <CategoryLabel>{t('category')}:</CategoryLabel>
+            <CategoryBadge>
+              <CategoryText>{post.category}</CategoryText>
+            </CategoryBadge>
+          </CategoryContainer>
+        )}
 
         <InputContainer>
           <Input
