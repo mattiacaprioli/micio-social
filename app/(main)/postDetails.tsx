@@ -97,10 +97,12 @@ const CategoryText = styled.Text`
   font-weight: ${theme.fonts.medium};
 `;
 
+// Utilizziamo l'interfaccia Post originale
 interface PostWithComments extends Omit<Post, 'createdAt'> {
   created_at: string;  // dal backend arriva come created_at invece di createdAt
   user_id: string;     // dal backend arriva come user_id invece di userId
   comments: Comment[];
+  category?: string;   // categoria del post
 }
 
 const PostDetails: React.FC = () => {
@@ -117,6 +119,11 @@ const PostDetails: React.FC = () => {
 
   const handleNewComment = async (payload: { new: Comment }) => {
     if (payload.new) {
+      // Verifichiamo se il commento è già presente nei nostri commenti
+      // per evitare duplicati quando aggiungiamo commenti localmente
+      const commentExists = post?.comments.some(comment => comment.id === payload.new.id);
+      if (commentExists) return;
+
       let newComment = { ...payload.new };
       const res = await getUserData(newComment.user_id);
 
@@ -168,7 +175,19 @@ const PostDetails: React.FC = () => {
   const getPostDetails = async () => {
     const res = await fetchPostDetails(params.postId);
     if (res.success && res.data) {
-      setPost(res.data);
+      // Ordiniamo i commenti per data di creazione (dal più recente al più vecchio)
+      const sortedComments = [...res.data.comments].sort((a: any, b: any) => {
+        // Utilizziamo any per evitare problemi di tipo
+        const dateA = new Date(a.created_at || a.createdAt || 0).getTime();
+        const dateB = new Date(b.created_at || b.createdAt || 0).getTime();
+        return dateB - dateA; // Ordine decrescente (più recente prima)
+      });
+
+      // Aggiorniamo il post con i commenti ordinati
+      setPost({
+        ...res.data,
+        comments: sortedComments
+      } as PostWithComments);
     } else {
       setPost(null);
     }
@@ -189,17 +208,24 @@ const PostDetails: React.FC = () => {
     setLoading(false);
 
     if (res.success) {
-      if (user.id !== post.userId) {
+      // Dopo aver creato il commento, ricarichiamo i dettagli del post
+      // per ottenere tutti i commenti aggiornati dal server
+      getPostDetails();
+
+      // Puliamo l'input
+      inputRef?.current?.clear();
+      commentRef.current = "";
+
+      // Invia notifica se necessario
+      if (user.id !== post.user_id) {
         const notify = {
           senderId: user.id,
-          receiverId: post.userId,
+          receiverId: post.user_id,
           title: t('commentedOnYourPost'),
           data: JSON.stringify({ postId: post.id, commentId: res?.data?.id }),
         };
         createNotification(notify);
       }
-      inputRef?.current?.clear();
-      commentRef.current = "";
     } else {
       Alert.alert("Comment", res.msg);
     }
@@ -311,9 +337,9 @@ const PostDetails: React.FC = () => {
         </InputContainer>
 
         <View style={{ marginVertical: 15, gap: 17 }}>
-          {post?.comments?.map((comment) => (
+          {post?.comments?.map((comment, index) => (
             <CommentItem
-              key={comment?.id?.toString()}
+              key={`${comment?.id?.toString()}-${index}`}
               item={comment}
               onDelete={onDeleteComment}
               highlight={params.commentId === comment.id}
