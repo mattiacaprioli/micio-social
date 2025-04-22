@@ -82,5 +82,8 @@
   "searchUsersPlaceholder": "Cerca utenti...",
   "noPostsFound": "Nessun post trovato. Prova una ricerca o una categoria diversa.",
   "noUsersFound": "Nessun utente trovato. Prova un termine di ricerca diverso.",
-  "errorSearchingUsers": "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi."
+  "errorSearchingUsers": "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.",
+  "editProfile": "Modifica Profilo",
+  "profileDetails": "Dettagli Profilo",
+  "personalInformation": "Informazioni Personali"
 }

@@ -82,5 +82,8 @@
   "searchUsersPlaceholder": "Search users...",
   "noPostsFound": "No posts found. Try a different search or category.",
   "noUsersFound": "No users found. Try a different search term.",
-  "errorSearchingUsers": "There was an error searching for users. Please try again later."
+  "errorSearchingUsers": "There was an error searching for users. Please try again later.",
+  "editProfile": "Edit Profile",
+  "profileDetails": "Profile Details",
+  "personalInformation": "Personal Information"
 }

@@ -33,7 +33,6 @@ const Container = styled.View`
   flex: 1;
   background-color: white;
   padding-top: ${wp(7)}px;
-  padding-bottom: ${wp(7)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -125,7 +124,7 @@ const PostDetails: React.FC = () => {
       if (commentExists) return;
 
       let newComment = { ...payload.new };
-      const res = await getUserData(newComment.user_id);
+      const res = await getUserData(newComment.userId);
 
       // Verifica che res.data sia di tipo UserRow prima di assegnarlo
       newComment.user = res.success && res.data ? {
@@ -343,7 +342,7 @@ const PostDetails: React.FC = () => {
               item={comment}
               onDelete={onDeleteComment}
               highlight={params.commentId === comment.id}
-              canDelete={user?.id === comment.user_id || user?.id === post.userId}
+              canDelete={user?.id === comment.userId || user?.id === post.userId}
             />
           ))}
 

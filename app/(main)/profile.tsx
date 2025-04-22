@@ -37,8 +37,6 @@ const Container = styled.View`
 const HeaderContainer = styled.View`
   flex: 1;
   background-color: white;
-  padding-left: ${wp(4)}px;
-  padding-right: ${wp(4)}px;
 `;
 
 const AvatarContainer = styled.View`
