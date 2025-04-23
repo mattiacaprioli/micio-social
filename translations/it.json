@@ -85,5 +85,21 @@
   "errorSearchingUsers": "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.",
   "editProfile": "Modifica Profilo",
   "profileDetails": "Dettagli Profilo",
-  "personalInformation": "Informazioni Personali"
+  "personalInformation": "Informazioni Personali",
+  "updateError": "Errore di Aggiornamento",
+  "failedToUpdateProfile": "Impossibile aggiornare il profilo. Riprova.",
+  "userNotFound": "Utente non trovato",
+  "uploadError": "Errore di Caricamento",
+  "failedToUploadProfileImage": "Impossibile caricare l'immagine del profilo",
+  "pleaseFillAllFields": "Compila tutti i campi richiesti",
+  "enterYourBio": "Inserisci la tua bio",
+  "enterYourPhoneNumber": "Inserisci il tuo numero di telefono",
+  "enterYourBirthday": "Inserisci la tua data di nascita (GG/MM/AAAA)",
+  "selectGender": "Seleziona genere",
+  "male": "Maschio",
+  "female": "Femmina",
+  "other": "Altro",
+  "italy": "Italia",
+  "usa": "Stati Uniti",
+  "uk": "Regno Unito"
 }

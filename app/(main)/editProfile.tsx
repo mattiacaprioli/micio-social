@@ -11,7 +11,7 @@ import { wp, hp } from "../../helpers/common";
 import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 import { Image } from "expo-image";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, ExtendedUser } from "../../context/AuthContext";
 import { getUserImageSrc, uploadFile } from "../../services/imageService";
 import Icon from "../../assets/icons";
 import Input from "../../components/Input";
@@ -36,7 +36,7 @@ interface UserFormData {
 
 // Utilizziamo il tipo definito in userService.ts
 type UpdateUserData = Partial<Omit<UserRow, 'id' | 'created_at'>> & {
-  // Aggiungiamo phoneNumber che è phone_number in UserRow
+  // Utilizziamo phoneNumber (camelCase) che è il nome corretto della colonna nel database
   phoneNumber?: string;
 };
 
@@ -229,26 +229,48 @@ const EditProfile: React.FC = () => {
 
   useEffect(() => {
     if (currentUser) {
-      setUser({
-        name: currentUser.name || "",
-        address: currentUser.address || "",
-        bio: currentUser.bio || "",
-        phoneNumber: currentUser.phoneNumber || "",
-        birthday: currentUser.birthday || "",
-        gender: currentUser.gender || "",
-        image: currentUser.image || null,
-      });
-      // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
-      if (currentUser.phoneNumber && currentUser.phoneNumber.startsWith("+")) {
-        const match = currentUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
-        if (match) {
-          setPhonePrefix(match[1]);
-          setPhoneNumber(match[2]);
+      // Verifichiamo se currentUser ha le proprietà che ci servono
+      // Utilizziamo type guard per verificare se è un ExtendedUser
+      const isExtendedUser = (user: any): user is ExtendedUser => {
+        return 'name' in user;
+      };
+
+      if (isExtendedUser(currentUser)) {
+        // Ora TypeScript sa che currentUser è di tipo ExtendedUser
+        const extUser = currentUser as ExtendedUser; // Cast esplicito per TypeScript
+        setUser({
+          name: extUser.name || "",
+          address: extUser.address || "",
+          bio: extUser.bio || "",
+          phoneNumber: extUser.phoneNumber || "", // Utilizziamo phoneNumber (camelCase)
+          birthday: extUser.birthday || "",
+          gender: extUser.gender || "",
+          image: extUser.image || null,
+        });
+
+        // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
+        if (extUser.phoneNumber && extUser.phoneNumber.startsWith("+")) {
+          const match = extUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
+          if (match) {
+            setPhonePrefix(match[1]);
+            setPhoneNumber(match[2]);
+          } else {
+            setPhoneNumber(extUser.phoneNumber);
+          }
         } else {
-          setPhoneNumber(currentUser.phoneNumber);
+          setPhoneNumber(extUser.phoneNumber || "");
         }
       } else {
-        setPhoneNumber(currentUser.phoneNumber || "");
+        // Se non è un ExtendedUser, inizializziamo con valori vuoti
+        setUser({
+          name: "",
+          address: "",
+          bio: "",
+          phoneNumber: "",
+          birthday: "",
+          gender: "",
+          image: null,
+        });
       }
     }
   }, [currentUser]);
@@ -296,6 +318,7 @@ const EditProfile: React.FC = () => {
       }
     }
 
+    // Utilizziamo phoneNumber (camelCase) che è il nome corretto della colonna nel database
     const updatedUser: UpdateUserData = {
       name,
       address,
@@ -312,14 +335,31 @@ const EditProfile: React.FC = () => {
       return;
     }
 
+    console.log("Updating user with data:", JSON.stringify(updatedUser));
     const res = await updateUser(currentUser.id, updatedUser);
     setLoading(false);
 
     if (res.success) {
-      setUserData({ ...currentUser, ...updatedUser }); // Update local auth context
+      console.log("Update successful:", JSON.stringify(res.data));
+      // Verifichiamo se currentUser è di tipo ExtendedUser
+      if ('name' in currentUser) {
+        // Creiamo un nuovo oggetto ExtendedUser con i dati aggiornati
+        const updatedExtendedUser: ExtendedUser = {
+          ...(currentUser as ExtendedUser),
+          name: updatedUser.name || (currentUser as ExtendedUser).name,
+          address: updatedUser.address,
+          bio: updatedUser.bio,
+          birthday: updatedUser.birthday,
+          gender: updatedUser.gender,
+          image: updatedUser.image,
+          phoneNumber: updatedUser.phoneNumber, // Utilizziamo phoneNumber (camelCase)
+        };
+        setUserData(updatedExtendedUser); // Update local auth context
+      }
       router.back();
     } else {
-      Alert.alert(t('updateError'), t('failedToUpdateProfile'));
+      console.error("Update failed:", res.msg);
+      Alert.alert(t('updateError'), res.msg || t('failedToUpdateProfile'));
     }
   };
 

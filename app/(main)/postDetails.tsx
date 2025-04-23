@@ -136,7 +136,7 @@ const PostDetails: React.FC = () => {
         address: res.data.address,
         birthday: res.data.birthday,
         gender: res.data.gender,
-        phoneNumber: res.data.phone_number
+        phoneNumber: res.data.phoneNumber
       } : undefined;
 
       setPost(prevPost => {

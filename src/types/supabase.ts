@@ -30,7 +30,7 @@ export interface UserRow {
   address?: string;
   birthday?: string;
   gender?: string;
-  phone_number?: string;
+  phoneNumber?: string;
 }
 
 export interface PostRow {
