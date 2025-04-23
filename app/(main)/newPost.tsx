@@ -9,12 +9,13 @@ import {
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import styled from "styled-components/native";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import Header from "../../components/Header";
 import { hp, wp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 import Avatar from "../../components/Avatar";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import RichTextEditor from "../../components/RichTextEditor";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Icon from "../../assets/icons";
@@ -60,14 +61,14 @@ const HeaderContainer = styled.View`
 
 const UserName = styled.Text`
   font-size: ${hp(2.2)}px;
-  font-weight: ${theme.fonts.semibold};
-  color: ${theme.colors.text};
+  font-weight: ${props => props.theme.fonts.semibold};
+  color: ${props => props.theme.colors.text};
 `;
 
 const PublicText = styled.Text`
   font-size: ${hp(1.7)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${theme.colors.textLight};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const TextEditorContainer = styled.View`
@@ -82,8 +83,8 @@ const MediaContainer = styled.View`
   padding: 12px;
   padding-left: 18px;
   padding-right: 18px;
-  border-radius: ${theme.radius.xl}px;
-  border-color: ${theme.colors.gray};
+  border-radius: ${props => props.theme.radius.xl}px;
+  border-color: ${props => props.theme.colors.gray};
   margin-bottom: 15px;
 `;
 
@@ -95,14 +96,14 @@ const MediaIconsContainer = styled.View`
 
 const AddImageText = styled.Text`
   font-size: ${hp(1.9)}px;
-  font-weight: ${theme.fonts.semibold};
-  color: ${theme.colors.text};
+  font-weight: ${props => props.theme.fonts.semibold};
+  color: ${props => props.theme.colors.text};
 `;
 
 const FileContainer = styled.View`
   height: ${hp(30)}px;
   width: 100%;
-  border-radius: ${theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.xl}px;
   overflow: hidden;
 `;
 
@@ -122,8 +123,8 @@ const CategoryContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.9)}px;
-  font-weight: ${theme.fonts.semibold};
-  color: ${theme.colors.text};
+  font-weight: ${props => props.theme.fonts.semibold};
+  color: ${props => props.theme.colors.text};
   margin-bottom: 10px;
 `;
 
@@ -138,14 +139,14 @@ const CategoryOption = styled.TouchableOpacity<{ isSelected?: boolean }>`
   padding-right: 15px;
   padding-top: 8px;
   padding-bottom: 8px;
-  border-radius: ${theme.radius.md}px;
-  background-color: ${props => props.isSelected ? theme.colors.primary : 'rgba(0,0,0,0.05)'};
+  border-radius: ${props => props.theme.radius.md}px;
+  background-color: ${props => props.isSelected ? props.theme.colors.primary : props.theme.colors.darkLight};
 `;
 
 const CategoryText = styled.Text<{ isSelected?: boolean }>`
   font-size: ${hp(1.6)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${props => props.isSelected ? 'white' : theme.colors.text};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.isSelected ? 'white' : props.theme.colors.text};
 `;
 
 const NewPost: React.FC = () => {
@@ -158,6 +159,8 @@ const NewPost: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [file, setFile] = useState<MediaFile | string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
 
   // Categorie disponibili (manteniamo le stesse della home)
   const categories = [
@@ -273,19 +276,20 @@ const NewPost: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <Container>
         <Header title={post && post.id ? t('editPost') : t('createPost')} />
         <ScrollView contentContainerStyle={{ gap: 20 }}>
           {/* avatar */}
           <HeaderContainer>
             <Avatar
-              uri={user?.image}
+              uri={user && 'image' in user ? user.image : undefined}
               size={hp(6.5)}
               rounded={theme.radius.xl}
+              isDarkMode={isDarkMode}
             />
             <View style={{ gap: 2 }}>
-              <UserName>{user && user.name}</UserName>
+              <UserName>{user && 'name' in user ? user.name : ''}</UserName>
               <PublicText>{t('public')}</PublicText>
             </View>
           </HeaderContainer>
@@ -358,7 +362,7 @@ const NewPost: React.FC = () => {
           onPress={onSubmit}
         />
       </Container>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 

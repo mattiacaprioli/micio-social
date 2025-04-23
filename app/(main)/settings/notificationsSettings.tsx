@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Switch } from "react-native";
 import styled from "styled-components/native";
-import ScreenWrapper from "../../../components/ScreenWrapper";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import ThemeWrapper from "../../../components/ThemeWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
-import { theme } from "../../../constants/theme";
+import { useTheme } from "../../../context/ThemeContext";
 import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
@@ -17,21 +18,20 @@ interface NotificationOption {
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  background-color: white;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
 
 const Card = styled.View`
   margin-top: ${hp(2)}px;
-  background-color: ${theme.colors.darkLight};
-  border-radius: ${theme.radius.xxl}px;
+  background-color: ${props => props.theme.colors.darkLight};
+  border-radius: ${props => props.theme.radius.xxl}px;
   padding-top: ${hp(1.5)}px;
   padding-bottom: ${hp(1.5)}px;
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
   border-width: 0.5px;
-  border-color: ${theme.colors.dark};
+  border-color: ${props => props.theme.colors.dark};
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
   gap: ${hp(2)}px;
 `;
@@ -44,13 +44,13 @@ const Item = styled.View`
   padding-bottom: ${hp(1)}px;
   padding-left: ${wp(3)}px;
   padding-right: ${wp(3)}px;
-  border-radius: ${theme.radius.lg}px;
-  background-color: white;
+  border-radius: ${props => props.theme.radius.lg}px;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const ItemText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
   font-weight: 500;
 `;
 
@@ -59,6 +59,8 @@ const NotificationsSettings: React.FC = () => {
   const [likesEnabled, setLikesEnabled] = useState<boolean>(true);
   const [commentsEnabled, setCommentsEnabled] = useState<boolean>(true);
   const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
 
   const toggleFollowers = (): void => setFollowersEnabled((previousState) => !previousState);
   const toggleLikes = (): void => setLikesEnabled((previousState) => !previousState);
@@ -83,7 +85,7 @@ const NotificationsSettings: React.FC = () => {
   ];
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <Container>
         <Header title={t("notifications")} />
         <Card>
@@ -100,7 +102,7 @@ const NotificationsSettings: React.FC = () => {
           ))}
         </Card>
       </Container>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 

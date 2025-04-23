@@ -6,30 +6,35 @@ import { hp, wp } from "../helpers/common";
 import Icon from "../assets/icons";
 import Avatar from "./Avatar";
 import { useAuth } from "../context/AuthContext";
-import { theme } from "../constants/theme";
+import { useTheme } from "../context/ThemeContext";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import { Theme } from "../constants/theme";
 
 interface TabBarProps {
   currentRoute?: string;
   onRefresh?: () => void;
+  theme?: Theme;
 }
 
-// Colori per la TabBar
-const tabBarColors = {
-  background: "white", // Sfondo bianco per coerenza con l'header
+// Funzione per ottenere i colori della TabBar in base al tema
+const getTabBarColors = (theme: any) => ({
+  background: theme.colors.background, // Sfondo in base al tema
   plusButton: theme.colors.primary, // Arancione primario per il bottone plus
   active: theme.colors.primary, // Arancione primario per le icone attive
   inactive: theme.colors.textLight, // Colore grigio per le icone inattive
-  border: theme.colors.darkLight // Colore del bordo superiore
-};
+  border: theme.colors.darkLight, // Colore del bordo superiore
+  text: theme.colors.text, // Colore del testo
+  borderColor: theme.colors.background // Colore del bordo del bottone plus
+});
 
 // Styled Components
-const Container = styled.View`
+const Container = styled.View<{ theme: Theme }>`
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: ${hp(6)}px;
-  background-color: ${tabBarColors.background};
+  background-color: ${props => props.theme.colors.background};
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
@@ -37,7 +42,7 @@ const Container = styled.View`
   padding-bottom: ${hp(1)}px;
   /* Bordo superiore */
   border-top-width: 1px;
-  border-top-color: ${tabBarColors.border};
+  border-top-color: ${props => props.theme.colors.darkLight};
   /* Ombra sottile per iOS e Android */
   box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.05);
 `;
@@ -66,6 +71,9 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) => {
   const router = useRouter();
   const { user } = useAuth();
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
+  const tabBarColors = getTabBarColors(theme);
 
   // Animazione per il pulsante plus
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
@@ -104,8 +112,7 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
           <Icon
             name="home"
             size={hp(3)}
-            // color={currentRoute === "/home" ? tabBarColors.active : tabBarColors.inactive}
-            color={theme.colors.text}
+            color={tabBarColors.text}
           />
         </TabButton>
 
@@ -130,7 +137,7 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
                 shadowRadius: 8,
                 elevation: 5,
                 borderWidth: 3,
-                borderColor: 'white',
+                borderColor: tabBarColors.borderColor,
               }
             ]}
           >
@@ -146,6 +153,7 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
             uri={(user as any)?.image}
             size={hp(4)}
             rounded={theme.radius.xl}
+            isDarkMode={isDarkMode}
             style={{
               borderWidth: currentRoute === "/profile" ? 2 : 0,
               borderColor: currentRoute === "/profile" ? tabBarColors.active : undefined

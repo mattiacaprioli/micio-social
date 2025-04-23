@@ -1,15 +1,16 @@
 import { Text } from "react-native"
 import React from "react"
 import styled from "styled-components/native"
-import { 
-  RichEditor, 
-  RichToolbar, 
+import { useTheme as useStyledTheme } from "styled-components/native"
+import {
+  RichEditor,
+  RichToolbar,
   actions,
   RichEditorProps,
-  RichToolbarProps 
+  RichToolbarProps
 } from "react-native-pell-rich-editor"
 import { useTranslation } from 'react-i18next'
-import { theme } from "../constants/theme"
+import { useTheme } from "../context/ThemeContext"
 
 // Definiamo il tipo per le azioni della toolbar
 type ToolbarAction = typeof actions[keyof typeof actions];
@@ -31,9 +32,9 @@ const EditorContainer = styled.View<{ minHeight?: number }>`
 `
 
 const StyledRichToolbar = styled(RichToolbar)`
-  border-top-right-radius: ${theme.radius.xl}px;
-  border-top-left-radius: ${theme.radius.xl}px;
-  background-color: ${theme.colors.gray};
+  border-top-right-radius: ${props => props.theme.radius.xl}px;
+  border-top-left-radius: ${props => props.theme.radius.xl}px;
+  background-color: ${props => props.theme.colors.gray};
 `
 
 const StyledRichEditor = styled(RichEditor)`
@@ -41,9 +42,9 @@ const StyledRichEditor = styled(RichEditor)`
   flex: 1;
   border-width: 1.5px;
   border-top-width: 0;
-  border-bottom-left-radius: ${theme.radius.xl}px;
-  border-bottom-right-radius: ${theme.radius.xl}px;
-  border-color: ${theme.colors.gray};
+  border-bottom-left-radius: ${props => props.theme.radius.xl}px;
+  border-bottom-right-radius: ${props => props.theme.radius.xl}px;
+  border-color: ${props => props.theme.colors.gray};
   padding: 5px;
 `
 
@@ -72,17 +73,13 @@ const defaultIconMap = {
   ),
 }
 
-const editorStyleProp = {
-  color: theme.colors.textDark,
-  placeholderColor: "gray",
-}
-
+// Questi stili verranno aggiornati dinamicamente in base al tema
 const flatContainerStyleProp = {
   paddingHorizontal: 8,
   gap: 3,
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
+const RichTextEditor: React.FC<RichTextEditorProps> = ({
   editorRef,
   onChange,
   initialContent = "",
@@ -94,6 +91,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   editorProps = {}
 }) => {
   const { t } = useTranslation()
+  const { isDarkMode } = useTheme()
+  const theme = useStyledTheme()
+
+  // Stili dinamici in base al tema
+  const editorStyleProp = {
+    color: theme.colors.textDark,
+    placeholderColor: theme.colors.textLight,
+    backgroundColor: 'transparent',
+  }
 
   React.useEffect(() => {
     if (initialContent && editorRef.current) {
@@ -108,6 +114,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         iconMap={defaultIconMap}
         flatContainerStyle={flatContainerStyleProp}
         selectedIconTint={theme.colors.primaryDark}
+        iconTint={theme.colors.textLight}
         editor={editorRef}
         disabled={disabled}
         {...toolbarProps}

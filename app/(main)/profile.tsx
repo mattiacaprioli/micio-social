@@ -10,14 +10,15 @@ import {
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { useTranslation } from 'react-i18next';
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import Header from "../../components/Header";
 import { wp, hp } from "../../helpers/common";
 import Icon from "../../assets/icons";
-import { theme } from "../../constants/theme";
+import { useTheme } from "../../context/ThemeContext";
 import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
@@ -26,17 +27,14 @@ import {
   getFollowersCount,
   getFollowingCount,
 } from "../../services/followsService";
-import { Post, User } from "../../src/types";
+import { User } from "../../src/types";
 import type { PostWithRelations } from "../../services/postService";
 
 // Styled Components
-const Container = styled.View`
-  flex: 1;
-`;
 
 const HeaderContainer = styled.View`
   flex: 1;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const AvatarContainer = styled.View`
@@ -51,18 +49,15 @@ const EditIcon = styled.Pressable`
   right: -12px;
   padding: 7px;
   border-radius: 50px;
-  background-color: white;
-  shadow-color: ${theme.colors.textLight};
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.4;
-  shadow-radius: 5px;
-  elevation: 7;
+  background-color: ${props => props.theme.colors.background};
+  /* Ombra per iOS e Android */
+  box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.2);
 `;
 
 const UserName = styled.Text`
   font-size: ${hp(3)}px;
   font-weight: 500;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const InfoContainer = styled.View`
@@ -78,15 +73,15 @@ const InfoRow = styled.View`
 const InfoText = styled.Text`
   font-size: ${hp(1.6)}px;
   font-weight: 500;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const SettingsButton = styled.Pressable`
   position: absolute;
   right: 0;
   padding: 5px;
-  border-radius: ${theme.radius.sm}px;
-  background-color: rgba(0,0,0,0.07);
+  border-radius: ${props => props.theme.radius.sm}px;
+  background-color: ${props => props.theme.colors.darkLight};
 `;
 
 const ListStyle = {
@@ -97,7 +92,7 @@ const ListStyle = {
 const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 const FollowContainer = styled.View`
@@ -114,12 +109,12 @@ const FollowItem = styled.View`
 const FollowCount = styled.Text`
   font-size: ${hp(2.5)}px;
   font-weight: bold;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const FollowLabel = styled.Text`
   font-size: ${hp(1.6)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 interface UserHeaderProps {
@@ -130,12 +125,13 @@ interface UserHeaderProps {
 let limit = 0;
 
 const Profile: React.FC = () => {
-  const { user, setAuth } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const theme = useStyledTheme();
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
     if (!hasMore && !isRefreshing) return;
@@ -168,7 +164,7 @@ const Profile: React.FC = () => {
   const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
     <PostCard
       item={item}
-      currentUser={user}
+      currentUser={user as User | null}
       router={router}
       isUserProfile={true}
     />
@@ -187,7 +183,7 @@ const Profile: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <FlatList
         data={posts}
         ListHeaderComponent={user && 'name' in user ? <UserHeader user={user} router={router} /> : null}
@@ -207,7 +203,7 @@ const Profile: React.FC = () => {
         }
         ListFooterComponent={renderFooter}
       />
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 
@@ -215,6 +211,8 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { t } = useTranslation();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
 
   useEffect(() => {
     const fetchCounts = async (): Promise<void> => {
@@ -248,6 +246,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
             size={hp(12)}
             uri={user?.image}
             rounded={theme.radius.xl}
+            isDarkMode={isDarkMode}
           />
           <EditIcon onPress={() => router.push("/editProfile")}>
             <Icon

@@ -6,9 +6,8 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { wp, hp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 import { Image } from "expo-image";
 import { useAuth, ExtendedUser } from "../../context/AuthContext";
@@ -57,9 +56,9 @@ const AvatarContainer = styled.View`
 const AvatarImage = styled(Image)`
   height: 100%;
   width: 100%;
-  border-radius: ${theme.radius.xxl * 1.8}px;
+  border-radius: ${props => props.theme.radius.xxl * 1.8}px;
   border-width: 1px;
-  border-color: ${theme.colors.darkLight};
+  border-color: ${props => props.theme.colors.darkLight};
 `;
 
 const CameraIcon = styled.Pressable`
@@ -68,9 +67,9 @@ const CameraIcon = styled.Pressable`
   right: -10px;
   padding: 8px;
   border-radius: 50px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   /* Utilizziamo le proprietà corrette per React Native */
-  box-shadow: 0px 4px 5px ${theme.colors.textLight};
+  box-shadow: 0px 4px 5px ${props => props.theme.colors.textLight};
 `;
 
 const Form = styled.View`
@@ -81,7 +80,7 @@ const Form = styled.View`
 const SectionTitle = styled.Text`
   font-size: ${hp(2)}px;
   font-weight: bold;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
   margin-top: 10px;
   margin-bottom: 10px;
 `;
@@ -103,16 +102,16 @@ const CharCount = styled.Text`
   bottom: 5px;
   right: 10px;
   font-size: ${hp(1.5)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const PhoneInputContainer = styled.View`
   flex-direction: row;
   align-items: center;
   border-width: 0.4px;
-  border-color: ${theme.colors.text};
-  border-radius: ${theme.radius.xxl}px;
-  background-color: white;
+  border-color: ${props => props.theme.colors.text};
+  border-radius: ${props => props.theme.radius.xxl}px;
+  background-color: ${props => props.theme.colors.background};
   padding-left: 10px;
   padding-right: 10px;
   height: ${hp(7.2)}px;
@@ -127,7 +126,7 @@ const PrefixContainer = styled.TouchableOpacity`
 
 const PrefixText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 // Note: Input component already uses styled-components internally or has its own styling.
@@ -145,9 +144,9 @@ const GenderSelector = styled.TouchableOpacity`
   padding-left: 18px;
   padding-right: 18px;
   border-width: 0.4px;
-  border-color: ${theme.colors.text};
-  border-radius: ${theme.radius.xxl}px;
-  background-color: white;
+  border-color: ${props => props.theme.colors.text};
+  border-radius: ${props => props.theme.radius.xxl}px;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 interface GenderTextProps {
@@ -155,7 +154,7 @@ interface GenderTextProps {
 }
 
 const GenderText = styled.Text<GenderTextProps>`
-  color: ${(props) => props.hasValue ? theme.colors.text : theme.colors.textLight};
+  color: ${(props) => props.hasValue ? props.theme.colors.text : props.theme.colors.textLight};
   font-size: ${hp(2)}px;
 `;
 
@@ -168,7 +167,7 @@ const ModalContainer = styled.View`
 
 const ModalContent = styled.View`
   width: 80%;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   padding: 20px;
   border-radius: 10px;
   align-items: center;
@@ -183,18 +182,18 @@ const ModalOption = styled.TouchableOpacity`
 
 const ModalOptionText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 const CancelButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+  background-color: ${props => props.theme.colors.primary};
   margin-top: 15px;
   width: 100%;
   align-items: center;
   justify-content: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  border-radius: ${theme.radius.xxl}px;
+  border-radius: ${props => props.theme.radius.xxl}px;
 `;
 
 const CancelButtonText = styled.Text`
@@ -369,7 +368,7 @@ const EditProfile: React.FC = () => {
       : getUserImageSrc(typeof user.image === 'string' ? user.image : undefined); // Remote file URL or default
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
           <Header title={t('editProfile')} />
@@ -539,7 +538,7 @@ const EditProfile: React.FC = () => {
           </Form>
         </Container>
       </ScrollView>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { TextInputProps, ViewStyle } from 'react-native'
 import styled from 'styled-components/native'
-import { theme } from '../constants/theme'
+import { useTheme as useStyledTheme } from 'styled-components/native'
 import { hp } from '../helpers/common'
 
 interface InputProps extends TextInputProps {
@@ -17,8 +17,8 @@ const Container = styled.View`
   height: ${hp(7.2)}px;
   justify-content: center;
   border-width: 0.4px;
-  border-color: ${theme.colors.text};
-  border-radius: ${theme.radius.xxl}px;
+  border-color: ${props => props.theme.colors.text};
+  border-radius: ${props => props.theme.radius.xxl}px;
   padding-left: 18px;
   padding-right: 18px;
   gap: 12px;
@@ -26,7 +26,7 @@ const Container = styled.View`
 
 const StyledTextInput = styled.TextInput`
   flex: 1;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const Input: React.FC<InputProps> = ({
@@ -35,6 +35,8 @@ const Input: React.FC<InputProps> = ({
   inputRef,
   ...props
 }) => {
+  const theme = useStyledTheme();
+
   return (
     <Container style={containerStyle}>
       {icon}

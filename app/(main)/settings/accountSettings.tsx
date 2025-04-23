@@ -5,12 +5,13 @@ import {
   ScrollView,
 } from "react-native";
 import styled from "styled-components/native";
-import ScreenWrapper from "../../../components/ScreenWrapper";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import ThemeWrapper from "../../../components/ThemeWrapper";
 import Header from "../../../components/Header";
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
 import { wp, hp } from "../../../helpers/common";
-import { theme } from "../../../constants/theme";
+import { useTheme } from "../../../context/ThemeContext";
 import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
@@ -30,7 +31,7 @@ const Container = styled.View`
   flex: 1;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const Form = styled.View`
@@ -42,7 +43,7 @@ const Form = styled.View`
 const SectionTitle = styled.Text`
   font-size: ${hp(2)}px;
   font-weight: 600;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
   margin-bottom: ${hp(1)}px;
 `;
 
@@ -56,7 +57,7 @@ const SettingItem = styled.View`
 
 const SettingLabel = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const LanguageButton = styled.TouchableOpacity`
@@ -64,8 +65,8 @@ const LanguageButton = styled.TouchableOpacity`
   padding-bottom: ${hp(0.5)}px;
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
-  background-color: ${theme.colors.primary};
-  border-radius: ${theme.radius.sm}px;
+  background-color: ${props => props.theme.colors.primary};
+  border-radius: ${props => props.theme.radius.sm}px;
 `;
 
 const LanguageText = styled.Text`
@@ -81,9 +82,10 @@ const AccountSettings: React.FC = () => {
     confirm: "",
   });
   const [loading] = useState<boolean>(false);
-  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
+  const { isDarkMode, toggleTheme } = useTheme();
   const { i18n, t } = useTranslation();
   const [language, setLanguage] = useState<string>(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
+  const theme = useStyledTheme();
 
   // Aggiungi questo useEffect per debug
   useEffect(() => {
@@ -131,11 +133,11 @@ const AccountSettings: React.FC = () => {
     );
   };
 
-  const toggleTheme = (): void => {
-    setIsDarkTheme((prev) => !prev);
+  const handleToggleTheme = (): void => {
+    toggleTheme();
     Alert.alert(
       t("themeChanged"),
-      `${t("themeSetTo")} ${!isDarkTheme ? t("dark") : t("light")}`
+      `${t("themeSetTo")} ${!isDarkMode ? t("dark") : t("light")}`
     );
   };
 
@@ -149,7 +151,7 @@ const AccountSettings: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
           <Header title={t("accountSettings")} />
@@ -211,10 +213,10 @@ const AccountSettings: React.FC = () => {
                   true: theme.colors.primary,
                 }}
                 thumbColor={
-                  isDarkTheme ? theme.colors.primary : theme.colors.textLight
+                  isDarkMode ? theme.colors.primary : theme.colors.textLight
                 }
-                onValueChange={toggleTheme}
-                value={isDarkTheme}
+                onValueChange={handleToggleTheme}
+                value={isDarkMode}
               />
             </SettingItem>
             <SettingItem>
@@ -237,7 +239,7 @@ const AccountSettings: React.FC = () => {
           </Form>
         </Container>
       </ScrollView>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 
