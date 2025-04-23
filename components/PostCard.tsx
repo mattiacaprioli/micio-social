@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import styled, { css } from "styled-components/native";
-import { theme } from "../constants/theme";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
 import Avatar from "./Avatar";
 import moment from "moment";
@@ -16,29 +16,46 @@ import RenderHtml from "react-native-render-html";
 import { Image } from "expo-image";
 import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video } from "expo-av";
-import { createPostLike, removePostLike } from "../services/postService";
+import { createPostLike, removePostLike, PostWithRelations } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
 import { useTranslation } from 'react-i18next';
+import { useTheme } from "../context/ThemeContext";
+import { User } from "../src/types";
+import { Router } from "expo-router";
+
+interface PostLike {
+  userId: string;
+  postId?: string;
+}
+
+interface PostCardProps {
+  item: PostWithRelations;
+  currentUser: User | null;
+  router: Router;
+  isUserProfile?: boolean;
+  hasShadow?: boolean;
+  showMoreIcon?: boolean;
+  showDelete?: boolean;
+  onDelete?: (item: PostWithRelations) => void;
+  onEdit?: (item: PostWithRelations) => void;
+}
 
 // Styled Components
-const Container = styled.View`
+const Container = styled.View<{ hasShadow?: boolean }>`
   gap: 10px;
   margin-bottom: 15px;
-  border-radius: ${theme.radius.xxl * 1.1}px;
+  border-radius: ${props => props.theme.radius.xxl * 1.1}px;
   padding: 10px;
   padding-top: 12px;
   padding-bottom: 12px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   border-width: 0.5px;
-  border-color: ${theme.colors.gray};
-  shadow-color: #000;
+  border-color: ${props => props.theme.colors.gray};
   ${(props) =>
     props.hasShadow &&
     css`
-      shadow-offset: 0px 2px;
-      shadow-opacity: 0.05;
-      shadow-radius: 6px;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
       elevation: 1;
     `}
 `;
@@ -55,12 +72,12 @@ const UserInfo = styled.TouchableOpacity`
 `;
 
 const CategoryBadge = styled.View`
-  background-color: ${theme.colors.primary};
+  background-color: ${props => props.theme.colors.primary};
   padding-left: 8px;
   padding-right: 8px;
   padding-top: 4px;
   padding-bottom: 4px;
-  border-radius: ${theme.radius.md}px;
+  border-radius: ${props => props.theme.radius.md}px;
   margin-left: 5px;
   align-self: flex-start;
 `;
@@ -68,19 +85,19 @@ const CategoryBadge = styled.View`
 const CategoryText = styled.Text`
   color: white;
   font-size: ${hp(1.3)}px;
-  font-weight: ${theme.fonts.medium};
+  font-weight: ${props => props.theme.fonts.medium};
 `;
 
 const UserName = styled.Text`
   font-size: ${hp(1.7)}px;
-  color: ${theme.colors.textDark};
-  font-weight: ${theme.fonts.medium};
+  color: ${props => props.theme.colors.textDark};
+  font-weight: ${props => props.theme.fonts.medium};
 `;
 
 const PostTime = styled.Text`
   font-size: ${hp(1.4)}px;
-  color: ${theme.colors.textLight};
-  font-weight: ${theme.fonts.medium};
+  color: ${props => props.theme.colors.textLight};
+  font-weight: ${props => props.theme.fonts.medium};
 `;
 
 const Content = styled.View`
@@ -90,13 +107,13 @@ const Content = styled.View`
 const PostMedia = styled(Image)`
   height: ${hp(40)}px;
   width: 100%;
-  border-radius: ${theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.xl}px;
 `;
 
 const PostVideo = styled(Video)`
   height: ${hp(30)}px;
   width: 100%;
-  border-radius: ${theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.xl}px;
 `;
 
 const PostBody = styled.View`
@@ -123,28 +140,11 @@ const Actions = styled.View`
 `;
 
 const Count = styled.Text`
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
   font-size: ${hp(1.8)}px;
 `;
 
-const textStyles = {
-  color: theme.colors.dark,
-  fontSize: hp(1.75),
-};
-
-const tagsStyles = {
-  div: textStyles,
-  p: textStyles,
-  ol: textStyles,
-  h1: {
-    color: theme.colors.dark,
-  },
-  h4: {
-    color: theme.colors.dark,
-  },
-};
-
-const PostCard = ({
+const PostCard: React.FC<PostCardProps> = ({
   item,
   currentUser,
   router,
@@ -156,35 +156,57 @@ const PostCard = ({
   onEdit = () => {},
 }) => {
   const { t } = useTranslation();
-  const [likes, setLikes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [likes, setLikes] = useState<PostLike[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
+
+  // Stili per il testo HTML
+  const textStyles = {
+    color: theme.colors.text,
+    fontSize: hp(1.75),
+  };
+
+  const tagsStyles = {
+    div: textStyles,
+    p: textStyles,
+    ol: textStyles,
+    h1: {
+      color: theme.colors.textDark,
+    },
+    h4: {
+      color: theme.colors.textDark,
+    },
+  };
 
   useEffect(() => {
-    setLikes(item?.postLikes);
+    setLikes(item?.postLikes || []);
   }, []);
 
   const openPostDetails = () => {
     if (!showMoreIcon) return null;
-    router.push({ pathname: "postDetails", params: { postId: item?.id } });
+    router.push({ pathname: "/postDetails", params: { postId: item?.id } });
   };
 
   const openUserProfile = () => {
     if (item?.user?.id === currentUser?.id) {
-      router.push("profile");
+      router.push("/profile");
     } else {
       router.push({
-        pathname: "userProfile",
+        pathname: "/userProfile",
         params: { userId: item?.user?.id },
       });
     }
   };
 
   const onLike = async () => {
+    if (!currentUser?.id) return;
+    
     if (liked) {
       // remove like
-      let updatedLikes = likes.filter((like) => like.userId != currentUser?.id);
+      let updatedLikes = likes.filter((like) => like.userId !== currentUser.id);
       setLikes([...updatedLikes]);
-      let res = await removePostLike(item?.id, currentUser?.id);
+      let res = await removePostLike(item?.id, currentUser.id);
 
       console.log("removed like: ", res);
       if (!res.success) {
@@ -193,13 +215,13 @@ const PostCard = ({
     } else {
       // create like
       let data = {
-        userId: currentUser?.id,
+        userId: currentUser.id,
         postId: item?.id,
       };
       setLikes([...likes, data]);
       let res = await createPostLike(data);
       if (res.success) {
-        if (currentUser.id !== item.user.id) {
+        if (item.user && currentUser.id !== item.user.id) {
           let notify = {
             senderId: currentUser.id,
             receiverId: item.user.id,
@@ -218,14 +240,16 @@ const PostCard = ({
   };
 
   const onShare = async () => {
-    let content = { message: stripHtmlTags(item?.body) };
+    let content: { message: string; url?: string } = { message: stripHtmlTags(item?.body || '') };
     if (item?.file) {
       // download the file then share the local uri
       setLoading(true);
       let url = await downloadFile(getSupabaseFileUrl(item?.file).uri);
       console.log("downloaded file: ", url);
       setLoading(false);
-      content.url = url;
+      if (url) {
+        content.url = url;
+      }
     }
     Share.share(content);
   };
@@ -246,21 +270,20 @@ const PostCard = ({
   };
 
   const createdAt = moment(item?.created_at).format("MMM D");
-  const liked = likes.filter((like) => like.userId == currentUser?.id)[0]
-    ? true
-    : false;
+  const liked = likes.filter((like) => like.userId === currentUser?.id).length > 0;
 
   return (
     <Container hasShadow={hasShadow}>
       <Header>
         <UserInfo
-          onPress={!isUserProfile ? openUserProfile : null}
+          onPress={!isUserProfile ? openUserProfile : undefined}
           disabled={isUserProfile}
         >
           <Avatar
             size={hp(4.5)}
             uri={item?.user?.image}
             rounded={theme.radius.xl}
+            isDarkMode={isDarkMode}
           />
           <View style={{ gap: 2 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -285,7 +308,7 @@ const PostCard = ({
           </TouchableOpacity>
         )}
 
-        {showDelete && currentUser.id == item?.userId && (
+        {showDelete && currentUser?.id === item?.user_id && (
           <Actions>
             <TouchableOpacity onPress={() => onEdit(item)}>
               <Icon name="edit" size={hp(2.4)} color={theme.colors.text} />
@@ -345,7 +368,9 @@ const PostCard = ({
             <TouchableOpacity onPress={openPostDetails}>
               <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
-            <Count>{item?.comments[0]?.count}</Count>
+            <Count>
+              {Array.isArray(item?.comments) ? item?.comments[0]?.count : item?.comments?.count}
+            </Count>
           </FooterButton>
           <FooterButton>
             {loading ? (
@@ -363,4 +388,3 @@ const PostCard = ({
 };
 
 export default PostCard;
-

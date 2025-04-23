@@ -85,5 +85,21 @@
   "errorSearchingUsers": "There was an error searching for users. Please try again later.",
   "editProfile": "Edit Profile",
   "profileDetails": "Profile Details",
-  "personalInformation": "Personal Information"
+  "personalInformation": "Personal Information",
+  "updateError": "Update Error",
+  "failedToUpdateProfile": "Failed to update profile. Please try again.",
+  "userNotFound": "User not found",
+  "uploadError": "Upload Error",
+  "failedToUploadProfileImage": "Failed to upload profile image",
+  "pleaseFillAllFields": "Please fill all required fields",
+  "enterYourBio": "Enter your bio",
+  "enterYourPhoneNumber": "Enter your phone number",
+  "enterYourBirthday": "Enter your birthday (DD/MM/YYYY)",
+  "selectGender": "Select gender",
+  "male": "Male",
+  "female": "Female",
+  "other": "Other",
+  "italy": "Italy",
+  "usa": "USA",
+  "uk": "UK"
 }

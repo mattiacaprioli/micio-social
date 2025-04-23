@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { ViewStyle, TextStyle } from 'react-native';
-import { theme } from '@/constants/theme';
+import { Theme } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
+import { useTheme as useStyledTheme } from 'styled-components/native';
 import { hp } from '../helpers/common'
 import Loading from './Loading';
 
@@ -13,17 +15,18 @@ interface ButtonProps {
   loading?: boolean;
   hasShadow?: boolean;
   disabled?: boolean;
+  theme?: Theme;
 }
 
-const StyledPressable = styled.Pressable<{ hasShadow: boolean }>`
-  background-color: ${theme.colors.primary};
+const StyledPressable = styled.Pressable<{ hasShadow: boolean; theme: Theme }>`
+  background-color: ${props => props.theme.colors.primary};
   height: ${hp(6.6)}px;
   justify-content: center;
   align-items: center;
-  border-radius: ${theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.xl}px;
   opacity: ${props => props.disabled ? 0.7 : 1};
   ${props => props.hasShadow && `
-    shadow-color: ${theme.colors.primary};
+    shadow-color: ${props.theme.colors.primary};
     shadow-offset: 0px 4px;
     shadow-opacity: 0.25;
     shadow-radius: 8px;
@@ -31,18 +34,18 @@ const StyledPressable = styled.Pressable<{ hasShadow: boolean }>`
   `}
 `;
 
-const StyledText = styled.Text`
+const StyledText = styled.Text<{ theme: Theme }>`
   color: white;
   font-size: ${hp(2.5)}px;
-  font-weight: ${theme.fonts.bold};
+  font-weight: ${props => props.theme.fonts.bold};
 `;
 
-const LoadingContainer = styled.View`
-  background-color: white;
+const LoadingContainer = styled.View<{ theme: Theme }>`
+  background-color: ${props => props.theme.colors.background};
   height: ${hp(6.6)}px;
   justify-content: center;
   align-items: center;
-  border-radius: ${theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.xl}px;
 `;
 
 const Button: React.FC<ButtonProps> = ({
@@ -52,12 +55,15 @@ const Button: React.FC<ButtonProps> = ({
   onPress = () => {},
   loading = false,
   hasShadow = true,
-  disabled = false,
+  disabled = false
 }) => {
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
+
   if (loading) {
     return (
       <LoadingContainer style={buttonStyle}>
-        <Loading />
+        <Loading color={theme.colors.primary} />
       </LoadingContainer>
     );
   }

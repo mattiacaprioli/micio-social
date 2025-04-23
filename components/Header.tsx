@@ -3,7 +3,9 @@ import styled from 'styled-components/native'
 import { useRouter, Router } from 'expo-router'
 import BackButton from './BackButton'
 import { hp } from '../helpers/common'
-import { theme } from '../constants/theme'
+import { Theme } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
+import { useTheme as useStyledTheme } from 'styled-components/native'
 
 // Styled Components
 const Container = styled.View<{ mb: number }>`
@@ -15,10 +17,10 @@ const Container = styled.View<{ mb: number }>`
   margin-bottom: ${(props) => props.mb}px;
 `;
 
-const Title = styled.Text`
+const Title = styled.Text<{ theme: Theme }>`
   font-size: ${hp(2.7)}px;
-  font-weight: ${theme.fonts.semibold};
-  color: ${theme.colors.textDark};
+  font-weight: ${props => props.theme.fonts.semibold};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const BackButtonContainer = styled.View`
@@ -30,6 +32,7 @@ interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
   mb?: number;
+  theme?: Theme;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -38,6 +41,8 @@ const Header: React.FC<HeaderProps> = ({
   mb = 10
 }) => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
 
   return (
     <Container mb={mb}>

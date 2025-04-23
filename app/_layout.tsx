@@ -2,6 +2,8 @@ import { LogBox } from "react-native";
 import React, { useEffect } from "react";
 import { Stack, useRouter } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { ThemeProvider as ThemeContextProvider } from "../context/ThemeContext";
+import ThemeProvider from "../components/ThemeProvider";
 import { supabase } from "../lib/supabase";
 import { getUserData } from "../services/userService";
 import '../lib/i18n'; // Importa prima il setup di i18n
@@ -18,7 +20,11 @@ const Layout: React.FC = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <AuthProvider>
-        <MainLayout />
+        <ThemeContextProvider>
+          <ThemeProvider>
+            <MainLayout />
+          </ThemeProvider>
+        </ThemeContextProvider>
       </AuthProvider>
     </I18nextProvider>
   );

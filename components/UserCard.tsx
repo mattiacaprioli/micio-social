@@ -2,9 +2,10 @@ import React from "react";
 import styled from "styled-components/native";
 import { TouchableOpacity, View } from "react-native";
 import { hp, wp } from "../helpers/common";
-import { theme } from "../constants/theme";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import Avatar from "./Avatar";
 import { UserWithBasicInfo } from "../services/userService";
+import { useTheme } from "../context/ThemeContext";
 
 interface UserCardProps {
   user: UserWithBasicInfo;
@@ -18,10 +19,10 @@ const Container = styled.TouchableOpacity`
   align-items: center;
   padding: ${hp(1.5)}px ${wp(3)}px;
   margin-bottom: ${hp(1)}px;
-  background-color: white;
-  border-radius: ${theme.radius.lg}px;
+  background-color: ${props => props.theme.colors.background};
+  border-radius: ${props => props.theme.radius.lg}px;
   border-width: 0.5px;
-  border-color: ${theme.colors.gray};
+  border-color: ${props => props.theme.colors.gray};
 `;
 
 const UserInfo = styled.View`
@@ -31,23 +32,27 @@ const UserInfo = styled.View`
 
 const UserName = styled.Text`
   font-size: ${hp(1.8)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${theme.colors.text};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.text};
 `;
 
 const UserBio = styled.Text`
   font-size: ${hp(1.5)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
   margin-top: ${hp(0.5)}px;
 `;
 
 const UserCard: React.FC<UserCardProps> = ({ user, onPress, currentUserId }) => {
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
+
   return (
     <Container onPress={() => onPress(user.id)}>
       <Avatar
         uri={user.image}
         size={hp(6)}
         rounded={theme.radius.xl}
+        isDarkMode={isDarkMode}
       />
       <UserInfo>
         <UserName>{user.name}</UserName>

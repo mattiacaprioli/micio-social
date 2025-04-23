@@ -10,13 +10,12 @@ import {
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { getUserData } from "../../services/userService";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "../../components/Header";
 import { wp, hp } from "../../helpers/common";
-import Icon from "../../assets/icons";
-import { theme } from "../../constants/theme";
 import Avatar from "../../components/Avatar";
 import { fetchPost } from "../../services/postService";
 import PostCard from "../../components/PostCard";
@@ -29,6 +28,7 @@ import {
   getFollowingCount,
 } from "../../services/followsService";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { createNotification } from "../../services/notificationService";
 import { useTranslation } from 'react-i18next';
 import { User } from "../../src/types";
@@ -41,7 +41,7 @@ const Container = styled.View`
 
 const HeaderContainer = styled.View`
   flex: 1;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const AvatarContainer = styled.View`
@@ -53,13 +53,13 @@ const AvatarContainer = styled.View`
 const UserName = styled.Text`
   font-size: ${hp(3)}px;
   font-weight: 500;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const InfoText = styled.Text`
   font-size: ${hp(1.6)}px;
   font-weight: 500;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const ListStyle = {
@@ -70,7 +70,7 @@ const ListStyle = {
 const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 const FollowContainer = styled.View`
@@ -87,16 +87,16 @@ const FollowItem = styled.View`
 const FollowCount = styled.Text`
   font-size: ${hp(2.5)}px;
   font-weight: bold;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const FollowLabel = styled.Text`
   font-size: ${hp(1.6)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const FollowButton = styled.Pressable`
-  background-color: ${theme.colors.primary};
+  background-color: ${props => props.theme.colors.primary};
   align-self: center;
   padding-top: 8px;
   padding-bottom: 8px;
@@ -127,6 +127,7 @@ const UserProfile: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const theme = useStyledTheme();
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
     if (!hasMore && !isRefreshing) return;
@@ -176,7 +177,7 @@ const UserProfile: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <FlatList
         data={posts}
         ListHeaderComponent={<UserHeader user={userData} router={router} />}
@@ -206,7 +207,7 @@ const UserProfile: React.FC = () => {
           )
         }
       />
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 
@@ -216,6 +217,8 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
 
   useEffect(() => {
     const fetchCounts = async (): Promise<void> => {
@@ -240,7 +243,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
 
   const handleFollowToggle = async (): Promise<void> => {
     if (!currentUser?.id || !user?.id) return;
-  
+
     if (isFollowing) {
       await unfollowUser(currentUser.id, user.id);
     } else {
@@ -257,10 +260,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
         }
       }
     }
-  
+
     const followingStatus = await isUserFollowing(currentUser.id, user.id);
     setIsFollowing(followingStatus);
-  
+
     const followers = await getFollowersCount(user.id);
     setFollowersCount(followers);
   };
@@ -278,6 +281,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
               uri={user?.image}
               size={hp(12)}
               rounded={theme.radius.xxl}
+              isDarkMode={isDarkMode}
             />
           </AvatarContainer>
 

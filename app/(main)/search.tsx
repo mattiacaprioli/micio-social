@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FlatList, ActivityIndicator, Keyboard, Alert } from "react-native";
 import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { useRouter } from "expo-router";
 import { hp, wp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 
 import { searchUsers, UserWithBasicInfo } from "../../services/userService";
 import UserCard from "../../components/UserCard";
 import Header from "../../components/Header";
 import Icon from "../../assets/icons";
 import { useTranslation } from "react-i18next";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
 
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  background-color: white;
   padding-top: ${wp(2)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
@@ -30,15 +29,15 @@ const SearchContainer = styled.View`
   padding-left: ${wp(3)}px;
   padding-right: ${wp(3)}px;
   height: ${hp(6)}px;
-  border-radius: ${theme.radius.lg}px;
-  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: ${props => props.theme.radius.lg}px;
+  background-color: ${props => props.theme.colors.darkLight};
 `;
 
 const SearchInput = styled.TextInput`
   flex: 1;
   height: 100%;
   font-size: ${hp(1.8)}px;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
   margin-left: ${wp(2)}px;
 `;
 
@@ -51,7 +50,7 @@ const NoResultsContainer = styled.View`
 
 const NoResultsText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
   text-align: center;
   margin-top: ${hp(2)}px;
 `;
@@ -63,6 +62,7 @@ const Search: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const theme = useStyledTheme();
 
   const [users, setUsers] = useState<UserWithBasicInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -131,7 +131,7 @@ const Search: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <Container>
         <Header title={t("search")} />
 
@@ -140,6 +140,7 @@ const Search: React.FC = () => {
           <Icon name="search" size={hp(2.5)} color={theme.colors.textLight} />
           <SearchInput
             placeholder={t("searchUsersPlaceholder")}
+            placeholderTextColor={theme.colors.textLight}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoCapitalize="none"
@@ -184,13 +185,13 @@ const Search: React.FC = () => {
             />
           ) : (
             <NoResultsContainer>
-              <Icon name="search" size={hp(10)} color="rgba(0,0,0,0.1)" />
+              <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
               <NoResultsText>{t("noUsersFound")}</NoResultsText>
             </NoResultsContainer>
           )
         )}
       </Container>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 

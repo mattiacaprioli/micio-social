@@ -1,12 +1,13 @@
 import { Text, View, TouchableOpacity, Alert } from "react-native"
 import React from "react"
 import styled, { css } from "styled-components/native"
-import { theme } from "../constants/theme"
+import { useTheme as useStyledTheme } from "styled-components/native"
 import { hp } from "../helpers/common"
 import Avatar from "./Avatar"
 import moment from "moment"
 import Icon from "../assets/icons"
-import { Comment } from "@/src/types"
+import { Comment } from "../src/types"
+import { useTheme } from "../context/ThemeContext"
 
 interface CommentItemProps {
   item: Comment;
@@ -27,22 +28,20 @@ const Container = styled.View`
 `
 
 const Content = styled.View<ContentProps>`
-  background-color: rgba(0,0,0,0.06);
+  background-color: ${props => props.highlight
+    ? props.theme.colors.background
+    : props.theme.colors.darkLight};
   flex: 1;
   gap: 5px;
   padding: 10px 14px;
-  border-radius: ${theme.radius.md}px;
+  border-radius: ${props => props.theme.radius.md}px;
 
   ${(props) =>
     props.highlight &&
     css`
       border-width: 0.2px;
-      background-color: white;
-      border-color: ${theme.colors.dark};
-      shadow-color: ${theme.colors.dark};
-      shadow-offset: 0px 0px;
-      shadow-opacity: 0.3;
-      shadow-radius: 8px;
+      border-color: ${props.theme.colors.dark};
+      box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
       elevation: 5;
     `}
 `
@@ -61,12 +60,12 @@ const NameContainer = styled.View`
 
 const StyledText = styled.Text`
   font-size: ${hp(1.6)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${theme.colors.textDark};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.textDark};
 `
 
 const DateText = styled(StyledText)`
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `
 
 const CommentText = styled(StyledText)`
@@ -80,6 +79,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
   highlight = false,
 }) => {
   const created_at = moment(item?.created_at).format("MMM d")
+  const { isDarkMode } = useTheme()
+  const theme = useStyledTheme()
 
   const handleDelete = () => {
     Alert.alert("Confirm", "Are you sure you want to do this?", [
@@ -98,7 +99,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
   return (
     <Container>
-      <Avatar uri={item?.user?.image} />
+      <Avatar uri={item?.user?.image} isDarkMode={isDarkMode} />
       <Content highlight={highlight}>
         <HeaderRow>
           <NameContainer>

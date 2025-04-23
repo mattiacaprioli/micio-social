@@ -6,6 +6,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   createComment,
@@ -14,7 +15,6 @@ import {
   removePost,
 } from "../../services/postService";
 import { hp, wp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
 import Loading from "../../components/Loading";
@@ -27,11 +27,11 @@ import { createNotification } from "../../services/notificationService";
 import { useTranslation } from 'react-i18next';
 import { TextInput } from "react-native";
 import { Post, Comment, User } from "../../src/types";
+import ThemeWrapper from "../../components/ThemeWrapper";
 
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  background-color: white;
   padding-top: ${wp(7)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
@@ -45,12 +45,12 @@ const Center = styled.View`
 
 const NotFoundText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const BeFirstText = styled.Text`
   text-align: center;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
   font-size: ${hp(1.8)}px;
 `;
 
@@ -77,23 +77,23 @@ const CategoryContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.8)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
   margin-right: 10px;
 `;
 
 const CategoryBadge = styled.View`
-  background-color: ${theme.colors.primary};
+  background-color: ${props => props.theme.colors.primary};
   padding-left: 12px;
   padding-right: 12px;
   padding-top: 6px;
   padding-bottom: 6px;
-  border-radius: ${theme.radius.md}px;
+  border-radius: ${props => props.theme.radius.md}px;
 `;
 
 const CategoryText = styled.Text`
   color: white;
   font-size: ${hp(1.6)}px;
-  font-weight: ${theme.fonts.medium};
+  font-weight: ${props => props.theme.fonts.medium};
 `;
 
 // Utilizziamo l'interfaccia Post originale
@@ -111,6 +111,7 @@ const PostDetails: React.FC = () => {
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const commentRef = useRef<string>("");
+  const theme = useStyledTheme();
 
   const [startLoading, setStartLoading] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
@@ -136,7 +137,7 @@ const PostDetails: React.FC = () => {
         address: res.data.address,
         birthday: res.data.birthday,
         gender: res.data.gender,
-        phoneNumber: res.data.phone_number
+        phoneNumber: res.data.phoneNumber
       } : undefined;
 
       setPost(prevPost => {
@@ -271,26 +272,47 @@ const PostDetails: React.FC = () => {
 
   if (startLoading) {
     return (
-      <Center>
-        <Loading />
-      </Center>
+      <ThemeWrapper>
+        <Center>
+          <Loading />
+        </Center>
+      </ThemeWrapper>
     );
   }
 
   if (!post) {
     return (
-      <Center>
-        <NotFoundText>Post not found!</NotFoundText>
-      </Center>
+      <ThemeWrapper>
+        <Center>
+          <NotFoundText>Post not found!</NotFoundText>
+        </Center>
+      </ThemeWrapper>
     );
   }
 
   return (
-    <Container>
+    <ThemeWrapper>
+      <Container>
       <ScrollView showsVerticalScrollIndicator={false}>
         <PostCard
-          item={{ ...post, comments: [{ count: post?.comments?.length }] }}
-          currentUser={user}
+          item={{
+            id: post.id,
+            userId: post.user_id,
+            body: post.body,
+            // Assicuriamoci che file sia una stringa o undefined
+            file: typeof post.file === 'string' ? post.file : undefined,
+            created_at: post.created_at,
+            comments: [{ count: post?.comments?.length }],
+            // Assicuriamoci che user abbia la struttura corretta per PostCard
+            user: post.user ? {
+              id: post.user.id,
+              name: post.user.name,
+              image: post.user.image || null
+            } : undefined,
+            postLikes: post.postLikes || [],
+            category: post.category
+          } as any}
+          currentUser={user as User | null}
           router={router}
           hasShadow={false}
           showMoreIcon={false}
@@ -354,6 +376,7 @@ const PostDetails: React.FC = () => {
         </View>
       </ScrollView>
     </Container>
+    </ThemeWrapper>
   );
 };
 

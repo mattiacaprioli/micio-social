@@ -1,13 +1,14 @@
 import { TouchableOpacity } from "react-native";
 import React from "react";
 import styled from "styled-components/native";
-import { theme } from "../constants/theme";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { hp } from "../helpers/common";
 import Avatar from "./Avatar";
 import moment from "moment";
 import Icon from "../assets/icons";
 import { Router } from "expo-router";
 import { NotificationUser } from "../services/notificationService";
+import { useTheme } from "../context/ThemeContext";
 
 interface NotificationItemProps {
   item: {
@@ -33,11 +34,11 @@ const Container = styled.TouchableOpacity`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   border-width: 0.5px;
-  border-color: ${theme.colors.darkLight};
+  border-color: ${props => props.theme.colors.darkLight};
   padding: 15px;
-  border-radius: ${theme.radius.xxl}px;
+  border-radius: ${props => props.theme.radius.xxl}px;
 `;
 
 const NameTitleContainer = styled.View`
@@ -47,19 +48,21 @@ const NameTitleContainer = styled.View`
 
 const StyledText = styled.Text`
   font-size: ${hp(1.6)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${theme.colors.text};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.text};
 `;
 
 const TitleText = styled(StyledText)`
-  color: ${theme.colors.textDark};
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const DateText = styled(StyledText)`
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ item, router, onDelete }) => {
+  const { isDarkMode } = useTheme();
+  const theme = useStyledTheme();
   const handleClick = () => {
     try {
       const parsedData: ParsedNotificationData = JSON.parse(item?.data);
@@ -71,9 +74,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ item, router, onDel
       } else if (parsedData.postId) {
         router.push({
           pathname: "/(main)/postDetails",
-          params: { 
+          params: {
             postId: parsedData.postId,
-            commentId: parsedData.commentId 
+            commentId: parsedData.commentId
           }
         });
       } else {
@@ -88,7 +91,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ item, router, onDel
 
   return (
     <Container onPress={handleClick}>
-      <Avatar size={hp(5)} uri={item?.sender?.image} />
+      <Avatar size={hp(5)} uri={item?.sender?.image} isDarkMode={isDarkMode} />
       <NameTitleContainer>
         <StyledText>{item?.sender?.name}</StyledText>
         <TitleText>{item?.title}</TitleText>

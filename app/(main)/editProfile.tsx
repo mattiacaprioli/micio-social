@@ -6,12 +6,11 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { wp, hp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 import { Image } from "expo-image";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth, ExtendedUser } from "../../context/AuthContext";
 import { getUserImageSrc, uploadFile } from "../../services/imageService";
 import Icon from "../../assets/icons";
 import Input from "../../components/Input";
@@ -36,7 +35,7 @@ interface UserFormData {
 
 // Utilizziamo il tipo definito in userService.ts
 type UpdateUserData = Partial<Omit<UserRow, 'id' | 'created_at'>> & {
-  // Aggiungiamo phoneNumber che è phone_number in UserRow
+  // Utilizziamo phoneNumber (camelCase) che è il nome corretto della colonna nel database
   phoneNumber?: string;
 };
 
@@ -57,9 +56,9 @@ const AvatarContainer = styled.View`
 const AvatarImage = styled(Image)`
   height: 100%;
   width: 100%;
-  border-radius: ${theme.radius.xxl * 1.8}px;
+  border-radius: ${props => props.theme.radius.xxl * 1.8}px;
   border-width: 1px;
-  border-color: ${theme.colors.darkLight};
+  border-color: ${props => props.theme.colors.darkLight};
 `;
 
 const CameraIcon = styled.Pressable`
@@ -68,9 +67,9 @@ const CameraIcon = styled.Pressable`
   right: -10px;
   padding: 8px;
   border-radius: 50px;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   /* Utilizziamo le proprietà corrette per React Native */
-  box-shadow: 0px 4px 5px ${theme.colors.textLight};
+  box-shadow: 0px 4px 5px ${props => props.theme.colors.textLight};
 `;
 
 const Form = styled.View`
@@ -81,7 +80,7 @@ const Form = styled.View`
 const SectionTitle = styled.Text`
   font-size: ${hp(2)}px;
   font-weight: bold;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
   margin-top: 10px;
   margin-bottom: 10px;
 `;
@@ -103,16 +102,16 @@ const CharCount = styled.Text`
   bottom: 5px;
   right: 10px;
   font-size: ${hp(1.5)}px;
-  color: ${theme.colors.textLight};
+  color: ${props => props.theme.colors.textLight};
 `;
 
 const PhoneInputContainer = styled.View`
   flex-direction: row;
   align-items: center;
   border-width: 0.4px;
-  border-color: ${theme.colors.text};
-  border-radius: ${theme.radius.xxl}px;
-  background-color: white;
+  border-color: ${props => props.theme.colors.text};
+  border-radius: ${props => props.theme.radius.xxl}px;
+  background-color: ${props => props.theme.colors.background};
   padding-left: 10px;
   padding-right: 10px;
   height: ${hp(7.2)}px;
@@ -127,7 +126,7 @@ const PrefixContainer = styled.TouchableOpacity`
 
 const PrefixText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 // Note: Input component already uses styled-components internally or has its own styling.
@@ -145,9 +144,9 @@ const GenderSelector = styled.TouchableOpacity`
   padding-left: 18px;
   padding-right: 18px;
   border-width: 0.4px;
-  border-color: ${theme.colors.text};
-  border-radius: ${theme.radius.xxl}px;
-  background-color: white;
+  border-color: ${props => props.theme.colors.text};
+  border-radius: ${props => props.theme.radius.xxl}px;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 interface GenderTextProps {
@@ -155,7 +154,7 @@ interface GenderTextProps {
 }
 
 const GenderText = styled.Text<GenderTextProps>`
-  color: ${(props) => props.hasValue ? theme.colors.text : theme.colors.textLight};
+  color: ${(props) => props.hasValue ? props.theme.colors.text : props.theme.colors.textLight};
   font-size: ${hp(2)}px;
 `;
 
@@ -168,7 +167,7 @@ const ModalContainer = styled.View`
 
 const ModalContent = styled.View`
   width: 80%;
-  background-color: white;
+  background-color: ${props => props.theme.colors.background};
   padding: 20px;
   border-radius: 10px;
   align-items: center;
@@ -183,18 +182,18 @@ const ModalOption = styled.TouchableOpacity`
 
 const ModalOptionText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 const CancelButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
+  background-color: ${props => props.theme.colors.primary};
   margin-top: 15px;
   width: 100%;
   align-items: center;
   justify-content: center;
   padding-top: 10px;
   padding-bottom: 10px;
-  border-radius: ${theme.radius.xxl}px;
+  border-radius: ${props => props.theme.radius.xxl}px;
 `;
 
 const CancelButtonText = styled.Text`
@@ -229,26 +228,48 @@ const EditProfile: React.FC = () => {
 
   useEffect(() => {
     if (currentUser) {
-      setUser({
-        name: currentUser.name || "",
-        address: currentUser.address || "",
-        bio: currentUser.bio || "",
-        phoneNumber: currentUser.phoneNumber || "",
-        birthday: currentUser.birthday || "",
-        gender: currentUser.gender || "",
-        image: currentUser.image || null,
-      });
-      // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
-      if (currentUser.phoneNumber && currentUser.phoneNumber.startsWith("+")) {
-        const match = currentUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
-        if (match) {
-          setPhonePrefix(match[1]);
-          setPhoneNumber(match[2]);
+      // Verifichiamo se currentUser ha le proprietà che ci servono
+      // Utilizziamo type guard per verificare se è un ExtendedUser
+      const isExtendedUser = (user: any): user is ExtendedUser => {
+        return 'name' in user;
+      };
+
+      if (isExtendedUser(currentUser)) {
+        // Ora TypeScript sa che currentUser è di tipo ExtendedUser
+        const extUser = currentUser as ExtendedUser; // Cast esplicito per TypeScript
+        setUser({
+          name: extUser.name || "",
+          address: extUser.address || "",
+          bio: extUser.bio || "",
+          phoneNumber: extUser.phoneNumber || "", // Utilizziamo phoneNumber (camelCase)
+          birthday: extUser.birthday || "",
+          gender: extUser.gender || "",
+          image: extUser.image || null,
+        });
+
+        // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
+        if (extUser.phoneNumber && extUser.phoneNumber.startsWith("+")) {
+          const match = extUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
+          if (match) {
+            setPhonePrefix(match[1]);
+            setPhoneNumber(match[2]);
+          } else {
+            setPhoneNumber(extUser.phoneNumber);
+          }
         } else {
-          setPhoneNumber(currentUser.phoneNumber);
+          setPhoneNumber(extUser.phoneNumber || "");
         }
       } else {
-        setPhoneNumber(currentUser.phoneNumber || "");
+        // Se non è un ExtendedUser, inizializziamo con valori vuoti
+        setUser({
+          name: "",
+          address: "",
+          bio: "",
+          phoneNumber: "",
+          birthday: "",
+          gender: "",
+          image: null,
+        });
       }
     }
   }, [currentUser]);
@@ -296,6 +317,7 @@ const EditProfile: React.FC = () => {
       }
     }
 
+    // Utilizziamo phoneNumber (camelCase) che è il nome corretto della colonna nel database
     const updatedUser: UpdateUserData = {
       name,
       address,
@@ -312,14 +334,31 @@ const EditProfile: React.FC = () => {
       return;
     }
 
+    console.log("Updating user with data:", JSON.stringify(updatedUser));
     const res = await updateUser(currentUser.id, updatedUser);
     setLoading(false);
 
     if (res.success) {
-      setUserData({ ...currentUser, ...updatedUser }); // Update local auth context
+      console.log("Update successful:", JSON.stringify(res.data));
+      // Verifichiamo se currentUser è di tipo ExtendedUser
+      if ('name' in currentUser) {
+        // Creiamo un nuovo oggetto ExtendedUser con i dati aggiornati
+        const updatedExtendedUser: ExtendedUser = {
+          ...(currentUser as ExtendedUser),
+          name: updatedUser.name || (currentUser as ExtendedUser).name,
+          address: updatedUser.address,
+          bio: updatedUser.bio,
+          birthday: updatedUser.birthday,
+          gender: updatedUser.gender,
+          image: updatedUser.image,
+          phoneNumber: updatedUser.phoneNumber, // Utilizziamo phoneNumber (camelCase)
+        };
+        setUserData(updatedExtendedUser); // Update local auth context
+      }
       router.back();
     } else {
-      Alert.alert(t('updateError'), t('failedToUpdateProfile'));
+      console.error("Update failed:", res.msg);
+      Alert.alert(t('updateError'), res.msg || t('failedToUpdateProfile'));
     }
   };
 
@@ -329,7 +368,7 @@ const EditProfile: React.FC = () => {
       : getUserImageSrc(typeof user.image === 'string' ? user.image : undefined); // Remote file URL or default
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
           <Header title={t('editProfile')} />
@@ -499,7 +538,7 @@ const EditProfile: React.FC = () => {
           </Form>
         </Container>
       </ScrollView>
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 

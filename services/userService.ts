@@ -35,18 +35,25 @@ export const updateUser = async (
   data: UpdateUserData
 ): Promise<ApiResponse<UpdateUserData>> => {
   try {
-    const { error } = await supabase
+    console.log("updateUser called with userId:", userId);
+    console.log("updateUser data:", JSON.stringify(data));
+
+    const { data: responseData, error } = await supabase
       .from("users")
       .update(data)
-      .eq("id", userId);
+      .eq("id", userId)
+      .select();
 
     if (error) {
+      console.error("Supabase update error:", error);
       return { success: false, msg: error?.message };
     }
+
+    console.log("Supabase update response:", JSON.stringify(responseData));
     return { success: true, data };
   } catch (error) {
     const err = error as Error;
-    console.log("got error: ", err);
+    console.error("updateUser error:", err);
     return { success: false, msg: err.message };
   }
 };

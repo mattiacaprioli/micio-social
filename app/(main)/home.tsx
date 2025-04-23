@@ -8,21 +8,21 @@ import {
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect } from '@react-navigation/native';
-import ScreenWrapper from "../../components/ScreenWrapper";
+import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { wp, hp } from "../../helpers/common";
-import { theme } from "../../constants/theme";
 import Icon from "../../assets/icons";
 import { useRouter, usePathname } from "expo-router";
 import { useTranslation } from "react-i18next";
-// import Avatar from "../../components/Avatar";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import TabBar from "../../components/TabBar";
 import { getUserData } from "../../services/userService";
+import { User } from "@/src/types";
 // Importiamo solo i tipi che utilizziamo effettivamente
 
 // Interfacce per i payload degli eventi Supabase
@@ -71,9 +71,9 @@ const Header = styled.View`
 `;
 
 const Title = styled.Text`
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
   font-size: ${hp(3.2)}px;
-  font-weight: ${theme.fonts.bold};
+  font-weight: ${props => props.theme.fonts.bold};
 `;
 
 const IconsContainer = styled.View`
@@ -91,7 +91,7 @@ const ListStyle = {
 const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
-  color: ${theme.colors.text};
+  color: ${props => props.theme.colors.text};
 `;
 
 const CategoriesContainer = styled.View`
@@ -104,8 +104,8 @@ const CategoriesContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.8)}px;
-  font-weight: ${theme.fonts.bold};
-  color: ${theme.colors.textLight};
+  font-weight: ${props => props.theme.fonts.bold};
+  color: ${props => props.theme.colors.textLight};
   margin-right: 10px;
 `;
 
@@ -118,15 +118,15 @@ const CategoryButton = styled.TouchableOpacity<{ isActive?: boolean }>`
   padding-right: ${wp(3)}px;
   padding-top: ${hp(1)}px;
   padding-bottom: ${hp(1)}px;
-  border-radius: ${theme.radius.md}px;
+  border-radius: ${props => props.theme.radius.md}px;
   margin-right: 8px;
-  background-color: ${props => props.isActive ? theme.colors.primary : 'rgba(0,0,0,0.05)'};
+  background-color: ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.darkLight};
 `;
 
 const CategoryText = styled.Text<{ isActive?: boolean }>`
   font-size: ${hp(1.6)}px;
-  font-weight: ${theme.fonts.medium};
-  color: ${props => props.isActive ? 'white' : theme.colors.text};
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.isActive ? 'white' : props.theme.colors.text};
 `;
 
 const Pill = styled.View`
@@ -138,13 +138,13 @@ const Pill = styled.View`
   justify-content: center;
   align-items: center;
   border-radius: 20px;
-  background-color: ${theme.colors.roseLight};
+  background-color: ${props => props.theme.colors.roseLight};
 `;
 
 const PillText = styled.Text`
   color: white;
   font-size: ${hp(1.2)}px;
-  font-weight: ${theme.fonts.bold};
+  font-weight: ${props => props.theme.fonts.bold};
 `;
 
 var limit = 0;
@@ -154,6 +154,7 @@ const Home: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const theme = useStyledTheme();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -390,7 +391,7 @@ const Home: React.FC = () => {
   // }
 
   return (
-    <ScreenWrapper bg="white">
+    <ThemeWrapper>
       <Container>
         {/* header */}
         <Header>
@@ -480,7 +481,7 @@ const Home: React.FC = () => {
             contentContainerStyle={ListStyle}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <PostCard item={item} currentUser={user} router={router} />
+              <PostCard item={item} currentUser={user as User | null} router={router} />
             )}
           onEndReached={() => {
             getPosts();
@@ -511,7 +512,7 @@ const Home: React.FC = () => {
       </Container>
       {/* <Button title="Logout" onPress={onLogout} /> */}
       <TabBar currentRoute={pathname} onRefresh={onRefresh} />
-    </ScreenWrapper>
+    </ThemeWrapper>
   );
 };
 
