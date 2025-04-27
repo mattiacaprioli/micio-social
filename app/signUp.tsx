@@ -1,7 +1,7 @@
 import { Alert, Pressable, Text, View } from "react-native";
 import React, { useRef, useState } from "react";
 import styled from "styled-components/native";
-import ScreenWrapper from "../components/ScreenWrapper";
+import AuthWrapper from "../components/AuthWrapper";
 import { StatusBar } from "expo-status-bar";
 import BackButton from "../components/BackButton";
 import { useRouter } from "expo-router";
@@ -76,10 +76,10 @@ const SignUp: React.FC = () => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { 
-        data: { 
-          name 
-        } 
+      options: {
+        data: {
+          name
+        }
       }
     });
     setLoading(false);
@@ -90,7 +90,7 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper bg="white">
+    <AuthWrapper>
       <StatusBar style="dark" />
       <Container>
         <BackButton router={router} />
@@ -110,17 +110,20 @@ const SignUp: React.FC = () => {
             icon={<Icon name="user" size={26} />}
             placeholder={t('enterYourName')}
             onChangeText={(value) => (nameRef.current = value)}
+            forceLightMode={true}
           />
           <Input
             icon={<Icon name="mail" size={26} />}
             placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
+            forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
             placeholder={t('enterYourPassword')}
             secureTextEntry
             onChangeText={(value) => (passwordRef.current = value)}
+            forceLightMode={true}
           />
 
           {/* Button */}
@@ -130,12 +133,12 @@ const SignUp: React.FC = () => {
         {/* Footer */}
         <FooterContainer>
           <FooterText>{t('alreadyHaveAccount')}</FooterText>
-          <Pressable onPress={() => router.push("/(auth)/login" as any)}>
+          <Pressable onPress={() => router.push("/login" as any)}>
             <LoginLink>{t('login')}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>
-    </ScreenWrapper>
+    </AuthWrapper>
   );
 };
 

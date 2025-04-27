@@ -1,7 +1,7 @@
 import { Alert, Pressable, View } from "react-native";
 import React, { useRef, useState } from "react";
 import styled from "styled-components/native";
-import ScreenWrapper from "../components/ScreenWrapper";
+import AuthWrapper from "../components/AuthWrapper";
 import { StatusBar } from "expo-status-bar";
 import BackButton from "../components/BackButton";
 import { useRouter } from "expo-router";
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
       email,
       password,
     });
-    
+
     setLoading(false);
 
     if (error) {
@@ -91,7 +91,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper bg="white">
+    <AuthWrapper>
       <StatusBar style="dark" />
       <Container>
         <BackButton router={router} />
@@ -111,12 +111,14 @@ const Login: React.FC = () => {
             icon={<Icon name="mail" size={26} />}
             placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
+            forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
             placeholder={t('enterYourPassword')}
             secureTextEntry
             onChangeText={(value) => (passwordRef.current = value)}
+            forceLightMode={true}
           />
           <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
 
@@ -127,12 +129,12 @@ const Login: React.FC = () => {
         {/* Footer */}
         <FooterContainer>
           <FooterText>{t('dontHaveAccount')}</FooterText>
-          <Pressable onPress={() => router.push("/(auth)/signUp" as any)}>
+          <Pressable onPress={() => router.push("/signUp" as any)}>
             <SignUpLink>{t('signUp')}</SignUpLink>
           </Pressable>
         </FooterContainer>
       </Container>
-    </ScreenWrapper>
+    </AuthWrapper>
   );
 };
 
