@@ -23,7 +23,7 @@ const Container = styled.View<{ $forceLightMode?: boolean }>`
   padding-left: 18px;
   padding-right: 18px;
   gap: 12px;
-  background-color: white;
+  background-color: ${props => props.$forceLightMode ? 'white' : props.theme.colors.background};
 `;
 
 const StyledTextInput = styled.TextInput<{ $forceLightMode?: boolean }>`
