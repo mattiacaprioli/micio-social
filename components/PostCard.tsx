@@ -201,7 +201,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const onLike = async () => {
     if (!currentUser?.id) return;
-    
+
     if (liked) {
       // remove like
       let updatedLikes = likes.filter((like) => like.userId !== currentUser.id);
@@ -308,7 +308,7 @@ const PostCard: React.FC<PostCardProps> = ({
           </TouchableOpacity>
         )}
 
-        {showDelete && currentUser?.id === item?.user_id && (
+        {showDelete && currentUser?.id === item?.user?.id && (
           <Actions>
             <TouchableOpacity onPress={() => onEdit(item)}>
               <Icon name="edit" size={hp(2.4)} color={theme.colors.text} />

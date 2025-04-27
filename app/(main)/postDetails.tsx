@@ -298,6 +298,7 @@ const PostDetails: React.FC = () => {
           item={{
             id: post.id,
             userId: post.user_id,
+            user_id: post.user_id, // Aggiungiamo anche user_id per compatibilità
             body: post.body,
             // Assicuriamoci che file sia una stringa o undefined
             file: typeof post.file === 'string' ? post.file : undefined,
