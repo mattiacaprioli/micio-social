@@ -1,0 +1,58 @@
+# Ignora node_modules eccetto i file necessari
+node_modules/**/*
+!node_modules/**/*.js
+!node_modules/**/*.json
+!node_modules/**/*.c
+!node_modules/**/*.cpp
+!node_modules/**/*.h
+!node_modules/**/*.mm
+!node_modules/**/*.m
+
+# Ignora file di build
+android/.gradle
+android/app/build
+ios/build
+ios/Pods
+
+# Ignora file di cache
+.git
+.expo
+.vscode
+.idea
+
+# Ignora file di test
+__tests__
+**/*.test.js
+**/*.spec.js
+**/*.spec.ts
+**/*.spec.tsx
+**/*.test.ts
+**/*.test.tsx
+
+# Ignora file di documentazione
+docs
+*.md
+LICENSE
+CHANGELOG*
+CONTRIBUTING*
+
+# Ignora file temporanei
+*.log
+*.tmp
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignora file di configurazione di sviluppo
+.eslintrc*
+.prettierrc*
+.babelrc*
+jest.config.*
+tsconfig.*
+*.tsbuildinfo
+
+# Ignora immagini e asset non necessari per la build
+**/*.psd
+**/*.ai
+**/*.sketch
