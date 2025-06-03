@@ -1,13 +1,14 @@
 import React from 'react'
-import { TextInputProps, ViewStyle } from 'react-native'
+import { TextInputProps, ViewStyle, TextInput } from 'react-native'
 import styled from 'styled-components/native'
 import { useTheme as useStyledTheme } from 'styled-components/native'
 import { hp } from '../helpers/common'
 
-interface InputProps extends TextInputProps {
+interface InputProps extends Omit<TextInputProps, 'ref'> {
   containerStyle?: ViewStyle;
   icon?: React.ReactNode;
-  inputRef?: React.RefObject<any>;
+  rightIcon?: React.ReactNode;
+  inputRef?: React.RefObject<TextInput>;
   forceLightMode?: boolean; // Aggiunto per forzare i colori della modalità chiara
 }
 
@@ -34,6 +35,7 @@ const StyledTextInput = styled.TextInput<{ $forceLightMode?: boolean }>`
 const Input: React.FC<InputProps> = ({
   containerStyle,
   icon,
+  rightIcon,
   inputRef,
   forceLightMode = false,
   ...props
@@ -45,10 +47,12 @@ const Input: React.FC<InputProps> = ({
       {icon}
       <StyledTextInput
         placeholderTextColor={forceLightMode ? '#999' : theme.colors.textLight}
+        // @ts-ignore
         ref={inputRef}
         $forceLightMode={forceLightMode}
         {...props}
       />
+      {rightIcon}
     </Container>
   )
 }
