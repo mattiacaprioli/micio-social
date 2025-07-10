@@ -14,7 +14,7 @@ import { wp, hp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
 import { useTranslation } from 'react-i18next';
 
-// Interfacce per i tipi
+// Interfaces for types
 interface PersonalInfo {
   name: string;
   email: string;
@@ -84,10 +84,10 @@ const AccountSettings: React.FC = () => {
   const [loading] = useState<boolean>(false);
   const { isDarkMode, toggleTheme } = useTheme();
   const { i18n, t } = useTranslation();
-  const [language, setLanguage] = useState<string>(i18n.language === 'en' ? 'English' : 'Italian'); // Inizializza in base alla lingua corrente
+  const [language, setLanguage] = useState<string>(i18n.language === 'en' ? 'English' : 'Italian'); // Initialize based on current language
   const theme = useStyledTheme();
 
-  // Aggiungi questo useEffect per debug
+  // Add this useEffect for debugging
   useEffect(() => {
     console.log('Current language:', i18n.language);
     console.log('Available translations:', i18n.store.data);
@@ -147,7 +147,7 @@ const AccountSettings: React.FC = () => {
     setLanguage(newLanguage);
     i18n.changeLanguage(newLanguageCode);
     Alert.alert(t("languageChanged"), `${t("languageSetTo")} ${newLanguage}`);
-    console.log('Language changed to:', newLanguageCode); // Per debug
+    console.log('Language changed to:', newLanguageCode); // For debugging
   };
 
   return (

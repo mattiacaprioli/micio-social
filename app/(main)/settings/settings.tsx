@@ -15,7 +15,7 @@ import Icon from "../../../assets/icons";
 import { supabase } from "../../../lib/supabase";
 import { useTranslation } from 'react-i18next';
 
-// Interfacce per i tipi
+// Interfaces for types
 interface SettingsOption {
   label: string;
   icon: string;

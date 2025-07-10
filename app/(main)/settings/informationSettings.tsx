@@ -6,7 +6,7 @@ import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { useTranslation } from 'react-i18next';
 
-// Interfacce per i tipi
+// Interfaces for types
 interface InfoOption {
   label: string;
   action: () => void;

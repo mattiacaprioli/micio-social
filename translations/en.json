@@ -101,5 +101,16 @@
   "other": "Other",
   "italy": "Italy",
   "usa": "USA",
-  "uk": "UK"
+  "uk": "UK",
+  "allFieldsRequired": "All fields are required",
+  "dark": "Dark",
+  "light": "Light",
+  "deactivate": "Deactivate",
+  "deactivateAccountConfirm": "Are you sure you want to deactivate your account? This action cannot be undone.",
+  "passwordUpdated": "Password updated successfully",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "personalInfoUpdated": "Personal information updated successfully",
+  "success": "Success",
+  "themeChanged": "Theme Changed",
+  "themeSetTo": "Theme set to"
 }

@@ -8,7 +8,7 @@ import { wp, hp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
 import { useTranslation } from 'react-i18next';
 
-// Interfacce per i tipi
+// Interfaces for types
 interface NotificationOption {
   label: string;
   value: boolean;
