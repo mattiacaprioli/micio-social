@@ -30,7 +30,6 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { createNotification } from "../../services/notificationService";
-import { useTranslation } from 'react-i18next';
 import { User } from "../../src/types";
 import type { PostWithRelations } from "../../services/postService";
 
@@ -120,7 +119,6 @@ interface UserHeaderProps {
 let limit = 0;
 
 const UserProfile: React.FC = () => {
-  const { t } = useTranslation();
   const { userId } = useLocalSearchParams();
   const router = useRouter();
   const [userData, setUserData] = useState<User | null>(null);
@@ -202,7 +200,7 @@ const UserProfile: React.FC = () => {
             </View>
           ) : (
             <View style={{ marginVertical: 30 }}>
-              <NoPostText>{t('noMorePosts')}</NoPostText>
+              <NoPostText>Non ci sono altri post</NoPostText>
             </View>
           )
         }
@@ -212,7 +210,6 @@ const UserProfile: React.FC = () => {
 };
 
 const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
-  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
@@ -253,7 +250,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           const notify = {
             senderId: currentUser.id,
             receiverId: user.id,
-            title: t('startedFollowingYou'),
+            title: "Ha iniziato a seguirti",
             data: JSON.stringify({ userId: currentUser.id }),
           };
           await createNotification(notify);
@@ -271,7 +268,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   return (
     <HeaderContainer>
       <View>
-        <Header title={t('profile')} mb={30} />
+        <Header title="Profilo" mb={30} />
       </View>
 
       <Container>
@@ -297,13 +294,13 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
             <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>{t('followers')}</FollowLabel>
+                <FollowLabel>Follower</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>{t('following')}</FollowLabel>
+                <FollowLabel>Seguiti</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
           </FollowContainer>
@@ -311,7 +308,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           {currentUser?.id !== user?.id && (
             <FollowButton onPress={handleFollowToggle}>
               <FollowButtonText>
-                {isFollowing ? t('unfollow') : t('follow')}
+                {isFollowing ? "Non seguire più" : "Segui"}
               </FollowButtonText>
             </FollowButton>
           )}

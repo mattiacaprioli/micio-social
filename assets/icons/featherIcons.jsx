@@ -100,3 +100,11 @@ export const SettingsIcon = ({ size, color, ...props }) => (
 export const XIcon = ({ size, color, ...props }) => (
   <Icon name="x" size={size} color={color} {...props} />
 );
+
+export const EyeIcon = ({ size, color, ...props }) => (
+  <Icon name="eye" size={size} color={color} {...props} />
+);
+
+export const EyeOffIcon = ({ size, color, ...props }) => (
+  <Icon name="eye-off" size={size} color={color} {...props} />
+);

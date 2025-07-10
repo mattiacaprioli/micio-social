@@ -26,6 +26,8 @@ import {
   VideoIcon,
   SettingsIcon,
   XIcon,
+  EyeIcon,
+  EyeOffIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -55,6 +57,8 @@ const icons = {
   video: VideoIcon,
   settings: SettingsIcon,
   x: XIcon,
+  eye: EyeIcon,
+  eyeOff: EyeOffIcon,
 }
 
 const Icon = ({name, ...props}) => {

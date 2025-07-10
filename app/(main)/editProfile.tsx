@@ -18,7 +18,6 @@ import Button from "../../components/Button";
 import { updateUser } from "../../services/userService";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { useTranslation } from 'react-i18next';
 import { UserRow } from "../../src/types/supabase";
 
 // Interfacce per i tipi
@@ -207,7 +206,6 @@ const MAX_BIO_LENGTH = 200;
 const EditProfile: React.FC = () => {
   const router = useRouter();
   const { user: currentUser, setUserData } = useAuth();
-  const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<UserFormData>({
     name: "",
@@ -298,7 +296,7 @@ const EditProfile: React.FC = () => {
   const onSubmit = async (): Promise<void> => {
     const { name, address, bio, birthday, gender, image } = user;
     if (!name || !address || !bio || !phoneNumber || !birthday || !gender) {
-      Alert.alert(t('profile'), t('pleaseFillAllFields'));
+      Alert.alert("Profilo", "Compila tutti i campi richiesti");
       return;
     }
 
@@ -311,7 +309,7 @@ const EditProfile: React.FC = () => {
         uploadedImageUrl = imagesRes.data; // Update with new remote URL
       } else {
         uploadedImageUrl = undefined; // Reset if upload failed
-        Alert.alert(t('uploadError'), t('failedToUploadProfileImage'));
+        Alert.alert("Errore di Caricamento", "Impossibile caricare l'immagine del profilo");
         setLoading(false);
         return;
       }
@@ -330,7 +328,7 @@ const EditProfile: React.FC = () => {
 
     if (!currentUser?.id) {
       setLoading(false);
-      Alert.alert(t('updateError'), t('userNotFound'));
+      Alert.alert("Errore di Aggiornamento", "Utente non trovato");
       return;
     }
 
@@ -358,7 +356,7 @@ const EditProfile: React.FC = () => {
       router.back();
     } else {
       console.error("Update failed:", res.msg);
-      Alert.alert(t('updateError'), res.msg || t('failedToUpdateProfile'));
+      Alert.alert("Errore di Aggiornamento", res.msg || "Impossibile aggiornare il profilo. Riprova.");
     }
   };
 
@@ -371,7 +369,7 @@ const EditProfile: React.FC = () => {
     <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
-          <Header title={t('editProfile')} />
+          <Header title="Modifica Profilo" />
 
           {/* Sezione profilo */}
           <Form>
@@ -382,16 +380,16 @@ const EditProfile: React.FC = () => {
               </CameraIcon>
             </AvatarContainer>
 
-            <SectionTitle>{t('profileDetails')}</SectionTitle>
+            <SectionTitle>Dettagli Profilo</SectionTitle>
             <Input
               icon={<Icon name="user" />}
-              placeholder={t('enterYourName')}
+              placeholder="Inserisci il tuo nome"
               value={user.name}
               onChangeText={(value) => setUser({ ...user, name: value })}
             />
             <Input
               icon={<Icon name="location" />}
-              placeholder={t('enterYourCity')}
+              placeholder="Inserisci la tua città"
               value={user.address}
               onChangeText={(value) => setUser({ ...user, address: value })}
             />
@@ -399,7 +397,7 @@ const EditProfile: React.FC = () => {
             {/* BIO con limite di 200 caratteri e contatore */}
             <BioInputContainer>
               <Input
-                placeholder={t('enterYourBio')}
+                placeholder="Inserisci la tua bio"
                 value={user.bio || ''}
                 multiline
                 containerStyle={bioContainerStyle} // Pass style object
@@ -415,7 +413,7 @@ const EditProfile: React.FC = () => {
             </BioInputContainer>
 
             {/* Sezione Informazioni Personali */}
-            <SectionTitle>{t('personalInformation')}</SectionTitle>
+            <SectionTitle>Informazioni Personali</SectionTitle>
             {/* Campo per il numero di telefono con selezione del prefisso */}
             <PhoneInputContainer>
               <PrefixContainer
@@ -424,7 +422,7 @@ const EditProfile: React.FC = () => {
                 <PrefixText>{phonePrefix}</PrefixText>
               </PrefixContainer>
               <Input
-                placeholder={t('enterYourPhoneNumber')}
+                placeholder="Inserisci il tuo numero di telefono"
                 value={phoneNumber}
                 keyboardType="phone-pad"
                 onChangeText={(value) => setPhoneNumber(value)}
@@ -433,7 +431,7 @@ const EditProfile: React.FC = () => {
             </PhoneInputContainer>
 
             <Input
-              placeholder={t('enterYourBirthday')}
+              placeholder="Inserisci la tua data di nascita (GG/MM/AAAA)"
               value={user.birthday}
               keyboardType="numeric"
               maxLength={10}
@@ -448,7 +446,7 @@ const EditProfile: React.FC = () => {
               onPress={() => setModalVisible(true)}
             >
               <GenderText hasValue={!!user.gender}>
-                {user.gender ? user.gender : t('selectGender')}
+                {user.gender ? user.gender : "Seleziona genere"}
               </GenderText>
             </GenderSelector>
 
@@ -466,7 +464,7 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>{t('male')}</ModalOptionText>
+                    <ModalOptionText>Maschio</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -474,7 +472,7 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>{t('female')}</ModalOptionText>
+                    <ModalOptionText>Femmina</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -482,12 +480,12 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>{t('other')}</ModalOptionText>
+                    <ModalOptionText>Altro</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setModalVisible(false)}
                   >
-                    <CancelButtonText>{t('cancel')}</CancelButtonText>
+                    <CancelButtonText>Annulla</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
@@ -507,7 +505,7 @@ const EditProfile: React.FC = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+39 {t('italy')}</ModalOptionText>
+                    <ModalOptionText>+39 Italia</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -515,7 +513,7 @@ const EditProfile: React.FC = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+1 {t('usa')}</ModalOptionText>
+                    <ModalOptionText>+1 Stati Uniti</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -523,18 +521,18 @@ const EditProfile: React.FC = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+44 {t('uk')}</ModalOptionText>
+                    <ModalOptionText>+44 Regno Unito</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setPrefixModalVisible(false)}
                   >
-                    <CancelButtonText>{t('cancel')}</CancelButtonText>
+                    <CancelButtonText>Annulla</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
             </Modal>
 
-            <Button title={t('update')} loading={loading} onPress={onSubmit} />
+            <Button title="Aggiorna informazioni" loading={loading} onPress={onSubmit} />
           </Form>
         </Container>
       </ScrollView>

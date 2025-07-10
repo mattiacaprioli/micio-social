@@ -24,7 +24,6 @@ import CommentItem from "../../components/CommentItem";
 import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
 import { createNotification } from "../../services/notificationService";
-import { useTranslation } from 'react-i18next';
 import { TextInput } from "react-native";
 import { Post, Comment, User } from "../../src/types";
 import ThemeWrapper from "../../components/ThemeWrapper";
@@ -105,7 +104,6 @@ interface PostWithComments extends Omit<Post, 'createdAt'> {
 }
 
 const PostDetails: React.FC = () => {
-  const { t } = useTranslation();
   const params = useLocalSearchParams<{ postId: string; commentId: string }>();
   const { user } = useAuth();
   const router = useRouter();
@@ -221,13 +219,13 @@ const PostDetails: React.FC = () => {
         const notify = {
           senderId: user.id,
           receiverId: post.user_id,
-          title: t('commentedOnYourPost'),
+          title: "Ha commentato il tuo post",
           data: JSON.stringify({ postId: post.id, commentId: res?.data?.id }),
         };
         createNotification(notify);
       }
     } else {
-      Alert.alert("Comment", res.msg);
+      Alert.alert("Commento", res.msg);
     }
   };
 
@@ -244,7 +242,7 @@ const PostDetails: React.FC = () => {
         };
       });
     } else {
-      Alert.alert("Comment", res.msg);
+      Alert.alert("Commento", res.msg);
     }
   };
 
@@ -324,7 +322,7 @@ const PostDetails: React.FC = () => {
 
         {post.category && (
           <CategoryContainer>
-            <CategoryLabel>{t('category')}:</CategoryLabel>
+            <CategoryLabel>Categoria:</CategoryLabel>
             <CategoryBadge>
               <CategoryText>{post.category}</CategoryText>
             </CategoryBadge>
@@ -334,7 +332,7 @@ const PostDetails: React.FC = () => {
         <InputContainer>
           <Input
             inputRef={inputRef}
-            placeholder={t('addAComment')}
+            placeholder="Aggiungi un commento..."
             onChangeText={(value) => (commentRef.current = value)}
             placeholderTextColor={theme.colors.textLight}
             containerStyle={{
@@ -371,7 +369,7 @@ const PostDetails: React.FC = () => {
 
           {post?.comments?.length === 0 && (
             <BeFirstText>
-              {t('beFirstToComment')}
+              Sii il primo a commentare!
             </BeFirstText>
           )}
         </View>

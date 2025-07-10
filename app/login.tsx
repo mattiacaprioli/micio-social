@@ -1,4 +1,4 @@
-import { Alert, Pressable, View } from "react-native";
+import { Alert, Pressable, View, TouchableOpacity } from "react-native";
 import React, { useRef, useState } from "react";
 import styled from "styled-components/native";
 import AuthWrapper from "../components/AuthWrapper";
@@ -65,6 +65,7 @@ const Login: React.FC = () => {
   const emailRef = useRef<string>("");
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const { t } = useTranslation();
 
   const onSubmit = async (): Promise<void> => {
@@ -116,9 +117,18 @@ const Login: React.FC = () => {
           <Input
             icon={<Icon name="lock" size={26} />}
             placeholder={t('enterYourPassword')}
-            secureTextEntry
+            secureTextEntry={!showPassword}
             onChangeText={(value) => (passwordRef.current = value)}
             forceLightMode={true}
+            rightIcon={
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Icon
+                  name={showPassword ? "eyeOff" : "eye"}
+                  size={22}
+                  color={theme.colors.textLight}
+                />
+              </TouchableOpacity>
+            }
           />
           <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
 
