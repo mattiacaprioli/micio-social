@@ -14,7 +14,6 @@ import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
 import { useTheme } from "../../context/ThemeContext";
 import Header from "../../components/Header";
-import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
 interface RouteParams {
@@ -61,7 +60,6 @@ const EmptyListText = styled.Text`
 const Followers: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { userId } = useLocalSearchParams<RouteParams>();
-  const { t } = useTranslation();
   const router = useRouter();
   const targetUserId = userId || currentUser?.id;
   const [followers, setFollowers] = useState<FollowerInfo[]>([]);
@@ -108,7 +106,7 @@ const Followers: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t('followers')} />
+        <Header title="Follower" />
         <FlatList
           data={followers}
           keyExtractor={(item) => item.follower_id.toString()}
@@ -122,7 +120,7 @@ const Followers: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>{t('noFollowersFound')}</EmptyListText>
+              <EmptyListText>Nessun follower trovato</EmptyListText>
             </EmptyListContainer>
           }
         />

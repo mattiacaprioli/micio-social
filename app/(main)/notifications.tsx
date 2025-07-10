@@ -9,7 +9,6 @@ import ThemeWrapper from "../../components/ThemeWrapper";
 import { useRouter } from "expo-router";
 import NotificationItem from "../../components/NotificationItem";
 import Header from "../../components/Header";
-import { useTranslation } from 'react-i18next';
 
 interface Notification {
   id: string;
@@ -45,7 +44,6 @@ const Notifications: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { user } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const getNotifications = async () => {
@@ -76,7 +74,7 @@ const Notifications: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t('notifications')} />
+        <Header title="Notifiche" />
         <ListStyle
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 10 }}
@@ -97,7 +95,7 @@ const Notifications: React.FC = () => {
             />
           ))}
           {notifications.length === 0 && (
-            <NoDataText>{t('noNotificationsYet')}</NoDataText>
+            <NoDataText>Nessuna notifica</NoDataText>
           )}
         </ListStyle>
       </Container>

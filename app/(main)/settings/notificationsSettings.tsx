@@ -6,7 +6,6 @@ import ThemeWrapper from "../../../components/ThemeWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
-import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
 interface NotificationOption {
@@ -58,7 +57,6 @@ const NotificationsSettings: React.FC = () => {
   const [followersEnabled, setFollowersEnabled] = useState<boolean>(true);
   const [likesEnabled, setLikesEnabled] = useState<boolean>(true);
   const [commentsEnabled, setCommentsEnabled] = useState<boolean>(true);
-  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
@@ -68,17 +66,17 @@ const NotificationsSettings: React.FC = () => {
 
   const settingsOptions: NotificationOption[] = [
     {
-      label: t("newFollowers"),
+      label: "Nuovi Follower",
       value: followersEnabled,
       toggle: toggleFollowers,
     },
     {
-      label: t("likes"),
+      label: "Mi Piace",
       value: likesEnabled,
       toggle: toggleLikes,
     },
     {
-      label: t("comments"),
+      label: "Commenti",
       value: commentsEnabled,
       toggle: toggleComments,
     },
@@ -87,7 +85,7 @@ const NotificationsSettings: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t("notifications")} />
+        <Header title="Notifiche" />
         <Card>
           {settingsOptions.map((option, index) => (
             <Item key={index}>

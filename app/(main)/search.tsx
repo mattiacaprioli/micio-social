@@ -58,7 +58,6 @@ const NoResultsText = styled.Text`
 // Rimosso LoadingContainer non utilizzato
 
 const Search: React.FC = () => {
-  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -90,16 +89,16 @@ const Search: React.FC = () => {
       // Mostra un messaggio di errore solo se non è il primo caricamento
       if (!initialLoading) {
         Alert.alert(
-          t("error"),
-          t("errorSearchingUsers"),
-          [{ text: t("ok"), onPress: () => {} }]
+          "Errore",
+          "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.",
+          [{ text: "OK", onPress: () => {} }]
         );
       }
     } finally {
       setLoading(false);
       setInitialLoading(false);
     }
-  }, [ searchQuery, initialLoading, t]);
+  }, [ searchQuery, initialLoading]);
 
   // Effettua la ricerca quando cambia la categoria, il tipo di ricerca o la query di ricerca
   useEffect(() => {
@@ -133,13 +132,13 @@ const Search: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t("search")} />
+        <Header title="Cerca" />
 
         {/* Barra di ricerca */}
         <SearchContainer>
           <Icon name="search" size={hp(2.5)} color={theme.colors.textLight} />
           <SearchInput
-            placeholder={t("searchUsersPlaceholder")}
+            placeholder="Cerca utenti..."
             placeholderTextColor={theme.colors.textLight}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -186,7 +185,7 @@ const Search: React.FC = () => {
           ) : (
             <NoResultsContainer>
               <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
-              <NoResultsText>{t("noUsersFound")}</NoResultsText>
+              <NoResultsText>Nessun utente trovato. Prova un termine di ricerca diverso.</NoResultsText>
             </NoResultsContainer>
           )
         )}

@@ -9,7 +9,6 @@ import {
   RichEditorProps,
   RichToolbarProps
 } from "react-native-pell-rich-editor"
-import { useTranslation } from 'react-i18next'
 import { useTheme } from "../context/ThemeContext"
 
 // Definiamo il tipo per le azioni della toolbar
@@ -90,7 +89,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   toolbarProps = {},
   editorProps = {}
 }) => {
-  const { t } = useTranslation()
   const { isDarkMode } = useTheme()
   const theme = useStyledTheme()
 
@@ -123,7 +121,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <StyledRichEditor
         ref={editorRef}
         editorStyle={editorStyleProp}
-        placeholder={placeholder || t('whatsOnYourMind')}
+        placeholder={placeholder || "A cosa stai pensando?"}
         onChange={onChange}
         disabled={disabled}
         {...editorProps}

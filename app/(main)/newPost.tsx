@@ -7,7 +7,6 @@ import {
   Text,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
-import { useTranslation } from 'react-i18next';
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
@@ -152,7 +151,6 @@ const CategoryText = styled.Text<{ isSelected?: boolean }>`
 const NewPost: React.FC = () => {
   const post = useLocalSearchParams<PostParams>();
   const { user } = useAuth();
-  const { t } = useTranslation();
   const bodyRef = useRef<string>("");
   const editorRef = useRef<RichEditor | null>(null);
   const router = useRouter();
@@ -246,7 +244,7 @@ const NewPost: React.FC = () => {
 
   const onSubmit = async (): Promise<void> => {
     if(!bodyRef.current && !file){
-      Alert.alert(t('post'), t('pleaseChooseImageOrAddBody'));
+      Alert.alert("Post", "Scegli un'immagine o aggiungi il contenuto del post");
       return;
     }
 
@@ -271,14 +269,14 @@ const NewPost: React.FC = () => {
       editorRef.current?.setContentHTML("");
       router.back();
     }else{
-      Alert.alert(t('post'), res.msg || "Error creating post");
+      Alert.alert("Post", res.msg || "Errore durante la creazione del post");
     }
   };
 
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={post && post.id ? t('editPost') : t('createPost')} />
+        <Header title={post && post.id ? "Modifica Post" : "Crea Post"} />
         <ScrollView contentContainerStyle={{ gap: 20 }}>
           {/* avatar */}
           <HeaderContainer>
@@ -290,7 +288,7 @@ const NewPost: React.FC = () => {
             />
             <View style={{ gap: 2 }}>
               <UserName>{user && 'name' in user ? user.name : ''}</UserName>
-              <PublicText>{t('public')}</PublicText>
+              <PublicText>Pubblico</PublicText>
             </View>
           </HeaderContainer>
 
@@ -326,7 +324,7 @@ const NewPost: React.FC = () => {
           )}
 
           <MediaContainer>
-            <AddImageText>{t('addToYourPost')}</AddImageText>
+            <AddImageText>Aggiungi al tuo post</AddImageText>
             <MediaIconsContainer>
               <TouchableOpacity onPress={() => onPick(true)}>
                 <Icon name="image" size={30} color={theme.colors.dark} />
@@ -339,7 +337,7 @@ const NewPost: React.FC = () => {
 
           {/* Selezione della categoria */}
           <CategoryContainer>
-            <CategoryLabel>{t('selectCategory')}</CategoryLabel>
+            <CategoryLabel>Seleziona Categoria</CategoryLabel>
             {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
             <CategoryOptionsContainer>
               {categories.map(category => (
@@ -356,7 +354,7 @@ const NewPost: React.FC = () => {
         </ScrollView>
         <Button
           buttonStyle={{ height: hp(6.2) }}
-          title={post && post.id ? t('update') : t('post')}
+          title={post && post.id ? "Aggiorna" : "Post"}
           loading={loading}
           hasShadow={false}
           onPress={onSubmit}

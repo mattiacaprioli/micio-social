@@ -14,7 +14,6 @@ import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
 import { useTheme } from "../../context/ThemeContext";
 import Header from "../../components/Header";
-import { useTranslation } from 'react-i18next';
 import { User } from "../../src/types";
 
 // Interfacce per i tipi
@@ -62,7 +61,6 @@ const EmptyListText = styled.Text`
 const Followings: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { userId } = useLocalSearchParams<RouteParams>();
-  const { t } = useTranslation();
   const router = useRouter();
   const targetUserId = userId || currentUser?.id;
   const [followings, setFollowings] = useState<FollowingInfo[]>([]);
@@ -111,7 +109,7 @@ const Followings: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t('followings')} />
+        <Header title="Seguiti" />
         <FlatList
           data={followings}
           keyExtractor={(item) => item.following_id.toString()}
@@ -125,7 +123,7 @@ const Followings: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>{t('noFollowingsFound')}</EmptyListText>
+              <EmptyListText>Nessun utente seguito trovato</EmptyListText>
             </EmptyListContainer>
           }
         />

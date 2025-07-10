@@ -4,7 +4,6 @@ import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../../components/ThemeWrapper";
 import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
-import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
 interface InfoOption {
@@ -65,19 +64,18 @@ const FooterText = styled.Text`
 `;
 
 const InformationSettings: React.FC = () => {
-  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const infoOptions: InfoOption[] = [
-    { label: t("privacyPolicy"), action: () => console.log("Privacy Policy pressed") },
-    { label: t("termsOfService"), action: () => console.log("Terms of Service pressed") },
-    { label: t("support"), action: () => console.log("Support pressed") },
+    { label: "Privacy Policy", action: () => console.log("Privacy Policy pressed") },
+    { label: "Termini di Servizio", action: () => console.log("Terms of Service pressed") },
+    { label: "Supporto", action: () => console.log("Support pressed") },
   ];
 
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={t("information")} />
+        <Header title="Informazioni" />
 
         <Card>
           {infoOptions.map((option, index) => (
@@ -91,8 +89,8 @@ const InformationSettings: React.FC = () => {
         </Card>
 
         <Footer>
-          <FooterText>{t("micioSocial")}</FooterText>
-          <FooterText>{t("appVersion")} 1.0.0</FooterText>
+          <FooterText>Micio Social</FooterText>
+          <FooterText>Versione app: 1.0.0</FooterText>
         </Footer>
       </Container>
     </ThemeWrapper>
