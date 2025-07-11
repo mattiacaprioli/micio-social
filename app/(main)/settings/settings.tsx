@@ -13,7 +13,6 @@ import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import { supabase } from "../../../lib/supabase";
-import { useTranslation } from 'react-i18next';
 
 // Interfacce per i tipi
 interface SettingsOption {
@@ -90,26 +89,25 @@ const VersionText = styled.Text`
 
 const Settings: React.FC = () => {
   const router = useRouter();
-  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const onLogout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert(t("logout"), t("errorSigningOut"));
+      Alert.alert("Logout", "Error signing out");
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     // show confirm modal
-    Alert.alert(t("confirm"), t("areYouSureLogout"), [
+    Alert.alert("Confirm", "Are you sure you want to logout?", [
       {
-        text: t("cancel"),
+        text: "Cancel",
         onPress: () => console.log("Modal cancelled"),
         style: "cancel",
       },
       {
-        text: t("logout"),
+        text: "Logout",
         onPress: () => onLogout(),
         style: "destructive",
       },
@@ -118,17 +116,17 @@ const Settings: React.FC = () => {
 
   const settingsOptions: SettingsOption[] = [
     {
-      label: t("account"),
+      label: "Account",
       icon: "arrowRight",
       action: () => router.push("/settings/accountSettings"),
     },
     {
-      label: t("notifications"),
+      label: "Notifications",
       icon: "arrowRight",
       action: () => router.push("/settings/notificationsSettings"),
     },
     {
-      label: t("information"),
+      label: "Information",
       icon: "arrowRight",
       action: () => router.push("/settings/informationSettings"),
     }
@@ -137,7 +135,7 @@ const Settings: React.FC = () => {
   return (
     <ThemeWrapper>
       <ScreenContainer>
-        <Header title={t("settings")} />
+        <Header title="Settings" />
         <Card>
           {settingsOptions.map((option, index) => (
             <Item
@@ -149,7 +147,7 @@ const Settings: React.FC = () => {
             </Item>
           ))}
           <Item onPress={handleLogout}>
-            <ItemTextLogout>{t("logout")}</ItemTextLogout>
+            <ItemTextLogout>Logout</ItemTextLogout>
             <Icon name="logout" size={20} color={theme.colors.rose} />
           </Item>
         </Card>
@@ -158,8 +156,8 @@ const Settings: React.FC = () => {
           source={require("../../../assets/images/welcome.png")}
         /> */}
         <View style={{flex: 1, justifyContent: 'flex-end'}}>
-          <Title>{t("micioSocial")}</Title>
-          <VersionText>{t("appVersion")} 1.0.0</VersionText>
+          <Title>Micio Social</Title>
+          <VersionText>App version: 1.0.0</VersionText>
         </View>
         
       </ScreenContainer>

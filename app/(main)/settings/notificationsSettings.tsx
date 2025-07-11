@@ -66,17 +66,17 @@ const NotificationsSettings: React.FC = () => {
 
   const settingsOptions: NotificationOption[] = [
     {
-      label: "Nuovi Follower",
+      label: "New Followers",
       value: followersEnabled,
       toggle: toggleFollowers,
     },
     {
-      label: "Mi Piace",
+      label: "Likes",
       value: likesEnabled,
       toggle: toggleLikes,
     },
     {
-      label: "Commenti",
+      label: "Comments",
       value: commentsEnabled,
       toggle: toggleComments,
     },
@@ -85,7 +85,7 @@ const NotificationsSettings: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title="Notifiche" />
+        <Header title="Notifications" />
         <Card>
           {settingsOptions.map((option, index) => (
             <Item key={index}>

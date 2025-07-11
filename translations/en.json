@@ -101,5 +101,22 @@
   "other": "Other",
   "italy": "Italy",
   "usa": "USA",
-  "uk": "UK"
+  "uk": "UK",
+  "error": "Error",
+  "allFieldsRequired": "All fields are required",
+  "success": "Success",
+  "personalInfoUpdated": "Personal information updated",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordUpdated": "Password updated",
+  "deactivateAccountTitle": "Deactivate Account",
+  "deactivateAccountConfirm": "Are you sure you want to deactivate your account? This action cannot be undone.",
+  "themeChanged": "Theme Changed",
+  "themeSetTo": "Theme set to",
+  "dark": "dark",
+  "light": "light",
+  "currentPasswordPlaceholder": "Current Password",
+  "newPasswordPlaceholder": "New Password",
+  "confirmNewPasswordPlaceholder": "Confirm New Password",
+  "micioSocialName": "Micio Social",
+  "appVersionLabel": "App Version:"
 }
