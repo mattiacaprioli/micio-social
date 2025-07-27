@@ -11,7 +11,6 @@ import {
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
-import { useTranslation } from 'react-i18next';
 import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -127,7 +126,6 @@ let limit = 0;
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -177,7 +175,7 @@ const Profile: React.FC = () => {
       </View>
     ) : (
       <View style={{ marginVertical: 30 }}>
-        <NoPostText>{t('noMorePosts')}</NoPostText>
+        <NoPostText>No more posts</NoPostText>
       </View>
     )
   );
@@ -208,7 +206,6 @@ const Profile: React.FC = () => {
 };
 
 const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
-  const { t } = useTranslation();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const { isDarkMode } = useTheme();
@@ -230,7 +227,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   return (
     <HeaderContainer>
       <View>
-        <Header title={t('profile')} mb={30} />
+        <Header title={'profile'} mb={30} />
         <SettingsButton
           onPress={() => router.push("/settings/settings")}
         >
@@ -280,13 +277,13 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
             <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>{t('followers')}</FollowLabel>
+                <FollowLabel>{'followers'}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>{t('following')}</FollowLabel>
+                <FollowLabel>{'following'}</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
           </FollowContainer>

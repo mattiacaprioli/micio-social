@@ -7,7 +7,6 @@ import { hp, wp } from '../helpers/common';
 import { theme } from '../constants/theme';
 import Button from '../components/Button';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -65,7 +64,6 @@ const LoginLink = styled(LoginText)`
 
 const Welcome: React.FC = () => {
   const router = useRouter();
-  const { t } = useTranslation();
 
   const buttonStyle: ViewStyle = {
     marginHorizontal: wp(3)
@@ -80,22 +78,22 @@ const Welcome: React.FC = () => {
 
         {/* title */}
         <View style={{gap: 20}}>
-          <Title>{t('micioSocial')}</Title>
+          <Title>MicioSocial</Title>
           <Punchline>
-            {t('welcomePunchline')}
+            Where every thought finds a home and every image tells a story.
           </Punchline>
         </View>
 
         {/* footer */}
         <Footer>
           <Button
-            title={t('getStarted')}
+            title={'Get Started'}
             buttonStyle={buttonStyle}
             onPress={() => router.push('signUp' as any)}
           />
           <BottomTextContainer>
             <LoginText>
-              {t('alreadyHaveAccount')}
+              Already have an account?
             </LoginText>
             <Pressable onPress={() => router.push('login' as any)}>
               <LoginLink>

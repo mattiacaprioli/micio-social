@@ -68,14 +68,14 @@ const InformationSettings: React.FC = () => {
 
   const infoOptions: InfoOption[] = [
     { label: "Privacy Policy", action: () => console.log("Privacy Policy pressed") },
-    { label: "Termini di Servizio", action: () => console.log("Terms of Service pressed") },
-    { label: "Supporto", action: () => console.log("Support pressed") },
+    { label: "Terms of Service", action: () => console.log("Terms of Service pressed") },
+    { label: "Support", action: () => console.log("Support pressed") },
   ];
 
   return (
     <ThemeWrapper>
       <Container>
-        <Header title="Informazioni" />
+        <Header title="Information" />
 
         <Card>
           {infoOptions.map((option, index) => (
@@ -90,7 +90,7 @@ const InformationSettings: React.FC = () => {
 
         <Footer>
           <FooterText>Micio Social</FooterText>
-          <FooterText>Versione app: 1.0.0</FooterText>
+          <FooterText>Version: 1.0.0</FooterText>
         </Footer>
       </Container>
     </ThemeWrapper>

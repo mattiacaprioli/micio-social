@@ -244,7 +244,7 @@ const NewPost: React.FC = () => {
 
   const onSubmit = async (): Promise<void> => {
     if(!bodyRef.current && !file){
-      Alert.alert("Post", "Scegli un'immagine o aggiungi il contenuto del post");
+      Alert.alert("Post", "Please add content or image");
       return;
     }
 
@@ -269,14 +269,14 @@ const NewPost: React.FC = () => {
       editorRef.current?.setContentHTML("");
       router.back();
     }else{
-      Alert.alert("Post", res.msg || "Errore durante la creazione del post");
+      Alert.alert("Post", res.msg || "Error creating post");
     }
   };
 
   return (
     <ThemeWrapper>
       <Container>
-        <Header title={post && post.id ? "Modifica Post" : "Crea Post"} />
+        <Header title={post && post.id ? "Edit Post" : "New Post"} />
         <ScrollView contentContainerStyle={{ gap: 20 }}>
           {/* avatar */}
           <HeaderContainer>
@@ -288,7 +288,7 @@ const NewPost: React.FC = () => {
             />
             <View style={{ gap: 2 }}>
               <UserName>{user && 'name' in user ? user.name : ''}</UserName>
-              <PublicText>Pubblico</PublicText>
+              <PublicText>Public</PublicText>
             </View>
           </HeaderContainer>
 
@@ -324,7 +324,7 @@ const NewPost: React.FC = () => {
           )}
 
           <MediaContainer>
-            <AddImageText>Aggiungi al tuo post</AddImageText>
+            <AddImageText>Add to your post</AddImageText>
             <MediaIconsContainer>
               <TouchableOpacity onPress={() => onPick(true)}>
                 <Icon name="image" size={30} color={theme.colors.dark} />
@@ -337,7 +337,7 @@ const NewPost: React.FC = () => {
 
           {/* Selezione della categoria */}
           <CategoryContainer>
-            <CategoryLabel>Seleziona Categoria</CategoryLabel>
+            <CategoryLabel>Select Category</CategoryLabel>
             {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
             <CategoryOptionsContainer>
               {categories.map(category => (
@@ -354,7 +354,7 @@ const NewPost: React.FC = () => {
         </ScrollView>
         <Button
           buttonStyle={{ height: hp(6.2) }}
-          title={post && post.id ? "Aggiorna" : "Post"}
+          title={post && post.id ? "Update" : "Post"}
           loading={loading}
           hasShadow={false}
           onPress={onSubmit}

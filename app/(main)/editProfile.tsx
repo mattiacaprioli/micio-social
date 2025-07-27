@@ -124,7 +124,7 @@ const PrefixContainer = styled.TouchableOpacity`
 `;
 
 const PrefixText = styled.Text`
-  font-size: ${hp(2)}px;
+  font-size: ${hp(1.9)}px;
   color: ${props => props.theme.colors.text};
 `;
 
@@ -247,7 +247,7 @@ const EditProfile: React.FC = () => {
 
         // Se il numero inizia con il "+" proviamo a dividerlo in prefisso e numero
         if (extUser.phoneNumber && extUser.phoneNumber.startsWith("+")) {
-          const match = extUser.phoneNumber.match(/^(\+\d{2,3})(.*)/);
+          const match = extUser.phoneNumber.match(/^(\+\d{2})(.*)/);
           if (match) {
             setPhonePrefix(match[1]);
             setPhoneNumber(match[2]);
@@ -296,7 +296,7 @@ const EditProfile: React.FC = () => {
   const onSubmit = async (): Promise<void> => {
     const { name, address, bio, birthday, gender, image } = user;
     if (!name || !address || !bio || !phoneNumber || !birthday || !gender) {
-      Alert.alert("Profilo", "Compila tutti i campi richiesti");
+      Alert.alert("Profile", "Please fill all required fields");
       return;
     }
 
@@ -309,7 +309,7 @@ const EditProfile: React.FC = () => {
         uploadedImageUrl = imagesRes.data; // Update with new remote URL
       } else {
         uploadedImageUrl = undefined; // Reset if upload failed
-        Alert.alert("Errore di Caricamento", "Impossibile caricare l'immagine del profilo");
+        Alert.alert("Upload Error", "Failed to upload profile image");
         setLoading(false);
         return;
       }
@@ -328,7 +328,7 @@ const EditProfile: React.FC = () => {
 
     if (!currentUser?.id) {
       setLoading(false);
-      Alert.alert("Errore di Aggiornamento", "Utente non trovato");
+      Alert.alert("Update Error", "User not found");
       return;
     }
 
@@ -356,7 +356,7 @@ const EditProfile: React.FC = () => {
       router.back();
     } else {
       console.error("Update failed:", res.msg);
-      Alert.alert("Errore di Aggiornamento", res.msg || "Impossibile aggiornare il profilo. Riprova.");
+      Alert.alert("Update Error", res.msg || "Failed to update profile. Please try again.");
     }
   };
 
@@ -369,7 +369,7 @@ const EditProfile: React.FC = () => {
     <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
-          <Header title="Modifica Profilo" />
+          <Header title="Edit Profile" />
 
           {/* Sezione profilo */}
           <Form>
@@ -380,16 +380,16 @@ const EditProfile: React.FC = () => {
               </CameraIcon>
             </AvatarContainer>
 
-            <SectionTitle>Dettagli Profilo</SectionTitle>
+            <SectionTitle>Profile Details</SectionTitle>
             <Input
               icon={<Icon name="user" />}
-              placeholder="Inserisci il tuo nome"
+              placeholder="Enter your name"
               value={user.name}
               onChangeText={(value) => setUser({ ...user, name: value })}
             />
             <Input
               icon={<Icon name="location" />}
-              placeholder="Inserisci la tua città"
+              placeholder="Enter your city"
               value={user.address}
               onChangeText={(value) => setUser({ ...user, address: value })}
             />
@@ -397,7 +397,7 @@ const EditProfile: React.FC = () => {
             {/* BIO con limite di 200 caratteri e contatore */}
             <BioInputContainer>
               <Input
-                placeholder="Inserisci la tua bio"
+                placeholder="Enter your bio"
                 value={user.bio || ''}
                 multiline
                 containerStyle={bioContainerStyle} // Pass style object
@@ -413,7 +413,7 @@ const EditProfile: React.FC = () => {
             </BioInputContainer>
 
             {/* Sezione Informazioni Personali */}
-            <SectionTitle>Informazioni Personali</SectionTitle>
+            <SectionTitle>Personal Information</SectionTitle>
             {/* Campo per il numero di telefono con selezione del prefisso */}
             <PhoneInputContainer>
               <PrefixContainer
@@ -422,7 +422,7 @@ const EditProfile: React.FC = () => {
                 <PrefixText>{phonePrefix}</PrefixText>
               </PrefixContainer>
               <Input
-                placeholder="Inserisci il tuo numero di telefono"
+                placeholder="Enter your phone number"
                 value={phoneNumber}
                 keyboardType="phone-pad"
                 onChangeText={(value) => setPhoneNumber(value)}
@@ -431,7 +431,7 @@ const EditProfile: React.FC = () => {
             </PhoneInputContainer>
 
             <Input
-              placeholder="Inserisci la tua data di nascita (GG/MM/AAAA)"
+              placeholder="Enter your birthday (GG/MM/AAAA)"
               value={user.birthday}
               keyboardType="numeric"
               maxLength={10}
@@ -446,7 +446,7 @@ const EditProfile: React.FC = () => {
               onPress={() => setModalVisible(true)}
             >
               <GenderText hasValue={!!user.gender}>
-                {user.gender ? user.gender : "Seleziona genere"}
+                {user.gender ? user.gender : "Select gender"}
               </GenderText>
             </GenderSelector>
 
@@ -464,7 +464,7 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Maschio</ModalOptionText>
+                    <ModalOptionText>Male</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -472,7 +472,7 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Femmina</ModalOptionText>
+                    <ModalOptionText>Female</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -480,12 +480,12 @@ const EditProfile: React.FC = () => {
                       setModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>Altro</ModalOptionText>
+                    <ModalOptionText>Other</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setModalVisible(false)}
                   >
-                    <CancelButtonText>Annulla</CancelButtonText>
+                    <CancelButtonText>Cancel</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
@@ -505,15 +505,7 @@ const EditProfile: React.FC = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+39 Italia</ModalOptionText>
-                  </ModalOption>
-                  <ModalOption
-                    onPress={() => {
-                      setPhonePrefix("+1");
-                      setPrefixModalVisible(false);
-                    }}
-                  >
-                    <ModalOptionText>+1 Stati Uniti</ModalOptionText>
+                    <ModalOptionText>+39 Italy</ModalOptionText>
                   </ModalOption>
                   <ModalOption
                     onPress={() => {
@@ -521,18 +513,18 @@ const EditProfile: React.FC = () => {
                       setPrefixModalVisible(false);
                     }}
                   >
-                    <ModalOptionText>+44 Regno Unito</ModalOptionText>
+                    <ModalOptionText>+44 UK</ModalOptionText>
                   </ModalOption>
                   <CancelButton
                     onPress={() => setPrefixModalVisible(false)}
                   >
-                    <CancelButtonText>Annulla</CancelButtonText>
+                    <CancelButtonText>Cancel</CancelButtonText>
                   </CancelButton>
                 </ModalContent>
               </ModalContainer>
             </Modal>
 
-            <Button title="Aggiorna informazioni" loading={loading} onPress={onSubmit} />
+            <Button title="Update" loading={loading} onPress={onSubmit} />
           </Form>
         </Container>
       </ScrollView>

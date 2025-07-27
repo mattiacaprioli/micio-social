@@ -11,7 +11,6 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
-import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -66,11 +65,10 @@ const Login: React.FC = () => {
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { t } = useTranslation();
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      Alert.alert(t("login"), t("pleaseFillAllFields"));
+      Alert.alert("login", "Please fill all required fields");
       return;
     }
 
@@ -87,7 +85,7 @@ const Login: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      Alert.alert(t("login"), error.message);
+      Alert.alert("login", error.message);
     }
   };
 
@@ -99,24 +97,24 @@ const Login: React.FC = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>{t('hey')},</WelcomeText>
-          <WelcomeText>{t('welcomeBack')}</WelcomeText>
+          <WelcomeText>Hey,</WelcomeText>
+          <WelcomeText>Welcome Back!</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            {t('pleaseLoginToContinue')}
+            Please enter your email and password to continue
           </FormHelperText>
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder={t('enterYourEmail')}
+            placeholder={'Enter your email'}
             onChangeText={(value) => (emailRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder={t('enterYourPassword')}
+            placeholder={'Enter your password'}
             secureTextEntry={!showPassword}
             onChangeText={(value) => (passwordRef.current = value)}
             forceLightMode={true}
@@ -130,17 +128,19 @@ const Login: React.FC = () => {
               </TouchableOpacity>
             }
           />
-          <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
+          <ForgotPasswordText>
+            Forgot Password?
+          </ForgotPasswordText>
 
           {/* Login Button */}
-          <Button title={t('login')} loading={loading} onPress={onSubmit} />
+          <Button title={'Login'} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>{t('dontHaveAccount')}</FooterText>
+          <FooterText>Don't have an account?</FooterText>
           <Pressable onPress={() => router.push("/signUp" as any)}>
-            <SignUpLink>{t('signUp')}</SignUpLink>
+            <SignUpLink>Sign Up</SignUpLink>
           </Pressable>
         </FooterContainer>
       </Container>

@@ -109,7 +109,7 @@ const Followings: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title="Seguiti" />
+        <Header title="Following" />
         <FlatList
           data={followings}
           keyExtractor={(item) => item.following_id.toString()}
@@ -123,7 +123,7 @@ const Followings: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>Nessun utente seguito trovato</EmptyListText>
+              <EmptyListText>No followings found</EmptyListText>
             </EmptyListContainer>
           }
         />

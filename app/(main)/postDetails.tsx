@@ -322,7 +322,7 @@ const PostDetails: React.FC = () => {
 
         {post.category && (
           <CategoryContainer>
-            <CategoryLabel>Categoria:</CategoryLabel>
+            <CategoryLabel>Category:</CategoryLabel>
             <CategoryBadge>
               <CategoryText>{post.category}</CategoryText>
             </CategoryBadge>
@@ -332,7 +332,7 @@ const PostDetails: React.FC = () => {
         <InputContainer>
           <Input
             inputRef={inputRef}
-            placeholder="Aggiungi un commento..."
+            placeholder="Add a comment..."
             onChangeText={(value) => (commentRef.current = value)}
             placeholderTextColor={theme.colors.textLight}
             containerStyle={{
@@ -369,7 +369,7 @@ const PostDetails: React.FC = () => {
 
           {post?.comments?.length === 0 && (
             <BeFirstText>
-              Sii il primo a commentare!
+              Be the first to comment!
             </BeFirstText>
           )}
         </View>

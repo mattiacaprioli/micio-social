@@ -16,7 +16,6 @@ import { supabase } from "../../lib/supabase";
 import { wp, hp } from "../../helpers/common";
 import Icon from "../../assets/icons";
 import { useRouter, usePathname } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
@@ -55,7 +54,6 @@ interface NotificationEventPayload {
   };
 }
 
-// Styled Components
 const Container = styled.View`
   flex: 1;
   padding-bottom: ${hp(5)}px;
@@ -153,7 +151,6 @@ const Home: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
@@ -423,7 +420,7 @@ const Home: React.FC = () => {
 
         {/* Categorie */}
         <CategoriesContainer>
-          <CategoryLabel>{t("categories")}</CategoryLabel>
+          <CategoryLabel>categories</CategoryLabel>
           {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
           <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
             <CategoryButton
@@ -442,7 +439,7 @@ const Home: React.FC = () => {
                 }
               }}
             >
-              <CategoryText isActive={selectedCategory === undefined}>{t("all")}</CategoryText>
+              <CategoryText isActive={selectedCategory === undefined}>all</CategoryText>
             </CategoryButton>
             {categories.map(category => (
               <CategoryButton

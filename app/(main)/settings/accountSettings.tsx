@@ -112,12 +112,12 @@ const AccountSettings: React.FC = () => {
 
   const handleDeactivateAccount = (): void => {
     Alert.alert(
-      "Disattiva Account",
-      "Sei sicuro di voler disattivare il tuo account? Questa azione non può essere annullata.",
+      "Confirm",
+      "Are you sure you want to deactivate your account? This action cannot be undone.",
       [
-        { text: "Annulla", style: "cancel" },
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Disattiva",
+          text: "Deactivate",
           onPress: () => console.log("Account deactivated"),
           style: "destructive",
         },
@@ -128,15 +128,15 @@ const AccountSettings: React.FC = () => {
   const handleToggleTheme = (): void => {
     toggleTheme();
     Alert.alert(
-      "Tema Cambiato",
-      `Tema impostato su ${!isDarkMode ? "scuro" : "chiaro"}`
+      "Theme Changed",
+      `Theme set to ${!isDarkMode ? "dark" : "light"}`
     );
   };
 
   const toggleLanguage = (): void => {
     const newLanguage = language === "English" ? "Italiano" : "English";
     setLanguage(newLanguage);
-    Alert.alert("Lingua Cambiata", `Lingua impostata su ${newLanguage}`);
+    Alert.alert("Language Changed", `Language set to ${newLanguage}`);
     console.log('Language changed to:', newLanguage);
   };
 
@@ -144,10 +144,10 @@ const AccountSettings: React.FC = () => {
     <ThemeWrapper>
       <ScrollView style={{ flex: 1 }}>
         <Container>
-          <Header title="Impostazioni Account" />
+          <Header title="Account Settings" />
 
           <Form>
-            <SectionTitle>Aggiorna Informazioni Personali</SectionTitle>
+            <SectionTitle>Update Personal Information</SectionTitle>
             <Input
               placeholder="Email"
               value={personalInfo.email}
@@ -156,16 +156,16 @@ const AccountSettings: React.FC = () => {
               }
             />
             <Button
-              title="Aggiorna Informazioni"
+              title="Update Information"
               loading={loading}
               onPress={handleUpdatePersonalInfo}
             />
           </Form>
 
           <Form>
-            <SectionTitle>Cambia Password</SectionTitle>
+            <SectionTitle>Change Password</SectionTitle>
             <Input
-              placeholder="Password Attuale"
+              placeholder="Current Password"
               secureTextEntry
               value={password.current}
               onChangeText={(text) =>
@@ -173,13 +173,13 @@ const AccountSettings: React.FC = () => {
               }
             />
             <Input
-              placeholder="Nuova Password"
+              placeholder="New Password"
               secureTextEntry
               value={password.new}
               onChangeText={(text) => setPassword({ ...password, new: text })}
             />
             <Input
-              placeholder="Conferma Nuova Password"
+              placeholder="Confirm New Password"
               secureTextEntry
               value={password.confirm}
               onChangeText={(text) =>
@@ -187,16 +187,16 @@ const AccountSettings: React.FC = () => {
               }
             />
             <Button
-              title="Cambia Password"
+              title="Change Password"
               loading={loading}
               onPress={handleChangePassword}
             />
           </Form>
 
           <Form>
-            <SectionTitle>Impostazioni App</SectionTitle>
+            <SectionTitle>App Settings</SectionTitle>
             <SettingItem>
-              <SettingLabel>Tema Scuro</SettingLabel>
+              <SettingLabel>Dark Theme</SettingLabel>
               <Switch
                 trackColor={{
                   false: theme.colors.dark,
@@ -209,20 +209,21 @@ const AccountSettings: React.FC = () => {
                 value={isDarkMode}
               />
             </SettingItem>
-            <SettingItem>
-              <SettingLabel>Lingua</SettingLabel>
+            {/* TODO: fix change language */}
+            {/* <SettingItem>
+              <SettingLabel>Language</SettingLabel>
               <LanguageButton
                 onPress={toggleLanguage}
               >
                 <LanguageText>{language}</LanguageText>
               </LanguageButton>
-            </SettingItem>
+            </SettingItem> */}
           </Form>
 
           <Form>
-            <SectionTitle>Disattiva Account</SectionTitle>
+            <SectionTitle>Deactivate Account</SectionTitle>
             <Button
-              title="Disattiva Account"
+              title="Deactivate Account"
               buttonStyle={{ backgroundColor: theme.colors.rose }}
               onPress={handleDeactivateAccount}
             />

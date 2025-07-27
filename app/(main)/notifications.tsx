@@ -95,7 +95,7 @@ const Notifications: React.FC = () => {
             />
           ))}
           {notifications.length === 0 && (
-            <NoDataText>Nessuna notifica</NoDataText>
+            <NoDataText>No notifications found</NoDataText>
           )}
         </ListStyle>
       </Container>

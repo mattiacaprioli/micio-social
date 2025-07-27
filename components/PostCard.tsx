@@ -19,7 +19,6 @@ import { Video } from "expo-av";
 import { createPostLike, removePostLike, PostWithRelations } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
-import { useTranslation } from 'react-i18next';
 import { useTheme } from "../context/ThemeContext";
 import { User } from "../src/types";
 import { Router } from "expo-router";
@@ -155,7 +154,6 @@ const PostCard: React.FC<PostCardProps> = ({
   onDelete = () => {},
   onEdit = () => {},
 }) => {
-  const { t } = useTranslation();
   const [likes, setLikes] = useState<PostLike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { isDarkMode } = useTheme();
@@ -225,7 +223,7 @@ const PostCard: React.FC<PostCardProps> = ({
           let notify = {
             senderId: currentUser.id,
             receiverId: item.user.id,
-            title: t('likedYourPost'),
+            title: 'likedYourPost',
             data: JSON.stringify({ postId: item.id }),
           };
           createNotification(notify);

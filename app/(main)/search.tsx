@@ -132,13 +132,13 @@ const Search: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-        <Header title="Cerca" />
+        <Header title="Search" />
 
         {/* Barra di ricerca */}
         <SearchContainer>
           <Icon name="search" size={hp(2.5)} color={theme.colors.textLight} />
           <SearchInput
-            placeholder="Cerca utenti..."
+            placeholder="Search users..."
             placeholderTextColor={theme.colors.textLight}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -185,7 +185,7 @@ const Search: React.FC = () => {
           ) : (
             <NoResultsContainer>
               <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
-              <NoResultsText>Nessun utente trovato. Prova un termine di ricerca diverso.</NoResultsText>
+              <NoResultsText>No users found. Try a different search term.</NoResultsText>
             </NoResultsContainer>
           )
         )}

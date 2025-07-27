@@ -11,7 +11,6 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
-import { useTranslation } from 'react-i18next';
 
 // Styled Components
 const Container = styled.View`
@@ -61,11 +60,10 @@ const SignUp: React.FC = () => {
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { t } = useTranslation();
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      Alert.alert(t("signUp"), t("pleaseFillAllFields"));
+      Alert.alert("signUp", "Please fill all required fields");
       return;
     }
     let name = nameRef.current.trim();
@@ -86,7 +84,7 @@ const SignUp: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      Alert.alert(t("signUp"), error.message);
+      Alert.alert("signUp", error.message);
     }
   };
 
@@ -98,30 +96,30 @@ const SignUp: React.FC = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>{t('lets')}</WelcomeText>
-          <WelcomeText>{t('getStarted')}</WelcomeText>
+          <WelcomeText>{'lets'}</WelcomeText>
+          <WelcomeText>{'getStarted'}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            {t('pleaseFillDetails')}
+            {'pleaseFillDetails'}
           </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}
-            placeholder={t('enterYourName')}
+            placeholder={'enterYourName'}
             onChangeText={(value) => (nameRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder={t('enterYourEmail')}
+            placeholder={'enterYourEmail'}
             onChangeText={(value) => (emailRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder={t('enterYourPassword')}
+            placeholder={'enterYourPassword'}
             secureTextEntry={!showPassword}
             onChangeText={(value) => (passwordRef.current = value)}
             forceLightMode={true}
@@ -137,14 +135,14 @@ const SignUp: React.FC = () => {
           />
 
           {/* Button */}
-          <Button title={t('signUp')} loading={loading} onPress={onSubmit} />
+          <Button title={'signUp'} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>{t('alreadyHaveAccount')}</FooterText>
+          <FooterText>{'alreadyHaveAccount'}</FooterText>
           <Pressable onPress={() => router.push("/login" as any)}>
-            <LoginLink>{t('login')}</LoginLink>
+            <LoginLink>{'login'}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>

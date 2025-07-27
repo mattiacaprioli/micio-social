@@ -75,14 +75,7 @@
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [
-          "i18next",
-          "react-native-pell-rich-editor",
-          "@rneui/themed",
-          "base64-arraybuffer",
-          "moment",
-          "patch-package",
-          "react-native-vector-icons",
-          "styled-components"
+          "i18next"
         ]
       }
     }

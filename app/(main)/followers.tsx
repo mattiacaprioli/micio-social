@@ -120,7 +120,7 @@ const Followers: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>Nessun follower trovato</EmptyListText>
+              <EmptyListText>No followers found</EmptyListText>
             </EmptyListContainer>
           }
         />
