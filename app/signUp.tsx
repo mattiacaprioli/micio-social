@@ -103,23 +103,23 @@ const SignUp: React.FC = () => {
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            {'pleaseFillDetails'}
+            {'Please fill the details to create an account'}
           </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}
-            placeholder={'enterYourName'}
+            placeholder={'Enter your name'}
             onChangeText={(value) => (nameRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder={'enterYourEmail'}
+            placeholder={'Enter your email'}
             onChangeText={(value) => (emailRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder={'enterYourPassword'}
+            placeholder={'Enter your password'}
             secureTextEntry={!showPassword}
             onChangeText={(value) => (passwordRef.current = value)}
             forceLightMode={true}
@@ -135,14 +135,14 @@ const SignUp: React.FC = () => {
           />
 
           {/* Button */}
-          <Button title={'signUp'} loading={loading} onPress={onSubmit} />
+          <Button title={'Sign Up'} loading={loading} onPress={onSubmit} />
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>{'alreadyHaveAccount'}</FooterText>
+          <FooterText>{'Already have an account?'}</FooterText>
           <Pressable onPress={() => router.push("/login" as any)}>
-            <LoginLink>{'login'}</LoginLink>
+            <LoginLink>{'Login'}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>
