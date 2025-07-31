@@ -28,6 +28,8 @@ import {
   XIcon,
   EyeIcon,
   EyeOffIcon,
+  MessageCircleIcon,
+  CheckIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -59,6 +61,8 @@ const icons = {
   x: XIcon,
   eye: EyeIcon,
   eyeOff: EyeOffIcon,
+  messageCircle: MessageCircleIcon,
+  check: CheckIcon,
 }
 
 const Icon = ({name, ...props}) => {
