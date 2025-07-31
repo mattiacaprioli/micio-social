@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { UserRow } from "@/src/types/supabase";
+import { UserRow } from "../src/types/supabase";
 import { ApiResponse } from "./types";
 
 export interface UserWithBasicInfo {

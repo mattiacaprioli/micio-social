@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { uploadFile } from "./imageService";
 import { ApiResponse } from "./types";
-import { PostRow } from "@/src/types/supabase";
+import { PostRow } from "../src/types/supabase";
 
 interface PostFile {
   uri: string;

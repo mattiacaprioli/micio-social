@@ -2,10 +2,10 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
-import { wp, hp } from '@/helpers/common';
+import { wp, hp } from '../../helpers/common';
 import Avatar from '../Avatar';
-import { ConversationWithUser } from '@/services/chatService';
-import { formatTime } from '@/helpers/common';
+import { ConversationWithUser } from '../../services/chatService';
+import { formatTime } from '../../helpers/common';
 
 interface ChatItemProps {
   conversation: ConversationWithUser;

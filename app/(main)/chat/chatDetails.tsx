@@ -11,20 +11,20 @@ import { useTheme as useStyledTheme } from "styled-components/native";
 import { useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import ThemeWrapper from "../../../components/ThemeWrapper";
-import { useAuth } from "@/context/AuthContext";
-import { wp, hp } from "@/helpers/common";
-import Header from "@/components/Header";
-import Loading from "@/components/Loading";
-import MessageBubble from "@/components/chat/MessageBubble";
-import MessageInput from "@/components/chat/MessageInput";
+import { useAuth } from "../../../context/AuthContext";
+import { wp, hp } from "../../../helpers/common";
+import Header from "../../../components/Header";
+import Loading from "../../../components/Loading";
+import MessageBubble from "../../../components/chat/MessageBubble";
+import MessageInput from "../../../components/chat/MessageInput";
 import {
   getConversationMessages,
   sendMessage,
   markMessagesAsRead,
   MessageWithUser,
   getConversationMessagesWithPagination,
-} from "@/services/chatService";
-import { supabase } from "@/lib/supabase";
+} from "../../../services/chatService";
+import { supabase } from "../../../lib/supabase";
 
 const Container = styled.View`
   flex: 1;

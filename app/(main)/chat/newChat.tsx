@@ -4,14 +4,14 @@ import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { useRouter } from 'expo-router';
 import ThemeWrapper from '../../../components/ThemeWrapper';
-import { useAuth } from '@/context/AuthContext';
-import { wp, hp } from '@/helpers/common';
-import Header from '@/components/Header';
-import Input from '@/components/Input';
-import Loading from '@/components/Loading';
-import UserCard from '@/components/UserCard';
-import { searchUsers, UserWithBasicInfo } from '@/services/userService';
-import { createOrFindConversation } from '@/services/chatService';
+import { useAuth } from '../../../context/AuthContext';
+import { wp, hp } from '../../../helpers/common';
+import Header from '../../../components/Header';
+import Input from '../../../components/Input';
+import Loading from '../../../components/Loading';
+import UserCard from '../../../components/UserCard';
+import { searchUsers, UserWithBasicInfo } from '../../../services/userService';
+import { createOrFindConversation } from '../../../services/chatService';
 
 const Container = styled.View`
   flex: 1;

@@ -21,7 +21,7 @@ import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import TabBar from "../../components/TabBar";
 import { getUserData } from "../../services/userService";
-import { User } from "@/src/types";
+import { User } from "../../src/types";
 // Importiamo solo i tipi che utilizziamo effettivamente
 
 // Interfacce per i payload degli eventi Supabase

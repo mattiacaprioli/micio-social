@@ -4,14 +4,14 @@ import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import ThemeWrapper from '../../../components/ThemeWrapper';
-import { useAuth } from '@/context/AuthContext';
-import { wp, hp } from '@/helpers/common';
-import Icon from '@/assets/icons';
-import Header from '@/components/Header';
-import Loading from '@/components/Loading';
-import ChatItem from '@/components/chat/ChatItem';
-import { getUserConversations, ConversationWithUser } from '@/services/chatService';
-import TabBar from '@/components/TabBar';
+import { useAuth } from '../../../context/AuthContext';
+import { wp, hp } from '../../../helpers/common';
+import Icon from '../../../assets/icons';
+import Header from '../../../components/Header';
+import Loading from '../../../components/Loading';
+import ChatItem from '../../../components/chat/ChatItem';
+import { getUserConversations, ConversationWithUser } from '../../../services/chatService';
+import TabBar from '../../../components/TabBar';
 import { usePathname } from 'expo-router';
 
 const Container = styled.View`

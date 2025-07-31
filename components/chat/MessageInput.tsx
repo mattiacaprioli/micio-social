@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, TextInput, Pressable, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
-import { wp, hp } from '@/helpers/common';
-import Icon from '@/assets/icons';
+import { wp, hp } from '../../helpers/common';
+import Icon from '../../assets/icons';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;

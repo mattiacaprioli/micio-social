@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Icon from '@/assets/icons';
+import Icon from '../../assets/icons';
 
 interface ReadStatusProps {
   isRead: boolean;
