@@ -10,7 +10,7 @@ import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import ThemeWrapper from "@/components/ThemeWrapper";
+import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "@/context/AuthContext";
 import { wp, hp } from "@/helpers/common";
 import Header from "@/components/Header";

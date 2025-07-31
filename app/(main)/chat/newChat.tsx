@@ -3,7 +3,7 @@ import { FlatList, View, Text, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { useRouter } from 'expo-router';
-import ThemeWrapper from '@/components/ThemeWrapper';
+import ThemeWrapper from '../../../components/ThemeWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { wp, hp } from '@/helpers/common';
 import Header from '@/components/Header';

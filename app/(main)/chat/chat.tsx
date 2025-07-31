@@ -3,7 +3,7 @@ import { FlatList, RefreshControl, View, Text, Pressable } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import ThemeWrapper from '@/components/ThemeWrapper';
+import ThemeWrapper from '../../../components/ThemeWrapper';
 import { useAuth } from '@/context/AuthContext';
 import { wp, hp } from '@/helpers/common';
 import Icon from '@/assets/icons';
