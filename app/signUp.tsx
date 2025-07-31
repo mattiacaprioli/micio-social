@@ -63,7 +63,7 @@ const SignUp: React.FC = () => {
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      Alert.alert("signUp", "Please fill all required fields");
+      Alert.alert("Sign Up", "Please fill all required fields");
       return;
     }
     let name = nameRef.current.trim();
@@ -84,7 +84,7 @@ const SignUp: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      Alert.alert("signUp", error.message);
+      Alert.alert("Sign Up", error.message);
     }
   };
 
@@ -96,14 +96,14 @@ const SignUp: React.FC = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>{'lets'}</WelcomeText>
-          <WelcomeText>{'getStarted'}</WelcomeText>
+          <WelcomeText>Let's</WelcomeText>
+          <WelcomeText>get started!</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            {'Please fill the details to create an account'}
+            Please fill the details to create an account
           </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}

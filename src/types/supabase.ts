@@ -16,6 +16,16 @@ export interface Database {
         Insert: Omit<CommentRow, 'id' | 'created_at'>;
         Update: Partial<Omit<CommentRow, 'id' | 'created_at'>>;
       };
+      conversations: {
+        Row: ConversationRow;
+        Insert: Omit<ConversationRow, 'id' | 'created_at' | 'updated_at' | 'last_message_at'>;
+        Update: Partial<Omit<ConversationRow, 'id' | 'created_at'>>;
+      };
+      messages: {
+        Row: MessageRow;
+        Insert: Omit<MessageRow, 'id' | 'created_at'>;
+        Update: Partial<Omit<MessageRow, 'id' | 'created_at'>>;
+      };
     };
   };
 }
@@ -48,4 +58,22 @@ export interface CommentRow {
   post_id: string;
   user_id: string;
   text: string;
+}
+
+export interface ConversationRow {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user1_id: string;
+  user2_id: string;
+  last_message_at: string;
+}
+
+export interface MessageRow {
+  id: string;
+  created_at: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  is_read?: boolean;
 }

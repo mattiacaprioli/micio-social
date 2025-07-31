@@ -51,7 +51,7 @@ const TabButton = styled(Pressable)<{ isActive?: boolean }>`
   align-items: center;
   justify-content: center;
   padding: ${hp(0)}px;
-  width: ${wp(20)}px;
+  width: ${wp(16)}px;
 
 `;
 
@@ -112,7 +112,18 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
           <Icon
             name="home"
             size={hp(3)}
-            color={tabBarColors.text}
+            color={currentRoute === "/home" ? tabBarColors.active : tabBarColors.inactive}
+          />
+        </TabButton>
+
+        <TabButton
+          onPress={() => router.push("/chat/chat")}
+          isActive={currentRoute.startsWith("/chat")}
+        >
+          <Icon
+            name="comment"
+            size={hp(3)}
+            color={currentRoute.startsWith("/chat") ? tabBarColors.active : tabBarColors.inactive}
           />
         </TabButton>
 
@@ -144,6 +155,17 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
             <Icon name="plus" size={hp(3)} color="white" />
           </AnimatedPressable>
         </PlusButtonContainer>
+
+        <TabButton
+          onPress={() => router.push("/search")}
+          isActive={currentRoute === "/search"}
+        >
+          <Icon
+            name="search"
+            size={hp(3)}
+            color={currentRoute === "/search" ? tabBarColors.active : tabBarColors.inactive}
+          />
+        </TabButton>
 
         <TabButton
           onPress={() => router.push("/profile")}

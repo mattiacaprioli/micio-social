@@ -108,3 +108,11 @@ export const EyeIcon = ({ size, color, ...props }) => (
 export const EyeOffIcon = ({ size, color, ...props }) => (
   <Icon name="eye-off" size={size} color={color} {...props} />
 );
+
+export const MessageCircleIcon = ({ size, color, ...props }) => (
+  <Icon name="message-circle" size={size} color={color} {...props} />
+);
+
+export const CheckIcon = ({ size, color, ...props }) => (
+  <Icon name="check" size={size} color={color} {...props} />
+);
