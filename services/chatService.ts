@@ -156,6 +156,44 @@ export const getConversationMessages = async (
   }
 };
 
+export const getConversationMessagesWithPagination = async (
+  conversationId: string,
+  limit = 50,
+  offset = 0
+): Promise<ApiResponse<MessageWithUser[]>> => {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .select(
+        `
+        *,
+        sender:users!messages_sender_id_fkey(id, name, image)
+      `
+      )
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: false }) 
+      .range(offset, offset + limit - 1); 
+
+    if (error) {
+      return { success: false, msg: "Could not fetch messages" };
+    }
+
+    const messagesWithUsers: MessageWithUser[] =
+      data?.reverse().map((msg) => ({
+        ...msg,
+        sender: {
+          id: msg.sender.id,
+          name: msg.sender.name,
+          image: msg.sender.image,
+        },
+      })) || [];
+
+    return { success: true, data: messagesWithUsers };
+  } catch (error) {
+    return { success: false, msg: "Could not fetch messages" };
+  }
+};
+
 export const sendMessage = async (
   conversationId: string,
   senderId: string,

@@ -22,6 +22,7 @@ import {
   sendMessage,
   markMessagesAsRead,
   MessageWithUser,
+  getConversationMessagesWithPagination,
 } from "@/services/chatService";
 import { supabase } from "@/lib/supabase";
 
@@ -46,22 +47,45 @@ const ChatDetails: React.FC = () => {
 
   const [messages, setMessages] = useState<MessageWithUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  const fetchMessages = async () => {
-    if (!conversationId) return;
+  const fetchMessages = async (loadMore = false) => {
+    if (loadMore) setLoadingMore(true);
+    else setLoading(true);
 
-    const result = await getConversationMessages(conversationId);
+    const offset = loadMore ? messages.length : 0;
+    const result = await getConversationMessagesWithPagination(
+      conversationId,
+      50,
+      offset
+    );
+
     if (result.success && result.data) {
-      setMessages(result.data);
+      if (loadMore) {
+        setMessages((prev) => [...result.data!, ...prev]);
+      } else {
+        setMessages(result.data);
+      }
+
+      setHasMoreMessages(result.data.length === 50);
+
       if (user?.id) {
         await markMessagesAsRead(conversationId, user.id);
       }
     }
+
     setLoading(false);
+    setLoadingMore(false);
   };
 
+  const loadMoreMessages = () => {
+    if (!loadingMore && hasMoreMessages) {
+      fetchMessages(true);
+    }
+  };
   useEffect(() => {
     if (!conversationId) return;
 
@@ -239,6 +263,9 @@ const ChatDetails: React.FC = () => {
               keyExtractor={(item) => item.id}
               renderItem={renderMessage}
               showsVerticalScrollIndicator={false}
+              onEndReached={loadMoreMessages}
+              onEndReachedThreshold={0.1}
+              ListHeaderComponent={loadingMore ? <Loading /> : null}
               onContentSizeChange={() => {
                 flatListRef.current?.scrollToEnd({ animated: false });
               }}
