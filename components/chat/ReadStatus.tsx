@@ -21,8 +21,8 @@ const ReadStatus: React.FC<ReadStatusProps> = ({
     <View style={{ flexDirection: 'row', marginTop: 2 }}>
       {isRead ? (
         <>
-          <Icon name="check" size={size} color="#4CAF50" />
-          <Icon name="check" size={size} color="#4CAF50" style={{ marginLeft: -8 }} />
+          <Icon name="check" size={size} color="white" />
+          <Icon name="check" size={size} color="white" style={{ marginLeft: -8 }} />
         </>
       ) : (
         <Icon name="check" size={size} color={color} />

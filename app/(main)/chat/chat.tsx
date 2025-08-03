@@ -1,31 +1,36 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { FlatList, RefreshControl, Alert } from 'react-native';
-import styled from 'styled-components/native';
-import { useTheme as useStyledTheme } from 'styled-components/native';
-import { useFocusEffect, useRouter } from 'expo-router';
-import ThemeWrapper from '../../../components/ThemeWrapper';
-import { useAuth } from '../../../context/AuthContext';
-import { wp, hp } from '../../../helpers/common';
-import Icon from '../../../assets/icons';
-import Header from '../../../components/Header';
-import Input from '../../../components/Input';
-import Loading from '../../../components/Loading';
-import ChatItem from '../../../components/chat/ChatItem';
-import UserCard from '../../../components/UserCard';
-import { getUserConversations, ConversationWithUser, createOrFindConversation } from '../../../services/chatService';
-import { searchUsers, UserWithBasicInfo } from '../../../services/userService';
-import TabBar from '../../../components/TabBar';
-import { usePathname } from 'expo-router';
+import React, { useEffect, useState, useCallback } from "react";
+import { FlatList, RefreshControl, Alert } from "react-native";
+import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
+import { useFocusEffect, useRouter } from "expo-router";
+import ThemeWrapper from "../../../components/ThemeWrapper";
+import { useAuth } from "../../../context/AuthContext";
+import { wp, hp } from "../../../helpers/common";
+import Icon from "../../../assets/icons";
+import Header from "../../../components/Header";
+import Input from "../../../components/Input";
+import Loading from "../../../components/Loading";
+import ChatItem from "../../../components/chat/ChatItem";
+import UserCard from "../../../components/UserCard";
+import {
+  getUserConversations,
+  ConversationWithUser,
+  createOrFindConversation,
+  hideConversation,
+} from "../../../services/chatService";
+import { searchUsers, UserWithBasicInfo } from "../../../services/userService";
+import TabBar from "../../../components/TabBar";
+import { usePathname } from "expo-router";
 
 const Container = styled.View`
   flex: 1;
-  background-color: ${props => props.theme.colors.background};
+  background-color: ${(props) => props.theme.colors.background};
 `;
 
 const SearchContainer = styled.View`
   padding: ${wp(4)}px;
   border-bottom-width: 1px;
-  border-bottom-color: ${props => props.theme.colors.gray};
+  border-bottom-color: ${(props) => props.theme.colors.gray};
 `;
 
 const ContentContainer = styled.View`
@@ -41,7 +46,7 @@ const EmptyContainer = styled.View`
 
 const EmptyText = styled.Text`
   font-size: ${hp(2.2)}px;
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
   text-align: center;
   margin-top: ${hp(2)}px;
 `;
@@ -57,20 +62,22 @@ const Chat: React.FC = () => {
   const theme = useStyledTheme();
   const pathname = usePathname();
 
-  const [conversations, setConversations] = useState<ConversationWithUser[]>([]);
+  const [conversations, setConversations] = useState<ConversationWithUser[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   // Stati per la ricerca utenti
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserWithBasicInfo[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const fetchConversations = async () => {
     if (!user?.id) return;
-    
+
     const result = await getUserConversations(user.id);
     if (result.success && result.data) {
       setConversations(result.data);
@@ -84,27 +91,29 @@ const Chat: React.FC = () => {
     setRefreshing(false);
   }, [user?.id]);
 
-  // Funzioni per la ricerca utenti
-  const handleSearch = useCallback(async (query: string) => {
-    setSearchQuery(query);
+  const handleSearch = useCallback(
+    async (query: string) => {
+      setSearchQuery(query);
 
-    if (query.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
+      if (query.trim().length < 2) {
+        setSearchResults([]);
+        return;
+      }
 
-    setSearchLoading(true);
-    const result = await searchUsers(query.trim());
+      setSearchLoading(true);
+      const result = await searchUsers(query.trim());
 
-    if (result.success && result.data) {
-      const filteredResults = result.data.filter(u => u.id !== user?.id);
-      setSearchResults(filteredResults);
-    } else {
-      setSearchResults([]);
-    }
+      if (result.success && result.data) {
+        const filteredResults = result.data.filter((u) => u.id !== user?.id);
+        setSearchResults(filteredResults);
+      } else {
+        setSearchResults([]);
+      }
 
-    setSearchLoading(false);
-  }, [user?.id]);
+      setSearchLoading(false);
+    },
+    [user?.id]
+  );
 
   const handleUserPress = async (selectedUser: UserWithBasicInfo) => {
     if (!user?.id || creating) return;
@@ -116,23 +125,40 @@ const Chat: React.FC = () => {
 
       if (result.success && result.data) {
         router.push({
-          pathname: '/chat/chatDetails',
+          pathname: "/chat/chatDetails",
           params: {
             conversationId: result.data.id,
             otherUserId: selectedUser.id,
             otherUserName: selectedUser.name,
-            otherUserImage: selectedUser.image || ''
-          }
+            otherUserImage: selectedUser.image || "",
+          },
         });
       } else {
-        Alert.alert('Error', 'Could not create conversation. Please try again.');
+        Alert.alert(
+          "Error",
+          "Could not create conversation. Please try again."
+        );
       }
     } catch (error) {
-      console.log('Error creating conversation:', error);
-      Alert.alert('Error', 'Could not create conversation. Please try again.');
+      console.log("Error creating conversation:", error);
+      Alert.alert("Error", "Could not create conversation. Please try again.");
     }
 
     setCreating(false);
+  };
+
+  const handleDeleteChat = async (conversationId: string) => {
+    if (!user?.id) return;
+
+    const result = await hideConversation(user.id, conversationId);
+
+    if (result.success) {
+      setConversations((prev) =>
+        prev.filter((conv) => conv.id !== conversationId)
+      );
+    } else {
+      Alert.alert("Errore", "Non è stato possibile eliminare la chat");
+    }
   };
 
   const handleSearchFocus = () => {
@@ -140,7 +166,7 @@ const Chat: React.FC = () => {
   };
 
   const handleSearchBlur = () => {
-    if (searchQuery.trim() === '') {
+    if (searchQuery.trim() === "") {
       setIsSearchMode(false);
       setSearchResults([]);
     }
@@ -154,13 +180,13 @@ const Chat: React.FC = () => {
 
   const handleChatPress = (conversation: ConversationWithUser) => {
     router.push({
-      pathname: '/chat/chatDetails',
+      pathname: "/chat/chatDetails",
       params: {
         conversationId: conversation.id,
         otherUserId: conversation.otherUser.id,
         otherUserName: conversation.otherUser.name,
-        otherUserImage: conversation.otherUser.image || ''
-      }
+        otherUserImage: conversation.otherUser.image || "",
+      },
     });
   };
 
@@ -168,15 +194,13 @@ const Chat: React.FC = () => {
     <ChatItem
       conversation={item}
       onPress={() => handleChatPress(item)}
+      onDelete={handleDeleteChat}
     />
   );
 
   const renderUserItem = ({ item }: { item: UserWithBasicInfo }) => (
     <UserItem>
-      <UserCard
-        user={item}
-        onPress={() => handleUserPress(item)}
-      />
+      <UserCard user={item} onPress={() => handleUserPress(item)} />
     </UserItem>
   );
 
@@ -184,7 +208,7 @@ const Chat: React.FC = () => {
     <EmptyContainer>
       <Icon name="comment" size={hp(8)} color={theme.colors.textLight} />
       <EmptyText theme={theme}>
-        You don't have any conversations yet.{'\n'}
+        You don't have any conversations yet.{"\n"}
         Use the search above to find users and start chatting!
       </EmptyText>
     </EmptyContainer>
@@ -215,9 +239,7 @@ const Chat: React.FC = () => {
 
     return (
       <EmptyContainer>
-        <EmptyText theme={theme}>
-          No users found for "{searchQuery}"
-        </EmptyText>
+        <EmptyText theme={theme}>No users found for "{searchQuery}"</EmptyText>
       </EmptyContainer>
     );
   };
