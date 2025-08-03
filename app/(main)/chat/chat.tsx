@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { FlatList, RefreshControl, View, Text, Pressable } from 'react-native';
+import { FlatList, RefreshControl, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -8,15 +8,28 @@ import { useAuth } from '../../../context/AuthContext';
 import { wp, hp } from '../../../helpers/common';
 import Icon from '../../../assets/icons';
 import Header from '../../../components/Header';
+import Input from '../../../components/Input';
 import Loading from '../../../components/Loading';
 import ChatItem from '../../../components/chat/ChatItem';
-import { getUserConversations, ConversationWithUser } from '../../../services/chatService';
+import UserCard from '../../../components/UserCard';
+import { getUserConversations, ConversationWithUser, createOrFindConversation } from '../../../services/chatService';
+import { searchUsers, UserWithBasicInfo } from '../../../services/userService';
 import TabBar from '../../../components/TabBar';
 import { usePathname } from 'expo-router';
 
 const Container = styled.View`
   flex: 1;
   background-color: ${props => props.theme.colors.background};
+`;
+
+const SearchContainer = styled.View`
+  padding: ${wp(4)}px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${props => props.theme.colors.gray};
+`;
+
+const ContentContainer = styled.View`
+  flex: 1;
 `;
 
 const EmptyContainer = styled.View`
@@ -33,21 +46,9 @@ const EmptyText = styled.Text`
   margin-top: ${hp(2)}px;
 `;
 
-const NewChatButton = styled(Pressable)`
-  position: absolute;
-  bottom: ${hp(10)}px;
-  right: ${wp(6)}px;
-  width: ${hp(7)}px;
-  height: ${hp(7)}px;
-  border-radius: ${hp(3.5)}px;
-  background-color: ${props => props.theme.colors.primary};
-  justify-content: center;
-  align-items: center;
-  elevation: 5;
-  shadow-color: ${props => props.theme.colors.primary};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.3;
-  shadow-radius: 4px;
+const UserItem = styled.View`
+  margin-horizontal: ${wp(4)}px;
+  margin-bottom: ${hp(1)}px;
 `;
 
 const Chat: React.FC = () => {
@@ -55,10 +56,17 @@ const Chat: React.FC = () => {
   const router = useRouter();
   const theme = useStyledTheme();
   const pathname = usePathname();
-  
+
   const [conversations, setConversations] = useState<ConversationWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Stati per la ricerca utenti
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserWithBasicInfo[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const fetchConversations = async () => {
     if (!user?.id) return;
@@ -75,6 +83,68 @@ const Chat: React.FC = () => {
     await fetchConversations();
     setRefreshing(false);
   }, [user?.id]);
+
+  // Funzioni per la ricerca utenti
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    const result = await searchUsers(query.trim());
+
+    if (result.success && result.data) {
+      const filteredResults = result.data.filter(u => u.id !== user?.id);
+      setSearchResults(filteredResults);
+    } else {
+      setSearchResults([]);
+    }
+
+    setSearchLoading(false);
+  }, [user?.id]);
+
+  const handleUserPress = async (selectedUser: UserWithBasicInfo) => {
+    if (!user?.id || creating) return;
+
+    setCreating(true);
+
+    try {
+      const result = await createOrFindConversation(user.id, selectedUser.id);
+
+      if (result.success && result.data) {
+        router.push({
+          pathname: '/chat/chatDetails',
+          params: {
+            conversationId: result.data.id,
+            otherUserId: selectedUser.id,
+            otherUserName: selectedUser.name,
+            otherUserImage: selectedUser.image || ''
+          }
+        });
+      } else {
+        Alert.alert('Error', 'Could not create conversation. Please try again.');
+      }
+    } catch (error) {
+      console.log('Error creating conversation:', error);
+      Alert.alert('Error', 'Could not create conversation. Please try again.');
+    }
+
+    setCreating(false);
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchMode(true);
+  };
+
+  const handleSearchBlur = () => {
+    if (searchQuery.trim() === '') {
+      setIsSearchMode(false);
+      setSearchResults([]);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -94,10 +164,6 @@ const Chat: React.FC = () => {
     });
   };
 
-  const handleNewChat = () => {
-    router.push('/chat/newChat');
-  };
-
   const renderChatItem = ({ item }: { item: ConversationWithUser }) => (
     <ChatItem
       conversation={item}
@@ -105,15 +171,56 @@ const Chat: React.FC = () => {
     />
   );
 
+  const renderUserItem = ({ item }: { item: UserWithBasicInfo }) => (
+    <UserItem>
+      <UserCard
+        user={item}
+        onPress={() => handleUserPress(item)}
+      />
+    </UserItem>
+  );
+
   const renderEmptyState = () => (
     <EmptyContainer>
       <Icon name="comment" size={hp(8)} color={theme.colors.textLight} />
       <EmptyText theme={theme}>
         You don't have any conversations yet.{'\n'}
-        Tap the + button to start a new chat!
+        Use the search above to find users and start chatting!
       </EmptyText>
     </EmptyContainer>
   );
+
+  const renderSearchEmptyState = () => {
+    if (searchLoading) return null;
+
+    if (searchQuery.length === 0) {
+      return (
+        <EmptyContainer>
+          <EmptyText theme={theme}>
+            Search for users to start a new chat
+          </EmptyText>
+        </EmptyContainer>
+      );
+    }
+
+    if (searchQuery.length < 2) {
+      return (
+        <EmptyContainer>
+          <EmptyText theme={theme}>
+            Type at least 2 characters to search
+          </EmptyText>
+        </EmptyContainer>
+      );
+    }
+
+    return (
+      <EmptyContainer>
+        <EmptyText theme={theme}>
+          No users found for "{searchQuery}"
+        </EmptyText>
+      </EmptyContainer>
+    );
+  };
 
   if (loading) {
     return (
@@ -130,25 +237,49 @@ const Chat: React.FC = () => {
     <ThemeWrapper>
       <Container theme={theme}>
         <Header title="Chat" />
-        
-        <FlatList
-          data={conversations}
-          keyExtractor={(item) => item.id}
-          renderItem={renderChatItem}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
-          ListEmptyComponent={renderEmptyState}
-          showsVerticalScrollIndicator={false}
-        />
 
-        <NewChatButton onPress={handleNewChat} theme={theme}>
-          <Icon name="plus" size={hp(3)} color="white" />
-        </NewChatButton>
+        <SearchContainer theme={theme}>
+          <Input
+            placeholder="Search users to start a new chat..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
+          />
+        </SearchContainer>
+
+        <ContentContainer>
+          {isSearchMode ? (
+            // Modalità ricerca utenti
+            searchLoading ? (
+              <Loading />
+            ) : (
+              <FlatList
+                data={searchResults}
+                keyExtractor={(item) => item.id}
+                renderItem={renderUserItem}
+                ListEmptyComponent={renderSearchEmptyState}
+                showsVerticalScrollIndicator={false}
+              />
+            )
+          ) : (
+            // Modalità lista chat
+            <FlatList
+              data={conversations}
+              keyExtractor={(item) => item.id}
+              renderItem={renderChatItem}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={theme.colors.primary}
+                />
+              }
+              ListEmptyComponent={renderEmptyState}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </ContentContainer>
       </Container>
       <TabBar currentRoute={pathname} onRefresh={onRefresh} />
     </ThemeWrapper>
