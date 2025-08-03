@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { wp, hp } from "../../helpers/common";
@@ -7,6 +7,8 @@ import { MessageWithUser } from "../../services/chatService";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
 import ReadStatus from "./ReadStatus";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../context/AuthContext";
 
 interface MessageBubbleProps {
   message: MessageWithUser;
@@ -59,6 +61,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   showAvatar = true,
 }) => {
   const theme = useStyledTheme();
+  const { user: currentUser } = useAuth();
+  const router = useRouter();
 
   const formatMessageTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -68,12 +72,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     });
   };
 
+  const openUserProfile = (userId: string) => {
+    if (message.sender.id === currentUser?.id) {
+      router.push("/profile");
+    } else {
+      router.push({
+        pathname: "/userProfile",
+        params: { userId: message.sender.id },
+      });
+    }
+  };
+
   return (
     <MessageContainer isCurrentUser={isCurrentUser}>
       {!isCurrentUser && showAvatar && (
-        <AvatarContainer>
-          <Avatar uri={message.sender.image} size={hp(4)} />
-        </AvatarContainer>
+        <TouchableOpacity onPress={() => openUserProfile(message.sender.id)}>
+          <AvatarContainer>
+            <Avatar uri={message.sender.image} size={hp(4)} />
+          </AvatarContainer>
+        </TouchableOpacity>
       )}
 
       <BubbleContainer isCurrentUser={isCurrentUser} theme={theme}>
@@ -90,9 +107,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       </BubbleContainer>
 
       {isCurrentUser && showAvatar && (
-        <AvatarContainer>
-          <Avatar uri={message.sender.image} size={hp(4)} />
-        </AvatarContainer>
+        <TouchableOpacity onPress={() => openUserProfile(message.sender.id)}>
+          <AvatarContainer>
+            <Avatar uri={message.sender.image} size={hp(4)} />
+          </AvatarContainer>
+        </TouchableOpacity>
       )}
       {message.sending && (
         <View
