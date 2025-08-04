@@ -33,6 +33,7 @@ export const getUserConversations = async (
   userId: string
 ): Promise<ApiResponse<ConversationWithUser[]>> => {
   try {
+    // Prima ottieni tutte le conversazioni dell'utente
     const { data, error } = await supabase
       .from("conversations")
       .select(
@@ -50,6 +51,17 @@ export const getUserConversations = async (
       console.log("getUserConversations error: ", error);
       return { success: false, msg: "Could not fetch conversations" };
     }
+
+    const { data: hiddenConversations, error: hiddenError } = await supabase
+      .from("hidden_conversations")
+      .select("conversation_id")
+      .eq("user_id", userId);
+
+    if (hiddenError) {
+      console.log("Hidden conversations error: ", hiddenError);
+    }
+
+    const hiddenIds = hiddenConversations?.map(h => h.conversation_id) || [];
 
     const conversationsWithUsers: ConversationWithUser[] =
       data?.map((conv) => {
@@ -70,7 +82,11 @@ export const getUserConversations = async (
               }
             : undefined,
         };
-      }) || [];
+      })
+      .filter(conv => 
+        conv.lastMessage !== undefined && 
+        !hiddenIds.includes(conv.id)
+      ) || [];
 
     return { success: true, data: conversationsWithUsers };
   } catch (error) {
@@ -171,8 +187,8 @@ export const getConversationMessagesWithPagination = async (
       `
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: false }) 
-      .range(offset, offset + limit - 1); 
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       return { success: false, msg: "Could not fetch messages" };
@@ -245,5 +261,52 @@ export const markMessagesAsRead = async (
   } catch (error) {
     console.log("markMessagesAsRead error: ", error);
     return { success: false, msg: "Could not mark messages as read" };
+  }
+};
+
+export const hideConversation = async (
+  userId: string,
+  conversationId: string
+): Promise<ApiResponse<boolean>> => {
+  try {
+    const { error } = await supabase
+      .from("hidden_conversations")
+      .insert({
+        user_id: userId,
+        conversation_id: conversationId
+      });
+
+    if (error) {
+      console.log("hideConversation error: ", error);
+      return { success: false, msg: "Could not hide conversation" };
+    }
+
+    return { success: true, data: true };
+  } catch (error) {
+    console.log("hideConversation error: ", error);
+    return { success: false, msg: "Could not hide conversation" };
+  }
+};
+
+export const unhideConversation = async (
+  userId: string,
+  conversationId: string
+): Promise<ApiResponse<boolean>> => {
+  try {
+    const { error } = await supabase
+      .from("hidden_conversations")
+      .delete()
+      .eq("user_id", userId)
+      .eq("conversation_id", conversationId);
+
+    if (error) {
+      console.log("unhideConversation error: ", error);
+      return { success: false, msg: "Could not unhide conversation" };
+    }
+
+    return { success: true, data: true };
+  } catch (error) {
+    console.log("unhideConversation error: ", error);
+    return { success: false, msg: "Could not unhide conversation" };
   }
 };

@@ -23,6 +23,7 @@ import {
   markMessagesAsRead,
   MessageWithUser,
   getConversationMessagesWithPagination,
+  unhideConversation,
 } from "../../../services/chatService";
 import { supabase } from "../../../lib/supabase";
 
@@ -127,6 +128,8 @@ const ChatDetails: React.FC = () => {
 
             if (user?.id && newMessage.sender_id !== user.id) {
               await markMessagesAsRead(conversationId, user.id);
+              // 🔥 AGGIUNGI QUESTA PARTE: Mostra di nuovo la conversazione se era nascosta quando ricevi un messaggio
+              await unhideConversation(user.id, conversationId);
             }
           }
         }
@@ -201,6 +204,9 @@ const ChatDetails: React.FC = () => {
           msg.id === tempMessage.id ? { ...msg, sending: false } : msg
         )
       );
+
+      // 🔥 AGGIUNGI QUESTA PARTE: Mostra di nuovo la conversazione se era nascosta
+      await unhideConversation(user.id, conversationId);
     }
 
     if (!result.success) {

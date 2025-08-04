@@ -32,6 +32,8 @@ import { useTheme } from "../../context/ThemeContext";
 import { createNotification } from "../../services/notificationService";
 import { User } from "../../src/types";
 import type { PostWithRelations } from "../../services/postService";
+import { createOrFindConversation } from "../../services/chatService";
+import { UserWithBasicInfo } from "../../services/userService";
 
 // Styled Components
 const Container = styled.View`
@@ -40,7 +42,7 @@ const Container = styled.View`
 
 const HeaderContainer = styled.View`
   flex: 1;
-  background-color: ${props => props.theme.colors.background};
+  background-color: ${(props) => props.theme.colors.background};
 `;
 
 const AvatarContainer = styled.View`
@@ -52,13 +54,13 @@ const AvatarContainer = styled.View`
 const UserName = styled.Text`
   font-size: ${hp(3)}px;
   font-weight: 500;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
 `;
 
 const InfoText = styled.Text`
   font-size: ${hp(1.6)}px;
   font-weight: 500;
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
 `;
 
 const ListStyle = {
@@ -69,7 +71,7 @@ const ListStyle = {
 const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
-  color: ${props => props.theme.colors.text};
+  color: ${(props) => props.theme.colors.text};
 `;
 
 const FollowContainer = styled.View`
@@ -86,16 +88,16 @@ const FollowItem = styled.View`
 const FollowCount = styled.Text`
   font-size: ${hp(2.5)}px;
   font-weight: bold;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
 `;
 
 const FollowLabel = styled.Text`
   font-size: ${hp(1.6)}px;
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
 `;
 
 const FollowButton = styled.Pressable`
-  background-color: ${props => props.theme.colors.primary};
+  background-color: ${(props) => props.theme.colors.primary};
   align-self: center;
   padding-top: 8px;
   padding-bottom: 8px;
@@ -109,6 +111,13 @@ const FollowButtonText = styled.Text`
   color: #fff;
   font-size: ${hp(2)}px;
   font-weight: 500;
+`;
+
+const RowContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
 `;
 
 interface UserHeaderProps {
@@ -214,6 +223,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [creating, setCreating] = useState(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
@@ -265,6 +275,40 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
     setFollowersCount(followers);
   };
 
+  const handleChatPress = async (selectedUser: User) => {
+    if (!currentUser?.id || creating) return;
+
+    setCreating(true);
+
+    try {
+      const result = await createOrFindConversation(
+        currentUser.id,
+        selectedUser.id
+      );
+
+      if (result.success && result.data) {
+        router.push({
+          pathname: "/chat/chatDetails",
+          params: {
+            conversationId: result.data.id,
+            otherUserId: selectedUser.id,
+            otherUserName: selectedUser.name,
+            otherUserImage: selectedUser.image || "",
+          },
+        });
+      } else {
+        Alert.alert(
+          "Error",
+          "Could not create conversation. Please try again."
+        );
+      }
+    } catch (error) {
+      console.log("Error creating conversation:", error);
+      Alert.alert("Error", "Could not create conversation. Please try again.");
+    }
+
+    setCreating(false);
+  };
   return (
     <HeaderContainer>
       <View>
@@ -285,26 +329,39 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           <View style={{ alignItems: "center", gap: 4 }}>
             <UserName>{user?.name}</UserName>
             <InfoText>{user?.address}</InfoText>
-            {user?.bio && (
-              <InfoText>{user.bio}</InfoText>
-            )}
+            {user?.bio && <InfoText>{user.bio}</InfoText>}
           </View>
 
           <FollowContainer>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/followers",
+                  params: { userId: user?.id },
+                })
+              }
+            >
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
                 <FollowLabel>Follower</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/followings",
+                  params: { userId: user?.id },
+                })
+              }
+            >
               <FollowItem>
                 <FollowCount>{followingCount}</FollowCount>
                 <FollowLabel>Seguiti</FollowLabel>
               </FollowItem>
             </TouchableOpacity>
           </FollowContainer>
-
+          
+          <RowContainer>
           {currentUser?.id !== user?.id && (
             <FollowButton onPress={handleFollowToggle}>
               <FollowButtonText>
@@ -312,6 +369,17 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
               </FollowButtonText>
             </FollowButton>
           )}
+          {currentUser?.id !== user?.id && (
+            <FollowButton
+              onPress={() => handleChatPress(user)}
+              disabled={creating}
+            >
+              <FollowButtonText>
+                {creating ? "Caricamento..." : "Chat"}
+              </FollowButtonText>
+            </FollowButton>
+          )}
+          </RowContainer>
         </View>
       </Container>
     </HeaderContainer>
@@ -319,4 +387,3 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
 };
 
 export default UserProfile;
-
