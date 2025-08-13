@@ -4,8 +4,10 @@ import {
   View,
   Alert,
   Share,
+  TouchableWithoutFeedback,
+  Animated,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled, { css } from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
@@ -15,7 +17,7 @@ import Icon from "../assets/icons";
 import RenderHtml from "react-native-render-html";
 import { Image } from "expo-image";
 import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
-import { Video } from "expo-av";
+import { Video, ResizeMode } from "expo-av";
 import { createPostLike, removePostLike, PostWithRelations } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
@@ -38,30 +40,31 @@ interface PostCardProps {
   showDelete?: boolean;
   onDelete?: (item: PostWithRelations) => void;
   onEdit?: (item: PostWithRelations) => void;
+  variant?: 'classic' | 'edgeToEdge';
 }
 
-// Styled Components
-const Container = styled.View<{ hasShadow?: boolean }>`
+const Container = styled.View<{ hasShadow?: boolean; variant?: string }>`
   gap: 10px;
   margin-bottom: 15px;
   border-radius: ${props => props.theme.radius.xxl * 1.1}px;
-  padding: 10px;
   padding-top: 12px;
   padding-bottom: 12px;
   background-color: ${props => props.theme.colors.background};
-  border-width: 0.5px;
+  border-width: ${props => props.variant === 'edgeToEdge' ? '0px' : '0.5px'};
   border-color: ${props => props.theme.colors.gray};
   ${(props) =>
     props.hasShadow &&
     css`
-      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
-      elevation: 1;
+      box-shadow: 0px ${props.variant === 'edgeToEdge' ? '1px 3px' : '2px 6px'} rgba(0, 0, 0, ${props.variant === 'edgeToEdge' ? '0.03' : '0.05'});
+      elevation: ${props.variant === 'edgeToEdge' ? '0.5' : '1'};
     `}
 `;
 
 const Header = styled.View`
   flex-direction: row;
   justify-content: space-between;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
 `;
 
 const UserInfo = styled.TouchableOpacity`
@@ -103,25 +106,38 @@ const Content = styled.View`
   gap: 10px;
 `;
 
+const MediaContainer = styled.View`
+  position: relative;
+  overflow: hidden;
+`;
+
 const PostMedia = styled(Image)`
   height: ${hp(40)}px;
   width: 100%;
-  border-radius: ${props => props.theme.radius.xl}px;
 `;
 
 const PostVideo = styled(Video)`
   height: ${hp(30)}px;
   width: 100%;
-  border-radius: ${props => props.theme.radius.xl}px;
+`;
+
+const AnimatedHeart = styled(Animated.View)`
+  position: absolute;
+  top: 40%;
+  left: 45%;
+  z-index: 10;
 `;
 
 const PostBody = styled.View`
-  margin-left: 5px;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
 `;
 
 const Footer = styled.View`
   flex-direction: row;
   align-items: center;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
   gap: 15px;
 `;
 
@@ -153,13 +169,46 @@ const PostCard: React.FC<PostCardProps> = ({
   showDelete = false,
   onDelete = () => {},
   onEdit = () => {},
+  variant = 'edgeToEdge',
 }) => {
   const [likes, setLikes] = useState<PostLike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showHeart, setShowHeart] = useState<boolean>(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
-  // Stili per il testo HTML
+  const heartScale = useRef(new Animated.Value(0)).current;
+  const lastTap = useRef<number>(0);
+
+  const handleDoubleTap = () => {
+    if (!liked) {
+      setShowHeart(true);
+      Animated.sequence([
+        Animated.spring(heartScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 3
+        }),
+        Animated.timing(heartScale, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true
+        }),
+      ]).start(() => setShowHeart(false));
+      onLike();
+    }
+  };
+
+  const handleSingleTap = () => {
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 300;
+    if (lastTap.current && (now - lastTap.current) < DOUBLE_PRESS_DELAY) {
+      handleDoubleTap();
+    }
+    lastTap.current = now;
+  };
+
   const textStyles = {
     color: theme.colors.text,
     fontSize: hp(1.75),
@@ -271,7 +320,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const liked = likes.filter((like) => like.userId === currentUser?.id).length > 0;
 
   return (
-    <Container hasShadow={hasShadow}>
+    <Container hasShadow={hasShadow} variant={variant}>
       <Header>
         <UserInfo
           onPress={!isUserProfile ? openUserProfile : undefined}
@@ -332,22 +381,38 @@ const PostCard: React.FC<PostCardProps> = ({
 
         {/* post image */}
         {item?.file && item?.file?.includes("postImages") && (
-          <PostMedia
-            source={getSupabaseFileUrl(item?.file)}
-            transitionDuration={100}
-            contentFit="cover"
-          />
+          <MediaContainer>
+            <TouchableWithoutFeedback onPress={handleSingleTap}>
+              <PostMedia
+                source={getSupabaseFileUrl(item?.file)}
+                contentFit="cover"
+              />
+            </TouchableWithoutFeedback>
+            {showHeart && (
+              <AnimatedHeart style={{ transform: [{ scale: heartScale }] }}>
+                <Icon name="heartFill" size={72} color={theme.colors.rose} />
+              </AnimatedHeart>
+            )}
+          </MediaContainer>
         )}
 
         {/* post video */}
         {item?.file && item?.file?.includes("postVideos") && (
-          <PostVideo
-            source={getSupabaseFileUrl(item?.file)}
-            transitionDuration={100}
-            useNativeControls
-            resizeMode="cover"
-            isLooping
-          />
+          <MediaContainer>
+            <TouchableWithoutFeedback onPress={handleSingleTap}>
+              <PostVideo
+                source={getSupabaseFileUrl(item?.file)}
+                useNativeControls
+                resizeMode={ResizeMode.CONTAIN}
+                isLooping
+              />
+            </TouchableWithoutFeedback>
+            {showHeart && (
+              <AnimatedHeart style={{ transform: [{ scale: heartScale }] }}>
+                <Icon name="heartFill" size={72} color={theme.colors.rose} />
+              </AnimatedHeart>
+            )}
+          </MediaContainer>
         )}
 
         {/* like, comment & share */}

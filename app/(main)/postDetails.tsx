@@ -32,8 +32,6 @@ import ThemeWrapper from "../../components/ThemeWrapper";
 const Container = styled.View`
   flex: 1;
   padding-top: ${wp(7)}px;
-  padding-left: ${wp(4)}px;
-  padding-right: ${wp(4)}px;
 `;
 
 const Center = styled.View`
@@ -56,6 +54,8 @@ const BeFirstText = styled.Text`
 const InputContainer = styled.View`
   flex-direction: row;
   align-items: center;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
   gap: 10px;
 `;
 
@@ -70,6 +70,8 @@ const LoadingContainer = styled.View`
 const CategoryContainer = styled.View`
   margin-top: 10px;
   margin-bottom: 15px;
+  padding-left: ${wp(4)}px;
+  padding-right: ${wp(4)}px;
   flex-direction: row;
   align-items: center;
 `;
@@ -356,7 +358,7 @@ const PostDetails: React.FC = () => {
           )}
         </InputContainer>
 
-        <View style={{ marginVertical: 15, gap: 17 }}>
+        <View style={{ marginVertical: 15, gap: 17, paddingLeft: wp(4), paddingRight: wp(4) }}>
           {post?.comments?.map((comment, index) => (
             <CommentItem
               key={`${comment?.id?.toString()}-${index}`}

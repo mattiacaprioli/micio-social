@@ -64,7 +64,6 @@ const InfoText = styled.Text`
 `;
 
 const ListStyle = {
-  paddingHorizontal: wp(4),
   paddingBottom: 30,
 };
 

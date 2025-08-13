@@ -28,9 +28,15 @@ const BackButtonContainer = styled.View`
   left: 0;
 `;
 
+const RightButtonContainer = styled.View`
+  position: absolute;
+  right: 0;
+`;
+
 interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
+  rightButton?: React.ReactNode;
   mb?: number;
   theme?: Theme;
 }
@@ -38,6 +44,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   title,
   showBackButton = true,
+  rightButton,
   mb = 10
 }) => {
   const router = useRouter();
@@ -52,6 +59,11 @@ const Header: React.FC<HeaderProps> = ({
         </BackButtonContainer>
       )}
       <Title>{title || ""}</Title>
+      {rightButton && (
+        <RightButtonContainer>
+          {rightButton}
+        </RightButtonContainer>
+      )}
     </Container>
   )
 }
