@@ -9,7 +9,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -69,9 +69,9 @@ const Header = styled.View`
 `;
 
 const Title = styled.Text`
-  color: ${props => props.theme.colors.text};
+  color: ${(props) => props.theme.colors.text};
   font-size: ${hp(3.2)}px;
-  font-weight: ${props => props.theme.fonts.bold};
+  font-weight: ${(props) => props.theme.fonts.bold};
 `;
 
 const IconsContainer = styled.View`
@@ -83,13 +83,13 @@ const IconsContainer = styled.View`
 
 const ListStyle = {
   paddingTop: 20,
-  paddingHorizontal: wp(4),
+  paddingHorizontal: 0,
 };
 
 const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
-  color: ${props => props.theme.colors.text};
+  color: ${(props) => props.theme.colors.text};
 `;
 
 const CategoriesContainer = styled.View`
@@ -102,8 +102,8 @@ const CategoriesContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.8)}px;
-  font-weight: ${props => props.theme.fonts.bold};
-  color: ${props => props.theme.colors.textLight};
+  font-weight: ${(props) => props.theme.fonts.bold};
+  color: ${(props) => props.theme.colors.textLight};
   margin-right: 10px;
 `;
 
@@ -116,15 +116,16 @@ const CategoryButton = styled.TouchableOpacity<{ isActive?: boolean }>`
   padding-right: ${wp(3)}px;
   padding-top: ${hp(1)}px;
   padding-bottom: ${hp(1)}px;
-  border-radius: ${props => props.theme.radius.md}px;
+  border-radius: ${(props) => props.theme.radius.md}px;
   margin-right: 8px;
-  background-color: ${props => props.isActive ? props.theme.colors.primary : props.theme.colors.darkLight};
+  background-color: ${(props) =>
+    props.isActive ? props.theme.colors.primary : props.theme.colors.darkLight};
 `;
 
 const CategoryText = styled.Text<{ isActive?: boolean }>`
   font-size: ${hp(1.6)}px;
-  font-weight: ${props => props.theme.fonts.medium};
-  color: ${props => props.isActive ? 'white' : props.theme.colors.text};
+  font-weight: ${(props) => props.theme.fonts.medium};
+  color: ${(props) => (props.isActive ? "white" : props.theme.colors.text)};
 `;
 
 const Pill = styled.View`
@@ -136,13 +137,13 @@ const Pill = styled.View`
   justify-content: center;
   align-items: center;
   border-radius: 20px;
-  background-color: ${props => props.theme.colors.roseLight};
+  background-color: ${(props) => props.theme.colors.roseLight};
 `;
 
 const PillText = styled.Text`
   color: white;
   font-size: ${hp(1.2)}px;
-  font-weight: ${props => props.theme.fonts.bold};
+  font-weight: ${(props) => props.theme.fonts.bold};
 `;
 
 var limit = 0;
@@ -157,7 +158,9 @@ const Home: React.FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
   const fadeAnim = useRef(new Animated.Value(1)).current; // Valore iniziale per l'opacità: 1
 
@@ -165,12 +168,14 @@ const Home: React.FC = () => {
   useEffect(() => {
     const loadSelectedCategory = async () => {
       try {
-        const savedCategory = await AsyncStorage.getItem('selectedCategory');
+        const savedCategory = await AsyncStorage.getItem("selectedCategory");
         if (savedCategory !== null) {
-          setSelectedCategory(savedCategory === 'undefined' ? undefined : savedCategory);
+          setSelectedCategory(
+            savedCategory === "undefined" ? undefined : savedCategory
+          );
         }
       } catch (error) {
-        console.error('Error loading selected category:', error);
+        console.error("Error loading selected category:", error);
       }
     };
 
@@ -179,11 +184,11 @@ const Home: React.FC = () => {
 
   // Categorie disponibili
   const categories = [
-    { id: 'funny', label: 'Funny' },
-    { id: 'cute', label: 'Cute' },
-    { id: 'amazing', label: 'Amazing' },
-    { id: 'pets', label: 'Pets' },
-    { id: 'nature', label: 'Nature' },
+    { id: "funny", label: "Funny" },
+    { id: "cute", label: "Cute" },
+    { id: "amazing", label: "Amazing" },
+    { id: "pets", label: "Pets" },
+    { id: "nature", label: "Nature" },
   ];
 
   const handlePostEvent = async (payload: PostEventPayload): Promise<void> => {
@@ -194,11 +199,14 @@ const Home: React.FC = () => {
       newPost.postLikes = [];
       newPost.comments = [{ count: 0 }];
       // Convertiamo il tipo per evitare errori di tipo
-      newPost.user = res.success && res.data ? {
-        id: res.data.id,
-        name: res.data.name,
-        image: res.data.image || null
-      } : undefined;
+      newPost.user =
+        res.success && res.data
+          ? {
+              id: res.data.id,
+              name: res.data.name,
+              image: res.data.image || null,
+            }
+          : undefined;
       setPosts((prevPosts) => [newPost, ...prevPosts]);
     }
     if (payload.eventType === "DELETE" && payload?.old?.id) {
@@ -223,7 +231,9 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleNewComment = async (payload: CommentEventPayload): Promise<void> => {
+  const handleNewComment = async (
+    payload: CommentEventPayload
+  ): Promise<void> => {
     if (payload.eventType === "INSERT" && payload.new.id) {
       let newComment = { ...payload.new };
       // Usa user_id se disponibile, altrimenti fallback su userId per compatibilità
@@ -231,11 +241,14 @@ const Home: React.FC = () => {
       if (!userId) return;
       let res = await getUserData(userId);
       // Convertiamo il tipo per evitare errori di tipo
-      newComment.user = res.success && res.data ? {
-        id: res.data.id,
-        name: res.data.name,
-        image: res.data.image || null
-      } : undefined;
+      newComment.user =
+        res.success && res.data
+          ? {
+              id: res.data.id,
+              name: res.data.name,
+              image: res.data.image || null,
+            }
+          : undefined;
 
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
@@ -255,11 +268,13 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleNewNotification = async (payload: NotificationEventPayload): Promise<void> => {
-    if(payload.eventType === "INSERT" && payload.new.id){
+  const handleNewNotification = async (
+    payload: NotificationEventPayload
+  ): Promise<void> => {
+    if (payload.eventType === "INSERT" && payload.new.id) {
       setNotificationCount((prevCount) => prevCount + 1);
     }
-  }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -403,18 +418,16 @@ const Home: React.FC = () => {
             <Pressable
               onPress={() => {
                 setNotificationCount(0);
-                router.push("/notifications")}
-              }>
+                router.push("/notifications");
+              }}
+            >
               <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
-              {
-                notificationCount > 0 && (
-                  <Pill>
-                    <PillText>{notificationCount}</PillText>
-                  </Pill>
-                )
-              }
+              {notificationCount > 0 && (
+                <Pill>
+                  <PillText>{notificationCount}</PillText>
+                </Pill>
+              )}
             </Pressable>
-
           </IconsContainer>
         </Header>
 
@@ -431,7 +444,7 @@ const Home: React.FC = () => {
                 if (selectedCategory !== undefined && !categoryLoading) {
                   setSelectedCategory(undefined);
                   // Salva la categoria selezionata in AsyncStorage
-                  AsyncStorage.setItem('selectedCategory', 'undefined');
+                  AsyncStorage.setItem("selectedCategory", "undefined");
                   setRefreshing(true);
                   // Svuota immediatamente i post per evitare di vedere i post vecchi
                   setPosts([]);
@@ -439,9 +452,11 @@ const Home: React.FC = () => {
                 }
               }}
             >
-              <CategoryText isActive={selectedCategory === undefined}>all</CategoryText>
+              <CategoryText isActive={selectedCategory === undefined}>
+                all
+              </CategoryText>
             </CategoryButton>
-            {categories.map(category => (
+            {categories.map((category) => (
               <CategoryButton
                 key={category.id}
                 isActive={selectedCategory === category.id}
@@ -451,7 +466,7 @@ const Home: React.FC = () => {
                   if (selectedCategory !== category.id && !categoryLoading) {
                     setSelectedCategory(category.id);
                     // Salva la categoria selezionata in AsyncStorage
-                    AsyncStorage.setItem('selectedCategory', category.id);
+                    AsyncStorage.setItem("selectedCategory", category.id);
                     setRefreshing(true);
                     // Svuota immediatamente i post per evitare di vedere i post vecchi
                     setPosts([]);
@@ -459,7 +474,9 @@ const Home: React.FC = () => {
                   }
                 }}
               >
-                <CategoryText isActive={selectedCategory === category.id}>{category.label}</CategoryText>
+                <CategoryText isActive={selectedCategory === category.id}>
+                  {category.label}
+                </CategoryText>
               </CategoryButton>
             ))}
           </CategoryScroll>
@@ -467,43 +484,56 @@ const Home: React.FC = () => {
 
         {/* posts */}
         {categoryLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 50,
+            }}
+          >
             <Loading />
           </View>
         ) : (
           <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
             <FlatList
-            data={posts}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={ListStyle}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <PostCard item={item} currentUser={user as User | null} router={router} />
-            )}
-          onEndReached={() => {
-            getPosts();
-            console.log("got to the end");
-          }}
-          onEndReachedThreshold={0}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[theme.colors.primary]}
+              data={posts}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={ListStyle}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <PostCard
+                  item={item}
+                  currentUser={user as User | null}
+                  router={router}
+                />
+              )}
+              onEndReached={() => {
+                getPosts();
+                console.log("got to the end");
+              }}
+              onEndReachedThreshold={0}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[theme.colors.primary]}
+                />
+              }
+              ListFooterComponent={
+                hasMore ? (
+                  <View
+                    style={{ marginVertical: posts.length === 0 ? 200 : 30 }}
+                  >
+                    <Loading />
+                  </View>
+                ) : (
+                  <View style={{ marginVertical: 30 }}>
+                    <NoPostText>No more posts</NoPostText>
+                  </View>
+                )
+              }
             />
-          }
-          ListFooterComponent={
-            hasMore ? (
-              <View style={{ marginVertical: posts.length === 0 ? 200 : 30 }}>
-                <Loading />
-              </View>
-            ) : (
-              <View style={{ marginVertical: 30 }}>
-                <NoPostText>No more posts</NoPostText>
-              </View>
-            )
-          }
-        />
           </Animated.View>
         )}
       </Container>

@@ -76,15 +76,12 @@ const InfoText = styled.Text`
 `;
 
 const SettingsButton = styled.Pressable`
-  position: absolute;
-  right: 0;
   padding: 5px;
   border-radius: ${props => props.theme.radius.sm}px;
   background-color: ${props => props.theme.colors.darkLight};
 `;
 
 const ListStyle = {
-  paddingHorizontal: wp(4),
   paddingBottom: 30,
 };
 
@@ -224,19 +221,22 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
     fetchCounts();
   }, [user]);
 
+  const settingsButton = (
+    <SettingsButton
+      onPress={() => router.push("/settings/settings")}
+    >
+      <Icon
+        name="settings"
+        size={hp(2.5)}
+        color={theme.colors.textDark}
+      />
+    </SettingsButton>
+  );
+
   return (
     <HeaderContainer>
       <View>
-        <Header title={'profile'} mb={30} />
-        <SettingsButton
-          onPress={() => router.push("/settings/settings")}
-        >
-          <Icon
-            name="settings"
-            size={hp(2.5)}
-            color={theme.colors.textDark}
-          />
-        </SettingsButton>
+        <Header title={'profile'} mb={30} rightButton={settingsButton} />
 
         <AvatarContainer>
           <Avatar
