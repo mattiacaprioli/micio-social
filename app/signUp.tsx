@@ -11,6 +11,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
+import { validatePasswordStrength } from "../services/authService";
 
 // Styled Components
 const Container = styled.View`
@@ -60,15 +61,27 @@ const SignUp: React.FC = () => {
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("");
 
   const onSubmit = async (): Promise<void> => {
-    if (!emailRef.current || !passwordRef.current) {
+    if (!emailRef.current || !passwordRef.current || !nameRef.current) {
       Alert.alert("Sign Up", "Please fill all required fields");
       return;
     }
+
     let name = nameRef.current.trim();
     let email = emailRef.current.trim();
     let password = passwordRef.current.trim();
+
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      Alert.alert(
+        "Invalid Password",
+        passwordValidation.message ||
+          "Password does not meet security requirements"
+      );
+      return;
+    }
 
     setLoading(true);
 
@@ -121,7 +134,10 @@ const SignUp: React.FC = () => {
             icon={<Icon name="lock" size={26} />}
             placeholder={'Enter your password'}
             secureTextEntry={!showPassword}
-            onChangeText={(value) => (passwordRef.current = value)}
+            onChangeText={(value) => {
+              passwordRef.current = value;
+              setPassword(value);
+            }}
             forceLightMode={true}
             rightIcon={
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -133,6 +149,41 @@ const SignUp: React.FC = () => {
               </TouchableOpacity>
             }
           />
+
+          {/* Password Requirements */}
+          {password.length > 0 && (
+            <View
+              style={{
+                marginTop: 10,
+                padding: 10,
+                backgroundColor: theme.colors.gray,
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: theme.colors.text,
+                  marginBottom: 5,
+                }}
+              >
+                Password requirements:
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: validatePasswordStrength(password).isValid
+                    ? theme.colors.primary
+                    : theme.colors.rose,
+                }}
+              >
+                {validatePasswordStrength(password).isValid
+                  ? "✓ Valid password"
+                  : validatePasswordStrength(password).message}
+              </Text>
+            </View>
+          )}
 
           {/* Button */}
           <Button title={'Sign Up'} loading={loading} onPress={onSubmit} />
