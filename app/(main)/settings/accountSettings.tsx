@@ -3,6 +3,9 @@ import {
   Alert,
   Switch,
   ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
 } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
@@ -10,8 +13,15 @@ import ThemeWrapper from "../../../components/ThemeWrapper";
 import Header from "../../../components/Header";
 import Input from "../../../components/Input";
 import Button from "../../../components/Button";
+import Icon from "../../../assets/icons";
 import { wp, hp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
+import { useAuth } from "../../../context/AuthContext";
+import {
+  changePassword,
+  validatePasswordStrength,
+} from "../../../services/authService";
+import { supabase } from "../../../lib/supabase";
 
 // Interfacce per i tipi
 interface PersonalInfo {
@@ -25,12 +35,11 @@ interface PasswordData {
   confirm: string;
 }
 
-// Styled Components
 const Container = styled.View`
   flex: 1;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
-  background-color: ${props => props.theme.colors.background};
+  background-color: ${(props) => props.theme.colors.background};
 `;
 
 const Form = styled.View`
@@ -42,7 +51,7 @@ const Form = styled.View`
 const SectionTitle = styled.Text`
   font-size: ${hp(2)}px;
   font-weight: 600;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
   margin-bottom: ${hp(1)}px;
 `;
 
@@ -56,7 +65,7 @@ const SettingItem = styled.View`
 
 const SettingLabel = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
 `;
 
 const LanguageButton = styled.TouchableOpacity`
@@ -64,8 +73,8 @@ const LanguageButton = styled.TouchableOpacity`
   padding-bottom: ${hp(0.5)}px;
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
-  background-color: ${props => props.theme.colors.primary};
-  border-radius: ${props => props.theme.radius.sm}px;
+  background-color: ${(props) => props.theme.colors.primary};
+  border-radius: ${(props) => props.theme.radius.sm}px;
 `;
 
 const LanguageText = styled.Text`
@@ -74,40 +83,118 @@ const LanguageText = styled.Text`
 `;
 
 const AccountSettings: React.FC = () => {
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({ name: "", email: "" });
+  const { user } = useAuth();
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    name: "",
+    email: "",
+  });
   const [password, setPassword] = useState<PasswordData>({
     current: "",
     new: "",
     confirm: "",
   });
-  const [loading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const { isDarkMode, toggleTheme } = useTheme();
-  const [language, setLanguage] = useState<string>('Italiano');
+  const [language, setLanguage] = useState<string>("Italiano");
+  const [showCurrentPassword, setShowCurrentPassword] =
+    useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const theme = useStyledTheme();
 
   const handleUpdatePersonalInfo = (): void => {
     if (!personalInfo.name || !personalInfo.email) {
-      Alert.alert(
-        "Errore",
-        "Tutti i campi sono obbligatori"
-      );
+      Alert.alert("Error", "All fields are required");
       return;
     }
     console.log("Updated personal information:", personalInfo);
-    Alert.alert("Successo", "Informazioni personali aggiornate");
+    Alert.alert("Success", "Personal information updated");
   };
 
-  const handleChangePassword = (): void => {
+  const handleChangePassword = async (): Promise<void> => {
     if (!password.current || !password.new || !password.confirm) {
-      Alert.alert("Errore", "Tutti i campi sono obbligatori");
+      Alert.alert("Error", "All fields are required");
       return;
     }
+
     if (password.new !== password.confirm) {
-      Alert.alert("Errore", "Le password non corrispondono");
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
-    console.log("Password changed successfully.");
-    Alert.alert("Successo", "Password aggiornata");
+
+    if (!user?.email) {
+      Alert.alert("Error", "User not authenticated");
+      return;
+    }
+
+    const passwordValidation = validatePasswordStrength(password.new);
+    if (!passwordValidation.isValid) {
+      Alert.alert(
+        "Invalid Password",
+        passwordValidation.message ||
+          "Password does not meet security requirements"
+      );
+      return;
+    }
+
+    if (password.current === password.new) {
+      Alert.alert(
+        "Error",
+        "New password must be different from current password"
+      );
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await changePassword({
+        currentPassword: password.current,
+        newPassword: password.new,
+        email: user.email,
+      });
+
+      setLoading(false);
+
+      if (result.success) {
+        setPassword({
+          current: "",
+          new: "",
+          confirm: "",
+        });
+
+        Alert.alert(
+          "Password Updated",
+          "Password changed successfully. For security reasons, you will be logged out and need to sign in again.",
+          [
+            {
+              text: "OK",
+              onPress: handleLogoutAfterPasswordChange,
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Error", result.msg || "Error changing password");
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Error changing password:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    }
+  };
+
+  const handleLogoutAfterPasswordChange = async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error);
+        Alert.alert("Error", "Error during logout");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Error during logout");
+    }
   };
 
   const handleDeactivateAccount = (): void => {
@@ -137,7 +224,7 @@ const AccountSettings: React.FC = () => {
     const newLanguage = language === "English" ? "Italiano" : "English";
     setLanguage(newLanguage);
     Alert.alert("Language Changed", `Language set to ${newLanguage}`);
-    console.log('Language changed to:', newLanguage);
+    console.log("Language changed to:", newLanguage);
   };
 
   return (
@@ -166,26 +253,92 @@ const AccountSettings: React.FC = () => {
             <SectionTitle>Change Password</SectionTitle>
             <Input
               placeholder="Current Password"
-              secureTextEntry
+              secureTextEntry={!showCurrentPassword}
               value={password.current}
               onChangeText={(text) =>
                 setPassword({ ...password, current: text })
               }
+              rightIcon={
+                <TouchableOpacity
+                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  <Icon
+                    name={showCurrentPassword ? "eyeOff" : "eye"}
+                    size={22}
+                    color={theme.colors.textLight}
+                  />
+                </TouchableOpacity>
+              }
             />
             <Input
               placeholder="New Password"
-              secureTextEntry
+              secureTextEntry={!showNewPassword}
               value={password.new}
               onChangeText={(text) => setPassword({ ...password, new: text })}
+              rightIcon={
+                <TouchableOpacity
+                  onPress={() => setShowNewPassword(!showNewPassword)}
+                >
+                  <Icon
+                    name={showNewPassword ? "eyeOff" : "eye"}
+                    size={22}
+                    color={theme.colors.textLight}
+                  />
+                </TouchableOpacity>
+              }
             />
             <Input
               placeholder="Confirm New Password"
-              secureTextEntry
+              secureTextEntry={!showConfirmPassword}
               value={password.confirm}
               onChangeText={(text) =>
                 setPassword({ ...password, confirm: text })
               }
+              rightIcon={
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Icon
+                    name={showConfirmPassword ? "eyeOff" : "eye"}
+                    size={22}
+                    color={theme.colors.textLight}
+                  />
+                </TouchableOpacity>
+              }
             />
+            {password.new.length > 0 && (
+              <View
+                style={{
+                  marginTop: 10,
+                  padding: 10,
+                  backgroundColor: theme.colors.gray,
+                  borderRadius: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: theme.colors.textDark,
+                    marginBottom: 5,
+                  }}
+                >
+                  Password requirements:
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: validatePasswordStrength(password.new).isValid
+                      ? theme.colors.primary
+                      : theme.colors.rose,
+                  }}
+                >
+                  {validatePasswordStrength(password.new).isValid
+                    ? "✓ Valid password"
+                    : validatePasswordStrength(password.new).message}
+                </Text>
+              </View>
+            )}
             <Button
               title="Change Password"
               loading={loading}
