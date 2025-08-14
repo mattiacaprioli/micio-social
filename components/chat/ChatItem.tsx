@@ -60,10 +60,10 @@ const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) 
   };
 
   const handleLongPress = () => {
-    Alert.alert("Elimina Chat", "Vuoi nascondere questa conversazione?", [
-      { text: "Annulla", style: "cancel" },
+    Alert.alert("Hide Chat", "Are you sure you want to hide this chat?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "Elimina",
+        text: "Hide",
         style: "destructive",
         onPress: () => onDelete?.(conversation.id),
       },

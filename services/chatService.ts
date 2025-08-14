@@ -66,7 +66,11 @@ export const getUserConversations = async (
     const conversationsWithUsers: ConversationWithUser[] =
       data?.map((conv) => {
         const otherUser = conv.user1_id === userId ? conv.user2 : conv.user1;
-        const lastMessage = conv.messages?.[0] || null;
+
+        const sortedMessages = conv.messages?.sort((a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const lastMessage = sortedMessages?.[0] || null;
 
         return {
           ...conv,
