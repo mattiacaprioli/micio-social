@@ -32,7 +32,7 @@ const Ecommerce: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container theme={theme}>
-        <Header title="Ecommerce" />
+        <Header title="Ecommerce" showBackButton={false} />
 
         <ContentContainer>
           <View>

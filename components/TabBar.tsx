@@ -158,12 +158,12 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
 
         <TabButton
           onPress={() => router.push("/pets/pets")}
-          isActive={currentRoute === "/pets"}
+          isActive={currentRoute.startsWith("/pets")}
         >
           <Icon
             name="catIcon"
             size={hp(3)}
-            color={currentRoute === "/pets" ? tabBarColors.active : tabBarColors.inactive}
+            color={currentRoute.startsWith("/pets") ? tabBarColors.active : tabBarColors.inactive}
           />
         </TabButton>
 

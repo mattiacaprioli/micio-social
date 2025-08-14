@@ -12,14 +12,15 @@ import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect } from "@react-navigation/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
+import { useRefresh } from "../../context/RefreshContext";
 import { supabase } from "../../lib/supabase";
 import { wp, hp } from "../../helpers/common";
 import Icon from "../../assets/icons";
-import { useRouter, usePathname } from "expo-router";
+import { useRouter } from "expo-router";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
-import TabBar from "../../components/TabBar";
+
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
 // Importiamo solo i tipi che utilizziamo effettivamente
@@ -150,8 +151,8 @@ var limit = 0;
 
 const Home: React.FC = () => {
   const { user } = useAuth();
+  const { homeRefreshRef } = useRefresh();
   const router = useRouter();
-  const pathname = usePathname();
   const theme = useStyledTheme();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
@@ -390,17 +391,11 @@ const Home: React.FC = () => {
   const onRefresh = useCallback((): void => {
     setRefreshing(true);
     animateCategoryChange(true);
-  }, [selectedCategory]); // Aggiungiamo selectedCategory come dipendenza
+  }, [selectedCategory]);
 
-  // console.log('user: ', user);
-
-  // const onLogout = async () => {
-  //   // setAuth(null);
-  //   const {error} = await supabase.auth.signOut();
-  //   if(error){
-  //     Alert.alert("Logout", "error signing out!");
-  //   }
-  // }
+  useEffect(() => {
+    homeRefreshRef.current = onRefresh;
+  }, [onRefresh]);
 
   return (
     <ThemeWrapper>
@@ -543,8 +538,6 @@ const Home: React.FC = () => {
           </Animated.View>
         )}
       </Container>
-      {/* <Button title="Logout" onPress={onLogout} /> */}
-      <TabBar currentRoute={pathname} onRefresh={onRefresh} />
     </ThemeWrapper>
   );
 };

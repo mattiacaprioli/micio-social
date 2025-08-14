@@ -32,7 +32,7 @@ const Pets: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container theme={theme}>
-        <Header title="Pets" />
+        <Header title="Pets" showBackButton={false} />
 
         <ContentContainer>
           <View>
