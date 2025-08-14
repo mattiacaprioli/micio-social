@@ -236,7 +236,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   return (
     <HeaderContainer>
       <View>
-        <Header title={'profile'} mb={30} rightButton={settingsButton} />
+        <Header title={'profile'} mb={30} rightButton={settingsButton} showBackButton={false} />
 
         <AvatarContainer>
           <Avatar

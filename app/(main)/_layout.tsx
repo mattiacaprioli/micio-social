@@ -14,7 +14,7 @@ const MainLayoutContent: React.FC = () => {
     }
   };
 
-  const hideTabBarRoutes = ['/newPost', '/chat/chatDetails', '/chat/chat', '/notifications', '/settings', '/search'];
+  const hideTabBarRoutes = ['/newPost', '/chat', '/notifications', '/settings', '/search', '/editProfile', '/userProfile'];
   const shouldHideTabBar = hideTabBarRoutes.some(route => pathname.startsWith(route));
 
   return (

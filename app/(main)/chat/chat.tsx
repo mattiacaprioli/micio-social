@@ -303,7 +303,6 @@ const Chat: React.FC = () => {
           )}
         </ContentContainer>
       </Container>
-      <TabBar currentRoute={pathname} onRefresh={onRefresh} />
     </ThemeWrapper>
   );
 };
