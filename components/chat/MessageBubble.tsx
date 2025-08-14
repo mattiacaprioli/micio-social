@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { wp, hp } from "../../helpers/common";
@@ -14,6 +14,12 @@ interface MessageBubbleProps {
   message: MessageWithUser;
   isCurrentUser: boolean;
   showAvatar?: boolean;
+  onLongPress?: (message: MessageWithUser) => void;
+  isEditing?: boolean;
+  editingText?: string;
+  onEditingTextChange?: (text: string) => void;
+  onSaveEdit?: () => void;
+  onCancelEdit?: () => void;
 }
 
 const MessageContainer = styled.View<{ isCurrentUser: boolean }>`
@@ -23,7 +29,7 @@ const MessageContainer = styled.View<{ isCurrentUser: boolean }>`
   margin-horizontal: ${wp(4)}px;
 `;
 
-const BubbleContainer = styled.View<{ isCurrentUser: boolean }>`
+const BubbleContainer = styled(Pressable)<{ isCurrentUser: boolean }>`
   max-width: 75%;
   background-color: ${(props) =>
     props.isCurrentUser ? props.theme.colors.primary : props.theme.colors.card};
@@ -47,6 +53,7 @@ const TimeText = styled.Text<{ isCurrentUser: boolean }>`
       ? "rgba(255,255,255,0.8)"
       : props.theme.colors.textLight};
   margin-top: ${hp(0.5)}px;
+  margin-left: auto;
   align-self: ${(props) => (props.isCurrentUser ? "flex-end" : "flex-start")};
 `;
 
@@ -55,10 +62,34 @@ const AvatarContainer = styled.View`
   height: ${hp(4)}px;
 `;
 
+const DeletedText = styled.Text<{ isCurrentUser: boolean }>`
+  font-size: ${hp(1.7)}px;
+  color: ${(props) => props.theme.colors.text};
+  font-style: italic;
+  line-height: ${hp(2.4)}px;
+`;
+
+const EditedIndicator = styled.Text<{ isCurrentUser: boolean }>`
+  font-size: ${hp(1.2)}px;
+  color: ${(props) =>
+    props.isCurrentUser
+      ? "rgba(255,255,255,0.6)"
+      : props.theme.colors.textLight};
+  margin-top: ${hp(0.2)}px;
+`;
+
+const RowView = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: ${wp(2)}px;
+`;
+
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isCurrentUser,
   showAvatar = true,
+  onLongPress,
 }) => {
   const theme = useStyledTheme();
   const { user: currentUser } = useAuth();
@@ -82,7 +113,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       });
     }
   };
-
+  
   return (
     <MessageContainer isCurrentUser={isCurrentUser}>
       {!isCurrentUser && showAvatar && (
@@ -93,17 +124,42 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         </TouchableOpacity>
       )}
 
-      <BubbleContainer isCurrentUser={isCurrentUser} theme={theme}>
-        <MessageText isCurrentUser={isCurrentUser} theme={theme}>
-          {message.content}
-        </MessageText>
-        <TimeText isCurrentUser={isCurrentUser} theme={theme}>
-          {formatMessageTime(message.created_at)}
-        </TimeText>
-        <ReadStatus
-          isRead={message.is_read || false}
-          isCurrentUser={isCurrentUser}
-        />
+      <BubbleContainer
+        isCurrentUser={isCurrentUser}
+        theme={theme}
+        onLongPress={() => onLongPress?.(message)}
+        delayLongPress={500}
+      >
+        {message.is_deleted ? (
+          <DeletedText isCurrentUser={isCurrentUser} theme={theme}>
+            Message deleted
+          </DeletedText>
+        ) : (
+          <>
+            <MessageText isCurrentUser={isCurrentUser} theme={theme}>
+              {message.content}
+            </MessageText>
+          </>
+        )}
+        <RowView>
+          {!message.is_deleted && (
+            <ReadStatus
+              isRead={message.is_read || false}
+              isCurrentUser={isCurrentUser}
+            />
+          )}
+          {message.updated_at && (
+            <EditedIndicator isCurrentUser={isCurrentUser} theme={theme}>
+              Edited
+            </EditedIndicator>
+          )}
+
+          {!message.is_deleted && (
+            <TimeText isCurrentUser={isCurrentUser} theme={theme}>
+              {formatMessageTime(message.created_at)}
+            </TimeText>
+          )}
+        </RowView>
       </BubbleContainer>
 
       {isCurrentUser && showAvatar && (
@@ -113,6 +169,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </AvatarContainer>
         </TouchableOpacity>
       )}
+
       {message.sending && (
         <View
           style={{
@@ -120,7 +177,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             alignSelf: isCurrentUser ? "flex-end" : "flex-start",
           }}
         >
-          <Loading size="small" /> {/* o un piccolo spinner */}
+          <Loading size="small" />
         </View>
       )}
     </MessageContainer>

@@ -27,6 +27,8 @@ export interface MessageWithUser extends MessageRow {
     image?: string | null;
   };
   sending?: boolean;
+  is_deleted: boolean;
+  updated_at: string | null;
 }
 
 export const getUserConversations = async (
@@ -61,36 +63,39 @@ export const getUserConversations = async (
       console.log("Hidden conversations error: ", hiddenError);
     }
 
-    const hiddenIds = hiddenConversations?.map(h => h.conversation_id) || [];
+    const hiddenIds = hiddenConversations?.map((h) => h.conversation_id) || [];
 
     const conversationsWithUsers: ConversationWithUser[] =
-      data?.map((conv) => {
-        const otherUser = conv.user1_id === userId ? conv.user2 : conv.user1;
+      data
+        ?.map((conv) => {
+          const otherUser = conv.user1_id === userId ? conv.user2 : conv.user1;
 
-        const sortedMessages = conv.messages?.sort((a: any, b: any) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        const lastMessage = sortedMessages?.[0] || null;
+          const sortedMessages = conv.messages?.sort(
+            (a: any, b: any) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          );
+          const lastMessage = sortedMessages?.[0] || null;
 
-        return {
-          ...conv,
-          otherUser: {
-            id: otherUser.id,
-            name: otherUser.name,
-            image: otherUser.image,
-          },
-          lastMessage: lastMessage
-            ? {
-                content: lastMessage.content,
-                created_at: lastMessage.created_at,
-              }
-            : undefined,
-        };
-      })
-      .filter(conv => 
-        conv.lastMessage !== undefined && 
-        !hiddenIds.includes(conv.id)
-      ) || [];
+          return {
+            ...conv,
+            otherUser: {
+              id: otherUser.id,
+              name: otherUser.name,
+              image: otherUser.image,
+            },
+            lastMessage: lastMessage
+              ? {
+                  content: lastMessage.content,
+                  created_at: lastMessage.created_at,
+                }
+              : undefined,
+          };
+        })
+        .filter(
+          (conv) =>
+            conv.lastMessage !== undefined && !hiddenIds.includes(conv.id)
+        ) || [];
 
     return { success: true, data: conversationsWithUsers };
   } catch (error) {
@@ -224,6 +229,8 @@ export const sendMessage = async (
       conversation_id: conversationId,
       sender_id: senderId,
       content: content.trim(),
+      is_deleted: false,
+      updated_at: null,
     };
 
     const { data, error } = await supabase
@@ -273,12 +280,10 @@ export const hideConversation = async (
   conversationId: string
 ): Promise<ApiResponse<boolean>> => {
   try {
-    const { error } = await supabase
-      .from("hidden_conversations")
-      .insert({
-        user_id: userId,
-        conversation_id: conversationId
-      });
+    const { error } = await supabase.from("hidden_conversations").insert({
+      user_id: userId,
+      conversation_id: conversationId,
+    });
 
     if (error) {
       console.log("hideConversation error: ", error);
@@ -312,5 +317,92 @@ export const unhideConversation = async (
   } catch (error) {
     console.log("unhideConversation error: ", error);
     return { success: false, msg: "Could not unhide conversation" };
+  }
+};
+
+export const deleteMessage = async (
+  messageId: string,
+  userId: string
+): Promise<ApiResponse<boolean>> => {
+  try {
+    const { data: message, error: fetchError } = await supabase
+      .from("messages")
+      .select("sender_id")
+      .eq("id", messageId)
+      .single();
+
+    if (fetchError || !message) {
+      return { success: false, msg: "Message not found" };
+    }
+
+    if (message.sender_id !== userId) {
+      return { success: false, msg: "You can only delete your own messages" };
+    }
+
+    const { error } = await supabase
+      .from("messages")
+      .update({ is_deleted: true })
+      .eq("id", messageId);
+
+    if (error) {
+      console.log("deleteMessage error: ", error);
+      return { success: false, msg: "Could not delete message" };
+    }
+
+    return { success: true, data: true };
+  } catch (error) {
+    console.log("deleteMessage error: ", error);
+    return { success: false, msg: "Could not delete message" };
+  }
+};
+
+export const editMessage = async (
+  messageId: string,
+  newContent: string,
+  userId: string
+): Promise<ApiResponse<boolean>> => {
+  try {
+    const { data: message, error: fetchError } = await supabase
+      .from("messages")
+      .select("sender_id, created_at")
+      .eq("id", messageId)
+      .single();
+
+    if (fetchError || !message) {
+      return { success: false, msg: "Message not found" };
+    }
+
+    if (message.sender_id !== userId) {
+      return { success: false, msg: "You can only edit your own messages" };
+    }
+
+    const messageTime = new Date(message.created_at).getTime();
+    const now = new Date().getTime();
+    const fifteenMinutes = 15 * 60 * 1000;
+
+    if (now - messageTime > fifteenMinutes) {
+      return {
+        success: false,
+        msg: "You can only edit messages within 15 minutes",
+      };
+    }
+
+    const { error } = await supabase
+      .from("messages")
+      .update({
+        content: newContent.trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", messageId);
+
+    if (error) {
+      console.log("editMessage error: ", error);
+      return { success: false, msg: "Could not edit message" };
+    }
+
+    return { success: true, data: true };
+  } catch (error) {
+    console.log("editMessage error: ", error);
+    return { success: false, msg: "Could not edit message" };
   }
 };

@@ -24,8 +24,12 @@ import {
   MessageWithUser,
   getConversationMessagesWithPagination,
   unhideConversation,
+  deleteMessage,
+  editMessage,
 } from "../../../services/chatService";
 import { supabase } from "../../../lib/supabase";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 
 const Container = styled.View`
   flex: 1;
@@ -34,6 +38,24 @@ const Container = styled.View`
 
 const MessagesContainer = styled.View`
   flex: 1;
+`;
+
+const BottomSheetContent = styled.View`
+  padding: ${wp(4)}px;
+`;
+
+const ActionItem = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  padding: ${wp(4)}px;
+  border-radius: ${wp(2)}px;
+`;
+
+const ActionText = styled.Text<{ color?: string }>`
+  font-size: ${hp(2)}px;
+  margin-left: ${wp(3)}px;
+  color: ${(props) => props.color || props.theme.colors.textDark};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 const ChatDetails: React.FC = () => {
@@ -51,7 +73,12 @@ const ChatDetails: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [sending, setSending] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState<string>("");
   const flatListRef = useRef<FlatList>(null);
+  const bottomSheetRef = useRef<RBSheet>(null);
+  const [selectedMessage, setSelectedMessage] =
+    useState<MessageWithUser | null>(null);
 
   const fetchMessages = async (loadMore = false) => {
     if (loadMore) setLoadingMore(true);
@@ -146,7 +173,13 @@ const ChatDetails: React.FC = () => {
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === payload.new.id
-                ? { ...msg, is_read: payload.new.is_read }
+                ? {
+                    ...msg,
+                    is_read: payload.new.is_read,
+                    content: payload.new.content,
+                    is_deleted: payload.new.is_deleted,
+                    updated_at: payload.new.updated_at
+                  }
                 : msg
             )
           );
@@ -158,6 +191,81 @@ const ChatDetails: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [conversationId, user?.id]);
+
+  const handleLongPressMessage = (message: MessageWithUser) => {
+    if (message.sender.id !== user?.id) return;
+
+    setSelectedMessage(message);
+    bottomSheetRef.current?.open();
+  };
+  const handleDeleteMessage = async (messageId: string) => {
+    Alert.alert(
+      "Delete Message",
+      "Are you sure you want to delete this message?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const result = await deleteMessage(messageId, user?.id || "");
+            if (result.success) {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === messageId ? { ...msg, is_deleted: true } : msg
+                )
+              );
+            } else {
+              Alert.alert(
+                "Error",
+                result.msg || "Unable to delete message"
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleStartEdit = (message: MessageWithUser) => {
+    setEditingMessageId(message.id);
+    setEditingText(message.content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMessageId || !editingText.trim()) return;
+
+    const result = await editMessage(
+      editingMessageId,
+      editingText,
+      user?.id || ""
+    );
+    if (result.success) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === editingMessageId
+            ? {
+                ...msg,
+                content: editingText.trim(),
+                updated_at: new Date().toISOString(),
+              }
+            : msg
+        )
+      );
+      setEditingMessageId(null);
+      setEditingText("");
+    } else {
+      Alert.alert(
+        "Error",
+        result.msg || "Unable to edit message"
+      );
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingText("");
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -176,6 +284,31 @@ const ChatDetails: React.FC = () => {
   const handleSendMessage = async (messageText: string) => {
     if (!user?.id || !conversationId || sending) return;
 
+    if (editingMessageId) {
+      const result = await editMessage(editingMessageId, messageText, user.id);
+      if (result.success) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === editingMessageId
+              ? {
+                  ...msg,
+                  content: messageText.trim(),
+                  updated_at: new Date().toISOString(),
+                }
+              : msg
+          )
+        );
+        setEditingMessageId(null);
+        setEditingText("");
+      } else {
+        Alert.alert(
+          "Error",
+          result.msg || "Unable to edit message"
+        );
+      }
+      return;
+    }
+
     setSending(true);
 
     const extendedUser = user as any;
@@ -187,6 +320,8 @@ const ChatDetails: React.FC = () => {
       content: messageText,
       sending: true,
       is_read: false,
+      is_deleted: false,
+      updated_at: null,
       sender: {
         id: user.id,
         name: extendedUser.name || "Tu",
@@ -233,11 +368,19 @@ const ChatDetails: React.FC = () => {
     const showAvatar =
       !previousMessage || previousMessage.sender_id !== item.sender_id;
 
+    const isEditing = editingMessageId === item.id;
+
     return (
       <MessageBubble
         message={item}
         isCurrentUser={isCurrentUser}
         showAvatar={showAvatar}
+        onLongPress={handleLongPressMessage}
+        isEditing={isEditing}
+        editingText={editingText}
+        onEditingTextChange={setEditingText}
+        onSaveEdit={handleSaveEdit}
+        onCancelEdit={handleCancelEdit}
       />
     );
   };
@@ -278,9 +421,73 @@ const ChatDetails: React.FC = () => {
             />
           </MessagesContainer>
 
-          <MessageInput onSendMessage={handleSendMessage} disabled={sending} />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            disabled={sending}
+            editingText={editingText}
+            isEditing={!!editingMessageId}
+            onCancelEdit={handleCancelEdit}
+          />
         </Container>
       </KeyboardAvoidingView>
+      <RBSheet
+        ref={bottomSheetRef}
+        height={200}
+        openDuration={250}
+        customStyles={{
+          container: {
+            borderTopLeftRadius: wp(4),
+            borderTopRightRadius: wp(4),
+            backgroundColor: theme.colors.background,
+          },
+        }}
+      >
+        <BottomSheetContent>
+          {selectedMessage && (
+            <>
+              {(() => {
+                const messageTime = new Date(
+                  selectedMessage.created_at
+                ).getTime();
+                const now = new Date().getTime();
+                const fifteenMinutes = 15 * 60 * 1000;
+                const canEdit = now - messageTime <= fifteenMinutes;
+
+                return canEdit && !selectedMessage.is_deleted ? (
+                  <ActionItem
+                    onPress={() => {
+                      handleStartEdit(selectedMessage);
+                      bottomSheetRef.current?.close();
+                    }}
+                  >
+                    <Ionicons
+                      name="create-outline"
+                      size={hp(2.5)}
+                      color={theme.colors.primary}
+                    />
+                    <ActionText theme={theme} color={theme.colors.primary}>
+                      Edit
+                    </ActionText>
+                  </ActionItem>
+                ) : null;
+              })()}
+
+              <ActionItem
+                onPress={() => {
+                  bottomSheetRef.current?.close();
+                  setTimeout(
+                    () => handleDeleteMessage(selectedMessage.id),
+                    300
+                  );
+                }}
+              >
+                <Ionicons name="trash-outline" size={hp(2.5)} color="#FF3B30" />
+                <ActionText color="#FF3B30">Delete</ActionText>
+              </ActionItem>
+            </>
+          )}
+        </BottomSheetContent>
+      </RBSheet>
     </ThemeWrapper>
   );
 };
