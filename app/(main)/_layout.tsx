@@ -14,10 +14,15 @@ const MainLayoutContent: React.FC = () => {
     }
   };
 
+  const hideTabBarRoutes = ['/newPost'];
+  const shouldHideTabBar = hideTabBarRoutes.some(route => pathname.startsWith(route));
+
   return (
     <View style={{ flex: 1 }}>
       <Slot />
-      <TabBar currentRoute={pathname} onRefresh={handleHomeRefresh} />
+      {!shouldHideTabBar && (
+        <TabBar currentRoute={pathname} onRefresh={handleHomeRefresh} />
+      )}
     </View>
   );
 };
