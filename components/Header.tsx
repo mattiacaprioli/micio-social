@@ -25,12 +25,12 @@ const Title = styled.Text<{ theme: Theme }>`
 
 const BackButtonContainer = styled.View`
   position: absolute;
-  left: 0;
+  left: 12;
 `;
 
 const RightButtonContainer = styled.View`
   position: absolute;
-  right: 0;
+  right: 12;
 `;
 
 interface HeaderProps {
