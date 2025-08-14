@@ -117,13 +117,13 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
         </TabButton>
 
         <TabButton
-          onPress={() => router.push("/chat/chat")}
-          isActive={currentRoute.startsWith("/chat")}
+          onPress={() => router.push("/ecommerce/ecommerce")}
+          isActive={currentRoute.startsWith("/ecommerce")}
         >
           <Icon
-            name="comment"
+            name="shoppingCart"
             size={hp(3)}
-            color={currentRoute.startsWith("/chat") ? tabBarColors.active : tabBarColors.inactive}
+            color={currentRoute.startsWith("/ecommerce") ? tabBarColors.active : tabBarColors.inactive}
           />
         </TabButton>
 
@@ -157,13 +157,13 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
         </PlusButtonContainer>
 
         <TabButton
-          onPress={() => router.push("/search")}
-          isActive={currentRoute === "/search"}
+          onPress={() => router.push("/pets/pets")}
+          isActive={currentRoute === "/pets"}
         >
           <Icon
-            name="search"
+            name="catIcon"
             size={hp(3)}
-            color={currentRoute === "/search" ? tabBarColors.active : tabBarColors.inactive}
+            color={currentRoute === "/pets" ? tabBarColors.active : tabBarColors.inactive}
           />
         </TabButton>
 

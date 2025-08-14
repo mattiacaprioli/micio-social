@@ -116,3 +116,11 @@ export const MessageCircleIcon = ({ size, color, ...props }) => (
 export const CheckIcon = ({ size, color, ...props }) => (
   <Icon name="check" size={size} color={color} {...props} />
 );
+
+export const ShoppingCart = ({ size, color, ...props }) => (
+  <Icon name="shopping-cart" size={size} color={color} {...props} />
+);
+
+export const CatIcon = ({ size, color, ...props }) => (
+  <Icon name="github" size={size} color={color} {...props} />
+);

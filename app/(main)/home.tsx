@@ -70,7 +70,7 @@ const Header = styled.View`
 
 const Title = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: ${hp(3.2)}px;
+  font-size: ${hp(3)}px;
   font-weight: ${(props) => props.theme.fonts.bold};
 `;
 
@@ -78,7 +78,7 @@ const IconsContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 18px;
+  gap: 8px;
 `;
 
 const ListStyle = {
@@ -95,7 +95,7 @@ const NoPostText = styled.Text`
 const CategoriesContainer = styled.View`
   flex-direction: row;
   margin-left: ${wp(4)}px;
-  margin-right: ${wp(4)}px;
+  margin-right: ${wp(0)}px;
   margin-bottom: 15px;
   align-items: center;
 `;
@@ -112,10 +112,10 @@ const CategoryScroll = styled.ScrollView`
 `;
 
 const CategoryButton = styled.TouchableOpacity<{ isActive?: boolean }>`
-  padding-left: ${wp(3)}px;
-  padding-right: ${wp(3)}px;
-  padding-top: ${hp(1)}px;
-  padding-bottom: ${hp(1)}px;
+  padding-left: ${wp(2)}px;
+  padding-right: ${wp(2)}px;
+  padding-top: ${hp(0.5)}px;
+  padding-bottom: ${hp(0.5)}px;
   border-radius: ${(props) => props.theme.radius.md}px;
   margin-right: 8px;
   background-color: ${(props) =>
@@ -184,11 +184,11 @@ const Home: React.FC = () => {
 
   // Categorie disponibili
   const categories = [
-    { id: "funny", label: "Funny" },
-    { id: "cute", label: "Cute" },
-    { id: "amazing", label: "Amazing" },
-    { id: "pets", label: "Pets" },
-    { id: "nature", label: "Nature" },
+    { id: 'funny', label: 'Funny' },
+    { id: 'cute', label: 'Cute' },
+    { id: 'amazing', label: 'Amazing' },
+    { id: 'pets', label: 'Pets' },
+    { id: 'nature', label: 'Nature' },
   ];
 
   const handlePostEvent = async (payload: PostEventPayload): Promise<void> => {
@@ -410,10 +410,16 @@ const Home: React.FC = () => {
           <Title>Micio Social</Title>
           <IconsContainer>
             <Pressable
+              onPress={() => router.push("/chat/chat" as any)}
+              style={{ marginRight: 15 }}
+            >
+              <Icon name="messageCircle" size={hp(2.5)} color={theme.colors.text} />
+            </Pressable>
+            <Pressable
               onPress={() => router.push("/search" as any)}
               style={{ marginRight: 15 }}
             >
-              <Icon name="search" size={hp(3.2)} color={theme.colors.text} />
+              <Icon name="search" size={hp(2.5)} color={theme.colors.text} />
             </Pressable>
             <Pressable
               onPress={() => {
@@ -421,7 +427,7 @@ const Home: React.FC = () => {
                 router.push("/notifications");
               }}
             >
-              <Icon name="heart" size={hp(3.2)} color={theme.colors.text} />
+              <Icon name="heart" size={hp(2.5)} color={theme.colors.text} />
               {notificationCount > 0 && (
                 <Pill>
                   <PillText>{notificationCount}</PillText>
