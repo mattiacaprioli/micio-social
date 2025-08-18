@@ -13,6 +13,7 @@ import { usePathname } from "expo-router";
 
 const Container = styled.View`
   flex: 1;
+  padding-top: ${hp(6)}px;
   background-color: ${(props) => props.theme.colors.background};
 `;
 
@@ -31,15 +32,19 @@ const Ecommerce: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <Container theme={theme}>
-        <Header title="Ecommerce" showBackButton={false} />
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Ecommerce" showBackButton={false} />
+        </View>
 
-        <ContentContainer>
+        <Container theme={theme}>
+          <ContentContainer>
           <View>
             <Text>Ecommerce</Text>
           </View>
-        </ContentContainer>
-      </Container>
+          </ContentContainer>
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

@@ -184,35 +184,41 @@ const UserProfile: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <FlatList
-        data={posts}
-        ListHeaderComponent={<UserHeader user={userData} router={router} />}
-        ListHeaderComponentStyle={{ marginBottom: 30 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={ListStyle}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        onEndReached={() => getPosts()}
-        onEndReachedThreshold={0}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-          />
-        }
-        ListFooterComponent={
-          hasMore ? (
-            <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
-              <Loading />
-            </View>
-          ) : (
-            <View style={{ marginVertical: 30 }}>
-              <NoPostText>Non ci sono altri post</NoPostText>
-            </View>
-          )
-        }
-      />
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Profilo" mb={30} />
+        </View>
+
+        <FlatList
+          data={posts}
+          ListHeaderComponent={<UserHeader user={userData} router={router} />}
+          ListHeaderComponentStyle={{ marginBottom: 30 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[ListStyle, { paddingTop: hp(8) }]}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          onEndReached={() => getPosts()}
+          onEndReachedThreshold={0}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+            />
+          }
+          ListFooterComponent={
+            hasMore ? (
+              <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
+                <Loading />
+              </View>
+            ) : (
+              <View style={{ marginVertical: 30 }}>
+                <NoPostText>Non ci sono altri post</NoPostText>
+              </View>
+            )
+          }
+        />
+      </View>
     </ThemeWrapper>
   );
 };
@@ -310,10 +316,6 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   };
   return (
     <HeaderContainer>
-      <View>
-        <Header title="Profilo" mb={30} />
-      </View>
-
       <Container>
         <View style={{ gap: 15 }}>
           <AvatarContainer>

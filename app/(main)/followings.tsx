@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
@@ -25,6 +21,7 @@ interface RouteParams {
 // Styled Components
 const Container = styled.View`
   flex: 1;
+  padding-top: ${hp(6)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -37,13 +34,13 @@ const Item = styled.TouchableOpacity`
   padding-top: ${hp(2)}px;
   padding-bottom: ${hp(2)}px;
   border-bottom-width: 1px;
-  border-color: ${props => props.theme.colors.darkLight};
+  border-color: ${(props) => props.theme.colors.darkLight};
 `;
 
 const FollowingName = styled.Text`
   margin-left: ${wp(4)}px;
   font-size: ${hp(2.2)}px;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
 `;
 
 const EmptyListContainer = styled.View`
@@ -54,7 +51,7 @@ const EmptyListContainer = styled.View`
 `;
 
 const EmptyListText = styled.Text`
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
   font-size: ${hp(2)}px;
 `;
 
@@ -92,7 +89,11 @@ const Followings: React.FC = () => {
     }
   };
 
-  const renderItem = ({ item }: { item: FollowingInfo }): React.ReactElement => {
+  const renderItem = ({
+    item,
+  }: {
+    item: FollowingInfo;
+  }): React.ReactElement => {
     return (
       <Item onPress={() => openUserProfile(item.following.id)}>
         <Avatar
@@ -108,26 +109,39 @@ const Followings: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <Container>
-        <Header title="Following" />
-        <FlatList
-          data={followings}
-          keyExtractor={(item) => item.following_id.toString()}
-          renderItem={renderItem}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={fetchFollowings}
-              colors={[theme.colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyListContainer>
-              <EmptyListText>No followings found</EmptyListText>
-            </EmptyListContainer>
-          }
-        />
-      </Container>
+      <View style={{ flex: 1 }}>
+        {/* Header fisso */}
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
+        >
+          <Header title="Following" />
+        </View>
+        <Container>
+          <FlatList
+            data={followings}
+            keyExtractor={(item) => item.following_id.toString()}
+            renderItem={renderItem}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={fetchFollowings}
+                colors={[theme.colors.primary]}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyListContainer>
+                <EmptyListText>No followings found</EmptyListText>
+              </EmptyListContainer>
+            }
+          />
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

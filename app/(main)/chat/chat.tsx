@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FlatList, RefreshControl, Alert } from "react-native";
+import { FlatList, RefreshControl, Alert, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -25,6 +25,7 @@ import { usePathname } from "expo-router";
 const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
+  padding-top: ${hp(6)}px;
 `;
 
 const SearchContainer = styled.View`
@@ -247,20 +248,29 @@ const Chat: React.FC = () => {
   if (loading) {
     return (
       <ThemeWrapper>
-        <Container theme={theme}>
-          <Header title="Chat" />
-          <Loading />
-        </Container>
+        <View style={{ flex: 1 }}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+            <Header title="Chat" />
+          </View>
+
+          <Container theme={theme}>
+            <Loading />
+          </Container>
+        </View>
       </ThemeWrapper>
     );
   }
 
   return (
     <ThemeWrapper>
-      <Container theme={theme}>
-        <Header title="Chat" />
+      <View style={{ flex: 1 }}>
+        {/* Header fisso */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Chat" />
+        </View>
 
-        <SearchContainer theme={theme}>
+        <Container theme={theme}>
+          <SearchContainer theme={theme}>
           <Input
             placeholder="Search users to start a new chat..."
             value={searchQuery}
@@ -302,7 +312,8 @@ const Chat: React.FC = () => {
             />
           )}
         </ContentContainer>
-      </Container>
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

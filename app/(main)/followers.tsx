@@ -24,6 +24,7 @@ interface RouteParams {
 // Styled Components
 const Container = styled.View`
   flex: 1;
+  padding-top: ${hp(6)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -105,9 +106,14 @@ const Followers: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <Container>
-        <Header title="Follower" />
-        <FlatList
+      <View style={{ flex: 1 }}>
+        {/* Header fisso */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Follower" />
+        </View>
+
+        <Container>
+          <FlatList
           data={followers}
           keyExtractor={(item) => item.follower_id.toString()}
           renderItem={renderItem}
@@ -124,7 +130,8 @@ const Followers: React.FC = () => {
             </EmptyListContainer>
           }
         />
-      </Container>
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

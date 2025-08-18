@@ -24,6 +24,7 @@ interface Notification {
 
 const Container = styled.View`
   flex: 1;
+  padding-top: ${hp(6)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -73,9 +74,13 @@ const Notifications: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <Container>
-        <Header title="Notifiche" />
-        <ListStyle
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Notifiche" />
+        </View>
+
+        <Container>
+          <ListStyle
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 10 }}
           refreshControl={
@@ -98,7 +103,8 @@ const Notifications: React.FC = () => {
             <NoDataText>No notifications found</NoDataText>
           )}
         </ListStyle>
-      </Container>
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

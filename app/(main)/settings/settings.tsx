@@ -24,6 +24,7 @@ interface SettingsOption {
 // Styled Components
 const ScreenContainer = styled.View`
   flex: 1;
+  padding-top: ${hp(8)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -134,9 +135,14 @@ const Settings: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <ScreenContainer>
-        <Header title={"settings"} />
-        <Card>
+      <View style={{ flex: 1 }}>
+        {/* Header fisso */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title={"settings"} />
+        </View>
+
+        <ScreenContainer>
+          <Card>
           {settingsOptions.map((option, index) => (
             <Item
               key={index}
@@ -159,8 +165,9 @@ const Settings: React.FC = () => {
           <Title>{"micioSocial"}</Title>
           <VersionText>{"appVersion"} 1.0.0</VersionText>
         </View>
-        
-      </ScreenContainer>
+
+        </ScreenContainer>
+      </View>
     </ThemeWrapper>
   );
 };

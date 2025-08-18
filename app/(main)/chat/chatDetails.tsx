@@ -34,6 +34,7 @@ import { Ionicons } from "@expo/vector-icons";
 const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
+  padding-top: ${hp(6)}px;
 `;
 
 const MessagesContainer = styled.View`
@@ -402,10 +403,14 @@ const ChatDetails: React.FC = () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <Container theme={theme}>
-          <Header title={otherUserName} showBackButton />
+        <View style={{ flex: 1 }}>
+          {/* Header fisso */}
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+            <Header title={otherUserName} showBackButton />
+          </View>
 
-          <MessagesContainer>
+          <Container theme={theme}>
+            <MessagesContainer>
             <FlatList
               ref={flatListRef}
               data={messages}
@@ -428,7 +433,8 @@ const ChatDetails: React.FC = () => {
             isEditing={!!editingMessageId}
             onCancelEdit={handleCancelEdit}
           />
-        </Container>
+          </Container>
+        </View>
       </KeyboardAvoidingView>
       <RBSheet
         ref={bottomSheetRef}

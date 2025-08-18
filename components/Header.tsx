@@ -9,12 +9,15 @@ import { useTheme as useStyledTheme } from 'styled-components/native'
 
 // Styled Components
 const Container = styled.View<{ mb: number }>`
+  position: relative;
+  top: 0;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin-top: 5px;
   gap: 10px;
-  margin-bottom: ${(props) => props.mb}px;
+  background-color: ${(props) => props.theme.colors.background};
+  height: ${hp(5.5)}px;
+  z-index: 10;
 `;
 
 const Title = styled.Text<{ theme: Theme }>`

@@ -40,6 +40,7 @@ const Container = styled.View`
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
   background-color: ${(props) => props.theme.colors.background};
+  padding-top: ${hp(6)}px;
 `;
 
 const Form = styled.View`
@@ -229,141 +230,151 @@ const AccountSettings: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <ScrollView style={{ flex: 1 }}>
-        <Container>
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
+        >
           <Header title="Account Settings" />
-
-          <Form>
-            <SectionTitle>Update Personal Information</SectionTitle>
-            <Input
-              placeholder="Email"
-              value={personalInfo.email}
-              onChangeText={(text) =>
-                setPersonalInfo({ ...personalInfo, email: text })
-              }
-            />
-            <Button
-              title="Update Information"
-              loading={loading}
-              onPress={handleUpdatePersonalInfo}
-            />
-          </Form>
-
-          <Form>
-            <SectionTitle>Change Password</SectionTitle>
-            <Input
-              placeholder="Current Password"
-              secureTextEntry={!showCurrentPassword}
-              value={password.current}
-              onChangeText={(text) =>
-                setPassword({ ...password, current: text })
-              }
-              rightIcon={
-                <TouchableOpacity
-                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                >
-                  <Icon
-                    name={showCurrentPassword ? "eyeOff" : "eye"}
-                    size={22}
-                    color={theme.colors.textLight}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            <Input
-              placeholder="New Password"
-              secureTextEntry={!showNewPassword}
-              value={password.new}
-              onChangeText={(text) => setPassword({ ...password, new: text })}
-              rightIcon={
-                <TouchableOpacity
-                  onPress={() => setShowNewPassword(!showNewPassword)}
-                >
-                  <Icon
-                    name={showNewPassword ? "eyeOff" : "eye"}
-                    size={22}
-                    color={theme.colors.textLight}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            <Input
-              placeholder="Confirm New Password"
-              secureTextEntry={!showConfirmPassword}
-              value={password.confirm}
-              onChangeText={(text) =>
-                setPassword({ ...password, confirm: text })
-              }
-              rightIcon={
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <Icon
-                    name={showConfirmPassword ? "eyeOff" : "eye"}
-                    size={22}
-                    color={theme.colors.textLight}
-                  />
-                </TouchableOpacity>
-              }
-            />
-            {password.new.length > 0 && (
-              <View
-                style={{
-                  marginTop: 10,
-                  padding: 10,
-                  backgroundColor: theme.colors.gray,
-                  borderRadius: 8,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "600",
-                    color: theme.colors.textDark,
-                    marginBottom: 5,
-                  }}
-                >
-                  Password requirements:
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: validatePasswordStrength(password.new).isValid
-                      ? theme.colors.primary
-                      : theme.colors.rose,
-                  }}
-                >
-                  {validatePasswordStrength(password.new).isValid
-                    ? "✓ Valid password"
-                    : validatePasswordStrength(password.new).message}
-                </Text>
-              </View>
-            )}
-            <Button
-              title="Change Password"
-              loading={loading}
-              onPress={handleChangePassword}
-            />
-          </Form>
-
-          <Form>
-            <SectionTitle>App Settings</SectionTitle>
-            <SettingItem>
-              <SettingLabel>Dark Theme</SettingLabel>
-              <Switch
-                trackColor={{
-                  false: theme.colors.dark,
-                  true: theme.colors.primary,
-                }}
-                thumbColor={
-                  isDarkMode ? theme.colors.primary : theme.colors.textLight
+        </View>
+        <ScrollView style={{ flex: 1 }}>
+          <Container>
+            {/* <Form>
+              <SectionTitle>Update Personal Information</SectionTitle>
+              <Input
+                placeholder="Email"
+                value={personalInfo.email}
+                onChangeText={(text) =>
+                  setPersonalInfo({ ...personalInfo, email: text })
                 }
-                onValueChange={handleToggleTheme}
-                value={isDarkMode}
               />
-            </SettingItem>
-            {/* TODO: fix change language */}
-            {/* <SettingItem>
+              <Button
+                title="Update Information"
+                loading={loading}
+                onPress={handleUpdatePersonalInfo}
+              />
+            </Form> */}
+
+            <Form>
+              <SectionTitle>Change Password</SectionTitle>
+              <Input
+                placeholder="Current Password"
+                secureTextEntry={!showCurrentPassword}
+                value={password.current}
+                onChangeText={(text) =>
+                  setPassword({ ...password, current: text })
+                }
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    <Icon
+                      name={showCurrentPassword ? "eyeOff" : "eye"}
+                      size={22}
+                      color={theme.colors.textLight}
+                    />
+                  </TouchableOpacity>
+                }
+              />
+              <Input
+                placeholder="New Password"
+                secureTextEntry={!showNewPassword}
+                value={password.new}
+                onChangeText={(text) => setPassword({ ...password, new: text })}
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    <Icon
+                      name={showNewPassword ? "eyeOff" : "eye"}
+                      size={22}
+                      color={theme.colors.textLight}
+                    />
+                  </TouchableOpacity>
+                }
+              />
+              <Input
+                placeholder="Confirm New Password"
+                secureTextEntry={!showConfirmPassword}
+                value={password.confirm}
+                onChangeText={(text) =>
+                  setPassword({ ...password, confirm: text })
+                }
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Icon
+                      name={showConfirmPassword ? "eyeOff" : "eye"}
+                      size={22}
+                      color={theme.colors.textLight}
+                    />
+                  </TouchableOpacity>
+                }
+              />
+              {password.new.length > 0 && (
+                <View
+                  style={{
+                    marginTop: 10,
+                    padding: 10,
+                    backgroundColor: theme.colors.gray,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "600",
+                      color: theme.colors.textDark,
+                      marginBottom: 5,
+                    }}
+                  >
+                    Password requirements:
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: validatePasswordStrength(password.new).isValid
+                        ? theme.colors.primary
+                        : theme.colors.rose,
+                    }}
+                  >
+                    {validatePasswordStrength(password.new).isValid
+                      ? "✓ Valid password"
+                      : validatePasswordStrength(password.new).message}
+                  </Text>
+                </View>
+              )}
+              <Button
+                title="Change Password"
+                loading={loading}
+                onPress={handleChangePassword}
+              />
+            </Form>
+
+            <Form>
+              <SectionTitle>App Settings</SectionTitle>
+              <SettingItem>
+                <SettingLabel>Dark Theme</SettingLabel>
+                <Switch
+                  trackColor={{
+                    false: theme.colors.dark,
+                    true: theme.colors.primary,
+                  }}
+                  thumbColor={
+                    isDarkMode ? theme.colors.primary : theme.colors.textLight
+                  }
+                  onValueChange={handleToggleTheme}
+                  value={isDarkMode}
+                />
+              </SettingItem>
+              {/* TODO: fix change language */}
+              {/* <SettingItem>
               <SettingLabel>Language</SettingLabel>
               <LanguageButton
                 onPress={toggleLanguage}
@@ -371,18 +382,19 @@ const AccountSettings: React.FC = () => {
                 <LanguageText>{language}</LanguageText>
               </LanguageButton>
             </SettingItem> */}
-          </Form>
+            </Form>
 
-          <Form>
-            <SectionTitle>Deactivate Account</SectionTitle>
-            <Button
-              title="Deactivate Account"
-              buttonStyle={{ backgroundColor: theme.colors.rose }}
-              onPress={handleDeactivateAccount}
-            />
-          </Form>
-        </Container>
-      </ScrollView>
+            <Form>
+              <SectionTitle>Deactivate Account</SectionTitle>
+              <Button
+                title="Deactivate Account"
+                buttonStyle={{ backgroundColor: theme.colors.rose }}
+                onPress={handleDeactivateAccount}
+              />
+            </Form>
+          </Container>
+        </ScrollView>
+      </View>
     </ThemeWrapper>
   );
 };

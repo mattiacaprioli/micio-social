@@ -177,27 +177,47 @@ const Profile: React.FC = () => {
     )
   );
 
+  const settingsButton = (
+    <SettingsButton
+      onPress={() => router.push("/settings/settings")}
+    >
+      <Icon
+        name="settings"
+        size={hp(2.5)}
+        color={theme.colors.textDark}
+      />
+    </SettingsButton>
+  );
+
   return (
     <ThemeWrapper>
-      <FlatList
-        data={posts}
-        ListHeaderComponent={user && 'name' in user ? <UserHeader user={user} router={router} /> : null}
-        ListHeaderComponentStyle={{ marginBottom: 30 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={ListStyle}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        onEndReached={() => getPosts()}
-        onEndReachedThreshold={0}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-          />
-        }
-        ListFooterComponent={renderFooter}
-      />
+      <View style={{ flex: 1 }}>
+        {/* Header fisso */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title={'profile'} mb={30} rightButton={settingsButton} showBackButton={false} />
+        </View>
+
+        {/* Contenuto scrollabile */}
+        <FlatList
+          data={posts}
+          ListHeaderComponent={user && 'name' in user ? <UserHeader user={user} router={router} /> : null}
+          ListHeaderComponentStyle={{ marginBottom: 30 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[ListStyle, { paddingTop: hp(8) }]}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          onEndReached={() => getPosts()}
+          onEndReachedThreshold={0}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+            />
+          }
+          ListFooterComponent={renderFooter}
+        />
+      </View>
     </ThemeWrapper>
   );
 };
@@ -221,23 +241,9 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
     fetchCounts();
   }, [user]);
 
-  const settingsButton = (
-    <SettingsButton
-      onPress={() => router.push("/settings/settings")}
-    >
-      <Icon
-        name="settings"
-        size={hp(2.5)}
-        color={theme.colors.textDark}
-      />
-    </SettingsButton>
-  );
-
   return (
     <HeaderContainer>
       <View>
-        <Header title={'profile'} mb={30} rightButton={settingsButton} showBackButton={false} />
-
         <AvatarContainer>
           <Avatar
             size={hp(12)}

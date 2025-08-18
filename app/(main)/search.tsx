@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FlatList, ActivityIndicator, Keyboard, Alert } from "react-native";
+import { FlatList, ActivityIndicator, Keyboard, Alert, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useRouter } from "expo-router";
@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 // Styled Components
 const Container = styled.View`
   flex: 1;
-  padding-top: ${wp(2)}px;
+  padding-top: ${hp(6)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
 `;
@@ -131,11 +131,14 @@ const Search: React.FC = () => {
 
   return (
     <ThemeWrapper>
-      <Container>
-        <Header title="Search" />
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+          <Header title="Search" />
+        </View>
 
-        {/* Barra di ricerca */}
-        <SearchContainer>
+        <Container>
+          {/* Barra di ricerca */}
+          <SearchContainer>
           <Icon name="search" size={hp(2.5)} color={theme.colors.textLight} />
           <SearchInput
             placeholder="Search users..."
@@ -189,7 +192,8 @@ const Search: React.FC = () => {
             </NoResultsContainer>
           )
         )}
-      </Container>
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };
