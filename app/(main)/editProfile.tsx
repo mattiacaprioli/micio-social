@@ -18,7 +18,7 @@ import { UserRow } from "../../src/types/supabase";
 // Interfacce per i tipi
 interface UserFormData {
   name: string;
-  address?: string;
+  website?: string;
   bio?: string;
   phoneNumber?: string;
   birthday?: string;
@@ -206,7 +206,7 @@ const EditProfile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<UserFormData>({
     name: "",
-    address: "",
+    website: "",
     bio: "",
     phoneNumber: "",
     birthday: "",
@@ -235,7 +235,7 @@ const EditProfile: React.FC = () => {
         const extUser = currentUser as ExtendedUser; // Cast esplicito per TypeScript
         setUser({
           name: extUser.name || "",
-          address: extUser.address || "",
+          website: extUser.website || "",
           bio: extUser.bio || "",
           phoneNumber: extUser.phoneNumber || "", // Utilizziamo phoneNumber (camelCase)
           birthday: extUser.birthday || "",
@@ -259,7 +259,7 @@ const EditProfile: React.FC = () => {
         // Se non è un ExtendedUser, inizializziamo con valori vuoti
         setUser({
           name: "",
-          address: "",
+          website: "",
           bio: "",
           phoneNumber: "",
           birthday: "",
@@ -294,8 +294,8 @@ const EditProfile: React.FC = () => {
   };
 
   const onSubmit = async (): Promise<void> => {
-    const { name, address, bio, birthday, gender, image } = user;
-    if (!name || !address || !bio || !phoneNumber || !birthday || !gender) {
+    const { name, website, bio, birthday, gender, image } = user;
+    if (!name || !bio || !phoneNumber || !birthday || !gender) {
       Alert.alert("Profile", "Please fill all required fields");
       return;
     }
@@ -320,7 +320,7 @@ const EditProfile: React.FC = () => {
     // Utilizziamo phoneNumber (camelCase) che è il nome corretto della colonna nel database
     const updatedUser: UpdateUserData = {
       name,
-      address,
+      website,
       bio,
       birthday,
       gender,
@@ -346,7 +346,7 @@ const EditProfile: React.FC = () => {
         const updatedExtendedUser: ExtendedUser = {
           ...(currentUser as ExtendedUser),
           name: updatedUser.name || (currentUser as ExtendedUser).name,
-          address: updatedUser.address,
+          website: updatedUser.website,
           bio: updatedUser.bio,
           birthday: updatedUser.birthday,
           gender: updatedUser.gender,
@@ -406,10 +406,10 @@ const EditProfile: React.FC = () => {
                 onChangeText={(value) => setUser({ ...user, name: value })}
               />
               <Input
-                icon={<Icon name="location" />}
-                placeholder="Enter your city"
-                value={user.address}
-                onChangeText={(value) => setUser({ ...user, address: value })}
+                icon={<Icon name="link" />}
+                placeholder="Enter your website"
+                value={user.website}
+                onChangeText={(value) => setUser({ ...user, website: value })}
               />
 
               {/* BIO con limite di 200 caratteri e contatore */}

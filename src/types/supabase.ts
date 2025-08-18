@@ -40,7 +40,7 @@ export interface UserRow {
   email: string;
   image?: string;
   bio?: string;
-  address?: string;
+  website?: string;
   birthday?: string;
   gender?: string;
   phoneNumber?: string;

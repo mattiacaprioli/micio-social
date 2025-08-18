@@ -124,3 +124,7 @@ export const ShoppingCart = ({ size, color, ...props }) => (
 export const CatIcon = ({ size, color, ...props }) => (
   <Icon name="github" size={size} color={color} {...props} />
 );
+
+export const LinkIcon = ({ size, color, ...props }) => (
+  <Icon name="link" size={size} color={color} {...props} />
+);

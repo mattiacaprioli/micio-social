@@ -7,6 +7,7 @@ import {
   RefreshControl,
   View,
   ListRenderItem,
+  Linking,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
@@ -241,6 +242,23 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
     fetchCounts();
   }, [user]);
 
+  const openWebsite = async (url: string): Promise<void> => {
+    try {
+      const formattedUrl = url.startsWith('http://') || url.startsWith('https://')
+        ? url
+        : `https://${url}`;
+
+      const supported = await Linking.canOpenURL(formattedUrl);
+      if (supported) {
+        await Linking.openURL(formattedUrl);
+      } else {
+        Alert.alert("Error", "Cannot open this URL");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Cannot open this URL");
+    }
+  };
+
   return (
     <HeaderContainer>
       <View>
@@ -267,15 +285,19 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           )}
 
           <InfoContainer>
-            {user?.address && (
-              <InfoRow>
-                <Icon
-                  name="location"
-                  size={hp(2)}
-                  color={theme.colors.textLight}
-                />
-                <InfoText>{user.address}</InfoText>
-              </InfoRow>
+            {user?.website && (
+              <TouchableOpacity onPress={() => openWebsite(user.website!)}>
+                <InfoRow>
+                  <Icon
+                    name="link"
+                    size={hp(2)}
+                    color={theme.colors.primary}
+                  />
+                  <InfoText style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+                    {user.website}
+                  </InfoText>
+                </InfoRow>
+              </TouchableOpacity>
             )}
           </InfoContainer>
 

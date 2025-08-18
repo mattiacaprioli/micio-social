@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   ListRenderItem,
+  Linking,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components/native";
@@ -232,6 +233,23 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
+  const openWebsite = async (url: string): Promise<void> => {
+    try {
+      const formattedUrl = url.startsWith('http://') || url.startsWith('https://')
+        ? url
+        : `https://${url}`;
+
+      const supported = await Linking.canOpenURL(formattedUrl);
+      if (supported) {
+        await Linking.openURL(formattedUrl);
+      } else {
+        Alert.alert("Error", "Cannot open this URL");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Cannot open this URL");
+    }
+  };
+
   useEffect(() => {
     const fetchCounts = async (): Promise<void> => {
       if (user?.id) {
@@ -329,7 +347,13 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
 
           <View style={{ alignItems: "center", gap: 4 }}>
             <UserName>{user?.name}</UserName>
-            <InfoText>{user?.address}</InfoText>
+            {user?.website && (
+              <TouchableOpacity onPress={() => openWebsite(user.website!)}>
+                <InfoText style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
+                  {user.website}
+                </InfoText>
+              </TouchableOpacity>
+            )}
             {user?.bio && <InfoText>{user.bio}</InfoText>}
           </View>
 

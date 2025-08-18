@@ -32,6 +32,7 @@ import {
   CheckIcon,
   ShoppingCart,
   CatIcon,
+  LinkIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -67,6 +68,7 @@ const icons = {
   check: CheckIcon,
   shoppingCart: ShoppingCart,
   catIcon: CatIcon,
+  link: LinkIcon,
 }
 
 const Icon = ({name, ...props}) => {

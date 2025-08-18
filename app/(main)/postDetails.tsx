@@ -134,7 +134,7 @@ const PostDetails: React.FC = () => {
         email: res.data.email,
         image: res.data.image,
         bio: res.data.bio,
-        address: res.data.address,
+        website: res.data.website,
         birthday: res.data.birthday,
         gender: res.data.gender,
         phoneNumber: res.data.phoneNumber
