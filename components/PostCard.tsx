@@ -6,6 +6,7 @@ import {
   Share,
   TouchableWithoutFeedback,
   Animated,
+  FlatList,
 } from "react-native";
 import React, { useEffect, useState, useRef } from "react";
 import styled, { css } from "styled-components/native";
@@ -18,12 +19,13 @@ import RenderHtml from "react-native-render-html";
 import { Image } from "expo-image";
 import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video, ResizeMode } from "expo-av";
-import { createPostLike, removePostLike, PostWithRelations } from "../services/postService";
+import { createPostLike, removePostLike, PostWithRelations, getPostLikeUsers } from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
 import { useTheme } from "../context/ThemeContext";
 import { User } from "../src/types";
 import { Router } from "expo-router";
+import RBSheet from "react-native-raw-bottom-sheet";
 
 interface PostLike {
   userId: string;
@@ -157,6 +159,33 @@ const Actions = styled.View`
 const Count = styled.Text`
   color: ${props => props.theme.colors.text};
   font-size: ${hp(1.8)}px;
+  padding: ${hp(0.3)}px;
+`;
+
+const ModalContent = styled.View`
+  padding: ${wp(4)}px;
+  max-height: ${hp(60)}px;
+`;
+
+const ModalTitle = styled.Text`
+  font-size: ${hp(2.2)}px;
+  font-weight: ${props => props.theme.fonts.bold};
+  color: ${props => props.theme.colors.textDark};
+  text-align: center;
+  margin-bottom: ${hp(2)}px;
+`;
+
+const UserItem = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  padding: ${hp(1.5)}px 0;
+  gap: ${wp(3)}px;
+`;
+
+const UserItemName = styled.Text`
+  font-size: ${hp(1.8)}px;
+  color: ${props => props.theme.colors.textDark};
+  font-weight: ${props => props.theme.fonts.medium};
 `;
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -174,11 +203,14 @@ const PostCard: React.FC<PostCardProps> = ({
   const [likes, setLikes] = useState<PostLike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [showHeart, setShowHeart] = useState<boolean>(false);
+  const [likeUsers, setLikeUsers] = useState<any[]>([]);
+  const [loadingLikeUsers, setLoadingLikeUsers] = useState<boolean>(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
   const heartScale = useRef(new Animated.Value(0)).current;
   const lastTap = useRef<number>(0);
+  const likesModalRef = useRef<any>(null);
 
   const handleDoubleTap = () => {
     if (!liked) {
@@ -300,6 +332,45 @@ const PostCard: React.FC<PostCardProps> = ({
     }
     Share.share(content);
   };
+
+  const openLikesModal = async () => {
+    if (likes.length === 0) return;
+
+    setLoadingLikeUsers(true);
+    const res = await getPostLikeUsers(item?.id);
+    setLoadingLikeUsers(false);
+
+    if (res.success) {
+      setLikeUsers(res.data || []);
+      likesModalRef.current?.open();
+    } else {
+      Alert.alert("Error", "Could not load users who liked this post");
+    }
+  };
+
+  const navigateToUserProfile = (userId: string) => {
+    likesModalRef.current?.close();
+    if (userId === currentUser?.id) {
+      router.push("/profile");
+    } else {
+      router.push({
+        pathname: "/userProfile",
+        params: { userId }
+      });
+    }
+  };
+
+  const renderLikeUser = ({ item: likeItem }: { item: any }) => (
+    <UserItem onPress={() => navigateToUserProfile(likeItem.users?.id)}>
+      <Avatar
+        uri={likeItem.users?.image}
+        size={hp(5)}
+        rounded={theme.radius.md}
+        isDarkMode={isDarkMode}
+      />
+      <UserItemName>{likeItem.users?.name}</UserItemName>
+    </UserItem>
+  );
 
   const handlePostDelete = () => {
     Alert.alert("Confirm", "Are you sure you want to do this?", [
@@ -425,7 +496,9 @@ const PostCard: React.FC<PostCardProps> = ({
                 <Icon name="heart" size={24} color={theme.colors.textLight} />
               )}
             </TouchableOpacity>
-            <Count>{likes?.length}</Count>
+            <TouchableOpacity disabled={likes.length === 0} onPress={openLikesModal}>
+              <Count>{likes?.length}</Count>
+            </TouchableOpacity>
           </FooterButton>
           <FooterButton>
             <TouchableOpacity onPress={openPostDetails}>
@@ -446,6 +519,42 @@ const PostCard: React.FC<PostCardProps> = ({
           </FooterButton>
         </Footer>
       </Content>
+
+      <RBSheet
+        ref={likesModalRef}
+        height={hp(60)}
+        openDuration={250}
+        customStyles={{
+          container: {
+            borderTopLeftRadius: wp(4),
+            borderTopRightRadius: wp(4),
+            backgroundColor: theme.colors.background,
+          },
+        }}
+      >
+        <ModalContent>
+          <ModalTitle>Liked by</ModalTitle>
+          {loadingLikeUsers ? (
+            <Loading />
+          ) : (
+            <FlatList
+              data={likeUsers}
+              keyExtractor={(item) => item.userId}
+              renderItem={renderLikeUser}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <Text style={{
+                  textAlign: 'center',
+                  color: theme.colors.textLight,
+                  marginTop: hp(2)
+                }}>
+                  No likes yet
+                </Text>
+              }
+            />
+          )}
+        </ModalContent>
+      </RBSheet>
     </Container>
   );
 };

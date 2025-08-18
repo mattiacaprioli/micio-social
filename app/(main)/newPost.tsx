@@ -47,6 +47,7 @@ interface MediaFile {
 const Container = styled.View`
   flex: 1;
   margin-bottom: 30px;
+  padding-top: ${hp(6)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
   gap: 15px;
@@ -60,14 +61,14 @@ const HeaderContainer = styled.View`
 
 const UserName = styled.Text`
   font-size: ${hp(2.2)}px;
-  font-weight: ${props => props.theme.fonts.semibold};
-  color: ${props => props.theme.colors.text};
+  font-weight: ${(props) => props.theme.fonts.semibold};
+  color: ${(props) => props.theme.colors.text};
 `;
 
 const PublicText = styled.Text`
   font-size: ${hp(1.7)}px;
-  font-weight: ${props => props.theme.fonts.medium};
-  color: ${props => props.theme.colors.textLight};
+  font-weight: ${(props) => props.theme.fonts.medium};
+  color: ${(props) => props.theme.colors.textLight};
 `;
 
 const TextEditorContainer = styled.View`
@@ -82,8 +83,8 @@ const MediaContainer = styled.View`
   padding: 12px;
   padding-left: 18px;
   padding-right: 18px;
-  border-radius: ${props => props.theme.radius.xl}px;
-  border-color: ${props => props.theme.colors.gray};
+  border-radius: ${(props) => props.theme.radius.xl}px;
+  border-color: ${(props) => props.theme.colors.gray};
   margin-bottom: 15px;
 `;
 
@@ -95,14 +96,14 @@ const MediaIconsContainer = styled.View`
 
 const AddImageText = styled.Text`
   font-size: ${hp(1.9)}px;
-  font-weight: ${props => props.theme.fonts.semibold};
-  color: ${props => props.theme.colors.text};
+  font-weight: ${(props) => props.theme.fonts.semibold};
+  color: ${(props) => props.theme.colors.text};
 `;
 
 const FileContainer = styled.View`
   height: ${hp(30)}px;
   width: 100%;
-  border-radius: ${props => props.theme.radius.xl}px;
+  border-radius: ${(props) => props.theme.radius.xl}px;
   overflow: hidden;
 `;
 
@@ -112,7 +113,7 @@ const CloseIcon = styled.Pressable`
   right: 10px;
   padding: 7px;
   border-radius: 50px;
-  background-color: rgba(225,0,0,0.5);
+  background-color: rgba(225, 0, 0, 0.5);
 `;
 
 // Componenti per la selezione della categoria
@@ -122,8 +123,8 @@ const CategoryContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.9)}px;
-  font-weight: ${props => props.theme.fonts.semibold};
-  color: ${props => props.theme.colors.text};
+  font-weight: ${(props) => props.theme.fonts.semibold};
+  color: ${(props) => props.theme.colors.text};
   margin-bottom: 10px;
 `;
 
@@ -138,14 +139,17 @@ const CategoryOption = styled.TouchableOpacity<{ isSelected?: boolean }>`
   padding-right: 15px;
   padding-top: 8px;
   padding-bottom: 8px;
-  border-radius: ${props => props.theme.radius.md}px;
-  background-color: ${props => props.isSelected ? props.theme.colors.primary : props.theme.colors.darkLight};
+  border-radius: ${(props) => props.theme.radius.md}px;
+  background-color: ${(props) =>
+    props.isSelected
+      ? props.theme.colors.primary
+      : props.theme.colors.darkLight};
 `;
 
 const CategoryText = styled.Text<{ isSelected?: boolean }>`
   font-size: ${hp(1.6)}px;
-  font-weight: ${props => props.theme.fonts.medium};
-  color: ${props => props.isSelected ? 'white' : props.theme.colors.text};
+  font-weight: ${(props) => props.theme.fonts.medium};
+  color: ${(props) => (props.isSelected ? "white" : props.theme.colors.text)};
 `;
 
 const NewPost: React.FC = () => {
@@ -156,21 +160,23 @@ const NewPost: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [file, setFile] = useState<MediaFile | string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
   // Categorie disponibili (manteniamo le stesse della home)
   const categories = [
-    { id: 'funny', label: 'Funny' },
-    { id: 'cute', label: 'Cute' },
-    { id: 'amazing', label: 'Amazing' },
-    { id: 'pets', label: 'Pets' },
-    { id: 'nature', label: 'Nature' },
+    { id: "funny", label: "Funny" },
+    { id: "cute", label: "Cute" },
+    { id: "amazing", label: "Amazing" },
+    { id: "pets", label: "Pets" },
+    { id: "nature", label: "Nature" },
   ];
 
   useEffect(() => {
-    if(post && post.id){
+    if (post && post.id) {
       bodyRef.current = post.body || "";
       setFile(post.file || null);
       setSelectedCategory(post.category);
@@ -182,14 +188,14 @@ const NewPost: React.FC = () => {
 
   const onPick = async (isImage: boolean): Promise<void> => {
     let mediaConfig: ImagePicker.ImagePickerOptions = {
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.7,
     };
     if (!isImage) {
       mediaConfig = {
-        mediaTypes: ['videos'],
+        mediaTypes: ["videos"],
         allowsEditing: true,
         quality: 0.7,
       };
@@ -201,7 +207,8 @@ const NewPost: React.FC = () => {
       // Converti l'asset in un oggetto MediaFile
       const asset = result.assets[0];
       // Assicurati che il tipo sia compatibile con PostFile
-      const fileType = asset.type === 'image' || asset.type === 'video' ? asset.type : 'image';
+      const fileType =
+        asset.type === "image" || asset.type === "video" ? asset.type : "image";
       setFile({
         uri: asset.uri,
         type: fileType,
@@ -226,7 +233,7 @@ const NewPost: React.FC = () => {
     }
 
     // check image or video for remote file
-    if (typeof file === 'string' && file.includes("postImages")) {
+    if (typeof file === "string" && file.includes("postImages")) {
       return "image";
     }
 
@@ -243,7 +250,7 @@ const NewPost: React.FC = () => {
   };
 
   const onSubmit = async (): Promise<void> => {
-    if(!bodyRef.current && !file){
+    if (!bodyRef.current && !file) {
       Alert.alert("Post", "Please add content or image");
       return;
     }
@@ -256,110 +263,124 @@ const NewPost: React.FC = () => {
       category: selectedCategory,
     } as any; // Utilizziamo any per evitare problemi di tipo
 
-    if(post && post.id){
+    if (post && post.id) {
       data.id = post.id;
     }
 
     setLoading(true);
     let res = await createOrUpdatePost(data);
     setLoading(false);
-    if(res.success){
+    if (res.success) {
       setFile(null);
       bodyRef.current = "";
       editorRef.current?.setContentHTML("");
       router.back();
-    }else{
+    } else {
       Alert.alert("Post", res.msg || "Error creating post");
     }
   };
 
   return (
     <ThemeWrapper>
-      <Container>
-        <Header title={post && post.id ? "Edit Post" : "New Post"} />
-        <ScrollView contentContainerStyle={{ gap: 20 }}>
-          {/* avatar */}
-          <HeaderContainer>
-            <Avatar
-              uri={user && 'image' in user ? user.image : undefined}
-              size={hp(6.5)}
-              rounded={theme.radius.xl}
-              isDarkMode={isDarkMode}
-            />
-            <View style={{ gap: 2 }}>
-              <UserName>{user && 'name' in user ? user.name : ''}</UserName>
-              <PublicText>Public</PublicText>
-            </View>
-          </HeaderContainer>
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
+        >
+          <Header title={post && post.id ? "Edit Post" : "New Post"} />
+        </View>
+        <Container>
+          <ScrollView contentContainerStyle={{ gap: 20 }}>
+            {/* avatar */}
+            <HeaderContainer>
+              <Avatar
+                uri={user && "image" in user ? user.image : undefined}
+                size={hp(6.5)}
+                rounded={theme.radius.xl}
+                isDarkMode={isDarkMode}
+              />
+              <View style={{ gap: 2 }}>
+                <UserName>{user && "name" in user ? user.name : ""}</UserName>
+                <PublicText>Public</PublicText>
+              </View>
+            </HeaderContainer>
 
-          <TextEditorContainer>
-            <RichTextEditor
-              editorRef={editorRef}
-              onChange={(body) => (bodyRef.current = body)}
-            />
-          </TextEditorContainer>
+            <TextEditorContainer>
+              <RichTextEditor
+                editorRef={editorRef}
+                onChange={(body) => (bodyRef.current = body)}
+              />
+            </TextEditorContainer>
 
-          {file && (
-            <FileContainer>
-              {getFileType(file) === "video" ? (
-                <Video
-                  style={{flex: 1}}
-                  source={{uri: getFileUri(file) || ''}}
-                  useNativeControls
-                  // @ts-ignore - Ignora l'errore di tipo per resizeMode
-                  resizeMode="contain"
-                  isLooping
-                />
-              ) : (
-                <Image
-                  source={{ uri: getFileUri(file) || '' }}
-                  resizeMode="cover"
-                  style={{ flex: 1 }}
-                />
-              )}
-              <CloseIcon onPress={() => setFile(null)}>
-                <Icon name="delete" size={20} color="white" />
-              </CloseIcon>
-            </FileContainer>
-          )}
+            {file && (
+              <FileContainer>
+                {getFileType(file) === "video" ? (
+                  <Video
+                    style={{ flex: 1 }}
+                    source={{ uri: getFileUri(file) || "" }}
+                    useNativeControls
+                    // @ts-ignore - Ignora l'errore di tipo per resizeMode
+                    resizeMode="contain"
+                    isLooping
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: getFileUri(file) || "" }}
+                    resizeMode="cover"
+                    style={{ flex: 1 }}
+                  />
+                )}
+                <CloseIcon onPress={() => setFile(null)}>
+                  <Icon name="delete" size={20} color="white" />
+                </CloseIcon>
+              </FileContainer>
+            )}
 
-          <MediaContainer>
-            <AddImageText>Add to your post</AddImageText>
-            <MediaIconsContainer>
-              <TouchableOpacity onPress={() => onPick(true)}>
-                <Icon name="image" size={30} color={theme.colors.dark} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => onPick(false)}>
-                <Icon name="video" size={33} color={theme.colors.dark} />
-              </TouchableOpacity>
-            </MediaIconsContainer>
-          </MediaContainer>
+            <MediaContainer>
+              <AddImageText>Add to your post</AddImageText>
+              <MediaIconsContainer>
+                <TouchableOpacity onPress={() => onPick(true)}>
+                  <Icon name="image" size={30} color={theme.colors.dark} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onPick(false)}>
+                  <Icon name="video" size={33} color={theme.colors.dark} />
+                </TouchableOpacity>
+              </MediaIconsContainer>
+            </MediaContainer>
 
-          {/* Selezione della categoria */}
-          <CategoryContainer>
-            <CategoryLabel>Select Category</CategoryLabel>
-            {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
-            <CategoryOptionsContainer>
-              {categories.map(category => (
-                <CategoryOption
-                  key={category.id}
-                  isSelected={selectedCategory === category.id}
-                  onPress={() => setSelectedCategory(category.id)}
-                >
-                  <CategoryText isSelected={selectedCategory === category.id}>{category.label}</CategoryText>
-                </CategoryOption>
-              ))}
-            </CategoryOptionsContainer>
-          </CategoryContainer>
-        </ScrollView>
-        <Button
-          buttonStyle={{ height: hp(6.2) }}
-          title={post && post.id ? "Update" : "Post"}
-          loading={loading}
-          hasShadow={false}
-          onPress={onSubmit}
-        />
-      </Container>
+            {/* Selezione della categoria */}
+            <CategoryContainer>
+              <CategoryLabel>Select Category</CategoryLabel>
+              {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
+              <CategoryOptionsContainer>
+                {categories.map((category) => (
+                  <CategoryOption
+                    key={category.id}
+                    isSelected={selectedCategory === category.id}
+                    onPress={() => setSelectedCategory(category.id)}
+                  >
+                    <CategoryText isSelected={selectedCategory === category.id}>
+                      {category.label}
+                    </CategoryText>
+                  </CategoryOption>
+                ))}
+              </CategoryOptionsContainer>
+            </CategoryContainer>
+          </ScrollView>
+          <Button
+            buttonStyle={{ height: hp(6.2) }}
+            title={post && post.id ? "Update" : "Post"}
+            loading={loading}
+            hasShadow={false}
+            onPress={onSubmit}
+          />
+        </Container>
+      </View>
     </ThemeWrapper>
   );
 };

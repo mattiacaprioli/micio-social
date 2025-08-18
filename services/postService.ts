@@ -195,6 +195,32 @@ export const removePostLike = async (postId: string, userId: string): Promise<Ap
   }
 };
 
+export const getPostLikeUsers = async (postId: string): Promise<ApiResponse<any[]>> => {
+  try {
+    const { data, error } = await supabase
+      .from("postLikes")
+      .select(`
+        userId,
+        users:userId (
+          id,
+          name,
+          image
+        )
+      `)
+      .eq("postId", postId);
+
+    if (error) {
+      console.log("getPostLikeUsers error: ", error);
+      return { success: false, msg: "Could not fetch like users" };
+    }
+
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.log("getPostLikeUsers error: ", error);
+    return { success: false, msg: "Could not fetch like users" };
+  }
+};
+
 export const createComment = async (comment: Comment): Promise<ApiResponse<Comment>> => {
   try {
     const { data, error } = await supabase
