@@ -18,7 +18,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "../../components/Header";
 import { wp, hp } from "../../helpers/common";
 import Avatar from "../../components/Avatar";
-import { fetchPost } from "../../services/postService";
+import { fetchPost, getUserPostsCount } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import {
@@ -228,6 +228,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { user: currentUser } = useAuth();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
+  const [postsCount, setPostsCount] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [creating, setCreating] = useState(false);
   const { isDarkMode } = useTheme();
@@ -255,8 +256,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
         const following = await getFollowingCount(user.id);
+        const posts = await getUserPostsCount(user.id);
         setFollowersCount(followers);
         setFollowingCount(following);
+        setPostsCount(posts);
       }
     };
 
@@ -358,6 +361,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           </View>
 
           <FollowContainer>
+            <FollowItem>
+              <FollowCount>{postsCount}</FollowCount>
+              <FollowLabel>Posts</FollowLabel>
+            </FollowItem>
             <TouchableOpacity
               onPress={() =>
                 router.push({

@@ -221,6 +221,25 @@ export const getPostLikeUsers = async (postId: string): Promise<ApiResponse<any[
   }
 };
 
+export const getUserPostsCount = async (userId: string): Promise<number> => {
+  try {
+    const { count, error } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true })
+      .eq("userId", userId);
+
+    if (error) {
+      console.log("getUserPostsCount error: ", error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.log("getUserPostsCount error: ", error);
+    return 0;
+  }
+};
+
 export const createComment = async (comment: Comment): Promise<ApiResponse<Comment>> => {
   try {
     const { data, error } = await supabase

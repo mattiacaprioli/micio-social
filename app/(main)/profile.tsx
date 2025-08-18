@@ -20,7 +20,7 @@ import { wp, hp } from "../../helpers/common";
 import Icon from "../../assets/icons";
 import { useTheme } from "../../context/ThemeContext";
 import Avatar from "../../components/Avatar";
-import { fetchPost } from "../../services/postService";
+import { fetchPost, getUserPostsCount } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import {
@@ -226,6 +226,7 @@ const Profile: React.FC = () => {
 const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
+  const [postsCount, setPostsCount] = useState<number>(0);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
@@ -234,8 +235,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (user?.id) {
         const followers = await getFollowersCount(user.id);
         const following = await getFollowingCount(user.id);
+        const posts = await getUserPostsCount(user.id);
         setFollowersCount(followers);
         setFollowingCount(following);
+        setPostsCount(posts);
       }
     };
 
@@ -302,6 +305,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           </InfoContainer>
 
           <FollowContainer>
+            <FollowItem>
+              <FollowCount>{postsCount}</FollowCount>
+              <FollowLabel>{'posts'}</FollowLabel>
+            </FollowItem>
             <TouchableOpacity onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
               <FollowItem>
                 <FollowCount>{followersCount}</FollowCount>
