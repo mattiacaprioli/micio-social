@@ -120,6 +120,114 @@ const RowContainer = styled.View`
   margin-top: 10px;
 `;
 
+// Nuovi styled components per il design migliorato
+const ModernProfileSection = styled.View`
+  align-items: center;
+  padding: ${hp(2)}px;
+  background-color: ${(props) => props.theme.colors.background};
+`;
+
+const ModernAvatarContainer = styled.View`
+  margin-bottom: ${hp(2)}px;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.15;
+  shadow-radius: 12px;
+  elevation: 8;
+`;
+
+const UserInfoSection = styled.View`
+  align-items: center;
+  margin-bottom: ${hp(2.5)}px;
+  gap: ${hp(0.8)}px;
+`;
+
+const ModernStatsContainer = styled.View`
+  flex-direction: row;
+  justify-content: space-around;
+  background-color: ${(props) => props.theme.colors.background};
+  border-radius: ${(props) => props.theme.radius.xl}px;
+  padding: ${hp(0.5)}px ${wp(2.5)}px;
+  margin: ${hp(1)}px ${wp(4)}px;
+  border: 1px solid ${(props) => props.theme.colors.gray}15;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.08;
+  shadow-radius: 8px;
+  elevation: 3;
+`;
+
+const ModernStatItem = styled.TouchableOpacity`
+  align-items: center;
+  flex: 1;
+  padding: ${hp(0.5)}px;
+`;
+
+const ModernStatItemNonClickable = styled.View`
+  align-items: center;
+  flex: 1;
+  padding: ${hp(0.5)}px;
+`;
+
+const ModernStatNumber = styled.Text`
+  font-size: ${hp(2.2)}px;
+  font-weight: 700;
+  color: ${(props) => props.theme.colors.textDark};
+  margin-bottom: ${hp(0.2)}px;
+`;
+
+const ModernStatLabel = styled.Text`
+  font-size: ${hp(1.2)}px;
+  color: ${(props) => props.theme.colors.textLight};
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+`;
+
+const ModernButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: ${wp(3)}px;
+  padding: 0 ${wp(4)}px;
+  margin-top: ${hp(1)}px;
+`;
+
+const ModernPrimaryButton = styled.TouchableOpacity`
+  background-color: ${(props) => props.theme.colors.primary};
+  padding: ${hp(1.4)}px ${wp(6)}px;
+  border-radius: ${(props) => props.theme.radius.xl}px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  shadow-color: ${(props) => props.theme.colors.primary};
+  shadow-offset: 0px 3px;
+  shadow-opacity: 0.25;
+  shadow-radius: 6px;
+  elevation: 4;
+`;
+
+const ModernSecondaryButton = styled.TouchableOpacity`
+  background-color: transparent;
+  border: 2px solid ${(props) => props.theme.colors.primary};
+  padding: ${hp(1.2)}px ${wp(6)}px;
+  border-radius: ${(props) => props.theme.radius.xl}px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+`;
+
+const ModernButtonText = styled.Text`
+  font-weight: 600;
+  font-size: ${hp(1.6)}px;
+`;
+
+const ModernPrimaryButtonText = styled(ModernButtonText)`
+  color: white;
+`;
+
+const ModernSecondaryButtonText = styled(ModernButtonText)`
+  color: ${(props) => props.theme.colors.primary};
+`;
+
 interface UserHeaderProps {
   user: User | null;
   router: ReturnType<typeof useRouter>;
@@ -187,7 +295,7 @@ const UserProfile: React.FC = () => {
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title="Profilo" mb={30} />
+          <Header title={userData?.name || "profile"} mb={30} />
         </View>
 
         <FlatList
@@ -337,83 +445,94 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   };
   return (
     <HeaderContainer>
-      <Container>
-        <View style={{ gap: 15 }}>
-          <AvatarContainer>
-            <Avatar
-              uri={user?.image}
-              size={hp(12)}
-              rounded={theme.radius.xxl}
-              isDarkMode={isDarkMode}
-            />
-          </AvatarContainer>
+      <ModernProfileSection>
+        {/* Avatar con ombra migliorata */}
+        <ModernAvatarContainer>
+          <Avatar
+            uri={user?.image}
+            size={hp(14)}
+            rounded={theme.radius.xxl}
+            isDarkMode={isDarkMode}
+          />
+        </ModernAvatarContainer>
 
-          <View style={{ alignItems: "center", gap: 4 }}>
-            <UserName>{user?.name}</UserName>
-            {user?.website && (
-              <TouchableOpacity onPress={() => openWebsite(user.website!)}>
-                <InfoText style={{ color: theme.colors.primary, textDecorationLine: 'underline' }}>
-                  {user.website}
-                </InfoText>
-              </TouchableOpacity>
-            )}
-            {user?.bio && <InfoText>{user.bio}</InfoText>}
-          </View>
+        {/* Informazioni utente */}
+        <UserInfoSection>
+          {user?.website && (
+            <TouchableOpacity onPress={() => openWebsite(user.website!)}>
+              <InfoText style={{
+                color: theme.colors.primary,
+                textDecorationLine: 'underline',
+                fontSize: hp(1.7)
+              }}>
+                {user.website}
+              </InfoText>
+            </TouchableOpacity>
+          )}
+          {user?.bio && (
+            <InfoText style={{
+              textAlign: 'center',
+              lineHeight: hp(2.2),
+              paddingHorizontal: wp(4)
+            }}>
+              {user.bio}
+            </InfoText>
+          )}
+        </UserInfoSection>
+      </ModernProfileSection>
 
-          <FollowContainer>
-            <FollowItem>
-              <FollowCount>{postsCount}</FollowCount>
-              <FollowLabel>Posts</FollowLabel>
-            </FollowItem>
-            <TouchableOpacity
-              onPress={() =>
-                router.push({
-                  pathname: "/followers",
-                  params: { userId: user?.id },
-                })
-              }
-            >
-              <FollowItem>
-                <FollowCount>{followersCount}</FollowCount>
-                <FollowLabel>Follower</FollowLabel>
-              </FollowItem>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                router.push({
-                  pathname: "/followings",
-                  params: { userId: user?.id },
-                })
-              }
-            >
-              <FollowItem>
-                <FollowCount>{followingCount}</FollowCount>
-                <FollowLabel>Seguiti</FollowLabel>
-              </FollowItem>
-            </TouchableOpacity>
-          </FollowContainer>
-          
-          <RowContainer>
-          {currentUser?.id !== user?.id && (
-            <FollowButton onPress={handleFollowToggle}>
-              <FollowButtonText>
-                {isFollowing ? "Non seguire più" : "Segui"}
-              </FollowButtonText>
-            </FollowButton>
-          )}
-          {currentUser?.id !== user?.id && (
-            <FollowButton
-              onPress={() => handleChatPress(user)}
-              disabled={creating}
-            >
-              <FollowButtonText>
-                {creating ? "Caricamento..." : "Chat"}
-              </FollowButtonText>
-            </FollowButton>
-          )}
-          </RowContainer>
-        </View>
-      </Container>
+      {/* Statistiche in card moderna */}
+      <ModernStatsContainer>
+        <ModernStatItemNonClickable>
+          <ModernStatNumber>{postsCount}</ModernStatNumber>
+          <ModernStatLabel>Posts</ModernStatLabel>
+        </ModernStatItemNonClickable>
+
+        <ModernStatItem
+          onPress={() =>
+            router.push({
+              pathname: "/followers",
+              params: { userId: user?.id },
+            })
+          }
+        >
+          <ModernStatNumber>{followersCount}</ModernStatNumber>
+          <ModernStatLabel>Followers</ModernStatLabel>
+        </ModernStatItem>
+
+        <ModernStatItem
+          onPress={() =>
+            router.push({
+              pathname: "/followings",
+              params: { userId: user?.id },
+            })
+          }
+        >
+          <ModernStatNumber>{followingCount}</ModernStatNumber>
+          <ModernStatLabel>Following</ModernStatLabel>
+        </ModernStatItem>
+      </ModernStatsContainer>
+
+      {/* Bottoni di azione moderni */}
+      {currentUser?.id !== user?.id && (
+        <ModernButtonsContainer>
+          <ModernPrimaryButton onPress={handleFollowToggle}>
+            <ModernPrimaryButtonText>
+              {isFollowing ? "Non seguire più" : "Segui"}
+            </ModernPrimaryButtonText>
+          </ModernPrimaryButton>
+
+          <ModernSecondaryButton
+            onPress={() => handleChatPress(user)}
+            disabled={creating}
+            style={{ opacity: creating ? 0.6 : 1 }}
+          >
+            <ModernSecondaryButtonText>
+              {creating ? "Caricamento..." : "Chat"}
+            </ModernSecondaryButtonText>
+          </ModernSecondaryButton>
+        </ModernButtonsContainer>
+      )}
     </HeaderContainer>
   );
 };
