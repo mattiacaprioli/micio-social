@@ -65,7 +65,7 @@ const SettingItem = styled.View`
 `;
 
 const SettingLabel = styled.Text`
-  font-size: ${hp(2)}px;
+  font-size: ${hp(1.5)}px;
   color: ${(props) => props.theme.colors.textDark};
 `;
 

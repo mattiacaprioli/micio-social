@@ -16,11 +16,11 @@ interface InputProps extends Omit<TextInputProps, 'ref'> {
 const Container = styled.View<{ $forceLightMode?: boolean }>`
   flex-direction: row;
   align-items: center;
-  height: ${hp(7.2)}px;
+  height: ${hp(5)}px;
   justify-content: center;
   border-width: 0.4px;
   border-color: ${props => props.$forceLightMode ? '#333' : props.theme.colors.text};
-  border-radius: ${props => props.theme.radius.xxl}px;
+  border-radius: ${props => props.theme.radius.sm}px;
   padding-left: 18px;
   padding-right: 18px;
   gap: 12px;

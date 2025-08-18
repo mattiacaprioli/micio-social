@@ -37,6 +37,7 @@ const Card = styled.View`
 `;
 
 const Item = styled.View`
+  height: ${hp(5)}px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;

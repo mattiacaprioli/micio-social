@@ -33,17 +33,16 @@ const Card = styled.View`
 `;
 
 const Item = styled.TouchableOpacity`
+  height: ${hp(5)}px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-top: ${hp(2)}px;
-  padding-bottom: ${hp(2)}px;
+  padding-top: ${hp(1)}px;
+  padding-bottom: ${hp(1)}px;
   padding-left: ${wp(3)}px;
   padding-right: ${wp(3)}px;
-  border-radius: ${props => props.theme.radius.lg}px;
-  background-color: ${props => props.theme.colors.background};
-  /* Shadow styles integrated */
-  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
+  border-radius: ${(props) => props.theme.radius.lg}px;
+  background-color: ${(props) => props.theme.colors.background};
 `;
 
 const ItemText = styled.Text`

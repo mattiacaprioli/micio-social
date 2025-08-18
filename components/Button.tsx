@@ -20,10 +20,10 @@ interface ButtonProps {
 
 const StyledPressable = styled.Pressable<{ hasShadow: boolean; theme: Theme }>`
   background-color: ${props => props.theme.colors.primary};
-  height: ${hp(6.6)}px;
+  height: ${hp(5)}px;
   justify-content: center;
   align-items: center;
-  border-radius: ${props => props.theme.radius.xl}px;
+  border-radius: ${props => props.theme.radius.sm}px;
   opacity: ${props => props.disabled ? 0.7 : 1};
   ${props => props.hasShadow && `
     shadow-color: ${props.theme.colors.primary};
@@ -36,7 +36,7 @@ const StyledPressable = styled.Pressable<{ hasShadow: boolean; theme: Theme }>`
 
 const StyledText = styled.Text<{ theme: Theme }>`
   color: white;
-  font-size: ${hp(2.5)}px;
+  font-size: ${hp(2)}px;
   font-weight: ${props => props.theme.fonts.bold};
 `;
 
