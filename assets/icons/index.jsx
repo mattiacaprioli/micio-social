@@ -33,6 +33,18 @@ import {
   ShoppingCart,
   CatIcon,
   LinkIcon,
+  GridIcon,
+  PackageIcon,
+  SmileIcon,
+  ScissorsIcon,
+  StarIcon,
+  StarFillIcon,
+  ExternalLinkIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  MoreHorizontalIcon,
+  CoffeeIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -69,6 +81,18 @@ const icons = {
   shoppingCart: ShoppingCart,
   catIcon: CatIcon,
   link: LinkIcon,
+  grid: GridIcon,
+  package: PackageIcon,
+  smile: SmileIcon,
+  scissors: ScissorsIcon,
+  star: StarIcon,
+  starFill: StarFillIcon,
+  externalLink: ExternalLinkIcon,
+  checkCircle: CheckCircleIcon,
+  xCircle: XCircleIcon,
+  clock: ClockIcon,
+  moreHorizontal: MoreHorizontalIcon,
+  coffee: CoffeeIcon,
 }
 
 const Icon = ({name, ...props}) => {
