@@ -128,3 +128,52 @@ export const CatIcon = ({ size, color, ...props }) => (
 export const LinkIcon = ({ size, color, ...props }) => (
   <Icon name="link" size={size} color={color} {...props} />
 );
+
+// Nuove icone per l'ecommerce
+export const GridIcon = ({ size, color, ...props }) => (
+  <Icon name="grid" size={size} color={color} {...props} />
+);
+
+export const PackageIcon = ({ size, color, ...props }) => (
+  <Icon name="package" size={size} color={color} {...props} />
+);
+
+export const SmileIcon = ({ size, color, ...props }) => (
+  <Icon name="smile" size={size} color={color} {...props} />
+);
+
+export const ScissorsIcon = ({ size, color, ...props }) => (
+  <Icon name="scissors" size={size} color={color} {...props} />
+);
+
+export const StarIcon = ({ size, color, ...props }) => (
+  <Icon name="star" size={size} color={color} {...props} />
+);
+
+export const StarFillIcon = ({ size, color, ...props }) => (
+  <IconFill name="star" size={size} color={color} {...props} />
+);
+
+export const ExternalLinkIcon = ({ size, color, ...props }) => (
+  <Icon name="external-link" size={size} color={color} {...props} />
+);
+
+export const CheckCircleIcon = ({ size, color, ...props }) => (
+  <Icon name="check-circle" size={size} color={color} {...props} />
+);
+
+export const XCircleIcon = ({ size, color, ...props }) => (
+  <Icon name="x-circle" size={size} color={color} {...props} />
+);
+
+export const ClockIcon = ({ size, color, ...props }) => (
+  <Icon name="clock" size={size} color={color} {...props} />
+);
+
+export const MoreHorizontalIcon = ({ size, color, ...props }) => (
+  <Icon name="more-horizontal" size={size} color={color} {...props} />
+);
+
+export const CoffeeIcon = ({ size, color, ...props }) => (
+  <Icon name="coffee" size={size} color={color} {...props} />
+);
