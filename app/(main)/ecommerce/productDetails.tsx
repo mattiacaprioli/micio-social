@@ -26,6 +26,7 @@ const { width } = Dimensions.get("window");
 const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
+  margin-bottom: 40px;
 `;
 
 const ScrollContainer = styled.ScrollView`

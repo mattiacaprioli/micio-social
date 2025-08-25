@@ -29,6 +29,7 @@ const Container = styled.View`
 
 const ContentContainer = styled.View`
   flex: 1;
+  margin-bottom: 40px;
 `;
 
 const ErrorContainer = styled.View`
