@@ -19,6 +19,7 @@ import {
   getFeaturedProducts,
   trackProductClick,
 } from "../../../services/ecommerceService";
+import { seedEcommerceData, clearEcommerceData } from "../../../services/seedDataService";
 
 const Container = styled.View`
   flex: 1;
@@ -52,6 +53,42 @@ const RetryButton = styled.TouchableOpacity`
 
 const RetryButtonText = styled.Text`
   color: white;
+  font-weight: 600;
+`;
+
+const InitDataButton = styled.TouchableOpacity`
+  background-color: ${(props) => props.theme.colors.primary};
+  padding: 8px 16px;
+  border-radius: 6px;
+  flex: 1;
+  align-items: center;
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+`;
+
+const InitDataButtonText = styled.Text`
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+const ButtonsContainer = styled.View`
+  flex-direction: row;
+  margin: 8px 16px;
+  gap: 8px;
+`;
+
+const ClearDataButton = styled.TouchableOpacity`
+  background-color: ${(props) => props.theme.colors.rose};
+  padding: 8px 16px;
+  border-radius: 6px;
+  flex: 1;
+  align-items: center;
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+`;
+
+const ClearDataButtonText = styled.Text`
+  color: white;
+  font-size: 14px;
   font-weight: 600;
 `;
 
@@ -147,6 +184,69 @@ const Ecommerce: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const initializeData = async () => {
+    try {
+      Alert.alert(
+        "Inizializzazione Dati",
+        "Vuoi popolare il database con i dati di esempio?",
+        [
+          { text: "Annulla", style: "cancel" },
+          {
+            text: "Conferma",
+            onPress: async () => {
+              try {
+                setLoading(true);
+                await seedEcommerceData();
+                await loadProducts();
+                await loadCategories();
+                Alert.alert("Successo", "Dati inizializzati correttamente!");
+              } catch (error) {
+                console.error("Error seeding data:", error);
+                Alert.alert("Errore", "Errore durante l'inizializzazione dei dati");
+              } finally {
+                setLoading(false);
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error in initializeData:", error);
+    }
+  };
+
+  const clearData = async () => {
+    try {
+      Alert.alert(
+        "Rimozione Dati",
+        "Vuoi rimuovere tutti i dati di test dal database?",
+        [
+          { text: "Annulla", style: "cancel" },
+          {
+            text: "Rimuovi",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                setLoading(true);
+                await clearEcommerceData();
+                await loadProducts();
+                await loadCategories();
+                Alert.alert("Successo", "Dati rimossi correttamente!");
+              } catch (error) {
+                console.error("Error clearing data:", error);
+                Alert.alert("Errore", "Errore durante la rimozione dei dati");
+              } finally {
+                setLoading(false);
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error in clearData:", error);
+    }
   };
 
   useFocusEffect(
@@ -273,6 +373,24 @@ const Ecommerce: React.FC = () => {
               onChangeText={handleSearch}
               placeholder="Cerca prodotti per il tuo micio..."
             />
+
+            <ButtonsContainer>
+              <InitDataButton
+                theme={theme}
+                onPress={initializeData}
+                disabled={loading}
+              >
+                <InitDataButtonText>🔄 Inizializza Dati</InitDataButtonText>
+              </InitDataButton>
+
+              <ClearDataButton
+                theme={theme}
+                onPress={clearData}
+                disabled={loading}
+              >
+                <ClearDataButtonText>🗑️ Rimuovi Dati</ClearDataButtonText>
+              </ClearDataButton>
+            </ButtonsContainer>
 
             <CategoryFilter
               categories={categories}

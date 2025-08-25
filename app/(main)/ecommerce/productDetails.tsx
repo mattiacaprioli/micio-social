@@ -19,7 +19,7 @@ import Icon from "../../../assets/icons";
 import Header from "../../../components/Header";
 import Loading from "../../../components/Loading";
 import { AffiliateProduct } from "../../../services/types";
-import { trackProductClick } from "../../../services/ecommerceService";
+import { trackProductClick, getProductById } from "../../../services/ecommerceService";
 
 const { width } = Dimensions.get("window");
 
@@ -241,31 +241,38 @@ const ProductDetails: React.FC = () => {
   const loadProductDetails = async (id: string) => {
     setLoading(true);
     try {
-      // Per ora usiamo dati mock - in futuro chiameremo un servizio
-      const mockProduct: AffiliateProduct = {
-        id: "1",
-        title: "Royal Canin Kitten - Cibo secco per gattini",
-        description: "Alimento completo specificamente formulato per gattini fino a 12 mesi di età. Contiene tutti i nutrienti essenziali per una crescita sana, con proteine di alta qualità, vitamine e minerali. La forma delle crocchette è studiata per facilitare la masticazione dei gattini.",
-        price: 24.99,
-        originalPrice: 29.99,
-        currency: "€",
-        images: [
-          "https://via.placeholder.com/400x400?text=Royal+Canin+1",
-          "https://via.placeholder.com/400x400?text=Royal+Canin+2",
-          "https://via.placeholder.com/400x400?text=Royal+Canin+3",
-        ],
-        category: "food",
-        brand: "Royal Canin",
-        affiliateUrl: "https://amazon.it/royal-canin-kitten",
-        affiliateNetwork: "amazon",
-        commission: 5,
-        rating: 4.5,
-        reviewCount: 1250,
-        availability: "in_stock",
-        tags: ["gattini", "cibo secco", "crescita", "nutrizione completa"],
-      };
+      // Prova prima a caricare dal database
+      const result = await getProductById(id);
+      
+      if (result.success && result.data) {
+        setProduct(result.data);
+      } else {
+        // Fallback ai dati mock se non trovato nel database
+        const mockProduct: AffiliateProduct = {
+          id: id,
+          title: "Royal Canin Kitten - Cibo secco per gattini",
+          description: "Alimento completo specificamente formulato per gattini fino a 12 mesi di età. Contiene tutti i nutrienti essenziali per una crescita sana, con proteine di alta qualità, vitamine e minerali. La forma delle crocchette è studiata per facilitare la masticazione dei gattini.",
+          price: 24.99,
+          originalPrice: 29.99,
+          currency: "€",
+          images: [
+            "https://via.placeholder.com/400x400?text=Royal+Canin+1",
+            "https://via.placeholder.com/400x400?text=Royal+Canin+2",
+            "https://via.placeholder.com/400x400?text=Royal+Canin+3",
+          ],
+          category: "food",
+          brand: "Royal Canin",
+          affiliateUrl: "https://amazon.it/royal-canin-kitten",
+          affiliateNetwork: "amazon",
+          commission: 5,
+          rating: 4.5,
+          reviewCount: 1250,
+          availability: "in_stock",
+          tags: ["gattini", "cibo secco", "crescita", "nutrizione completa"],
+        };
 
-      setProduct(mockProduct);
+        setProduct(mockProduct);
+      }
     } catch (error) {
       console.error("Error loading product:", error);
       Alert.alert("Errore", "Impossibile caricare i dettagli del prodotto");
