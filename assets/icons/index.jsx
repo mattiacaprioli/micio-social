@@ -45,6 +45,9 @@ import {
   ClockIcon,
   MoreHorizontalIcon,
   CoffeeIcon,
+  RefreshCwIcon,
+  WifiOffIcon,
+  AlertCircleIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -93,6 +96,9 @@ const icons = {
   clock: ClockIcon,
   moreHorizontal: MoreHorizontalIcon,
   coffee: CoffeeIcon,
+  refreshCw: RefreshCwIcon,
+  wifiOff: WifiOffIcon,
+  alertCircle: AlertCircleIcon,
 }
 
 const Icon = ({name, ...props}) => {

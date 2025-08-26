@@ -57,3 +57,10 @@ export interface ProductCategory {
   icon: string;
   description?: string;
 }
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  hasMore: boolean;
+  total: number;
+  nextOffset: number;
+}

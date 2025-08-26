@@ -17,16 +17,15 @@ import { useAuth } from "../../../context/AuthContext";
 import { hp, wp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import Header from "../../../components/Header";
-import Loading from "../../../components/Loading";
 import { AffiliateProduct } from "../../../services/types";
 import { trackProductClick, getProductById } from "../../../services/ecommerceService";
+import { ProductDetailsSkeleton } from "../../../components/ecommerce/SkeletonLoader";
 
 const { width } = Dimensions.get("window");
 
 const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
-  margin-bottom: 40px;
 `;
 
 const ScrollContainer = styled.ScrollView`
@@ -423,7 +422,7 @@ const ProductDetails: React.FC = () => {
       <ThemeWrapper>
         <Container>
           <Header title="Dettagli Prodotto" showBackButton />
-          <Loading />
+          <ProductDetailsSkeleton />
         </Container>
       </ThemeWrapper>
     );

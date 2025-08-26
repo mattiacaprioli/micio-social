@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { ApiResponse, AffiliateProduct, ProductClick, ProductCategory } from "./types";
+import { ApiResponse, AffiliateProduct, ProductClick, ProductCategory, PaginatedResponse } from "./types";
 
 // Funzione per recuperare prodotti dal database
 export const fetchProducts = async (
@@ -48,6 +48,81 @@ export const fetchProducts = async (
     return { success: true, data: products };
   } catch (error) {
     console.error('fetchProducts error:', error);
+    return { success: false, msg: 'Could not fetch products' };
+  }
+};
+
+export const fetchProductsPaginated = async (
+  category?: string,
+  limit = 20,
+  offset = 0
+): Promise<ApiResponse<PaginatedResponse<AffiliateProduct>>> => {
+  try {
+    let countQuery = supabase
+      .from('affiliate_products')
+      .select('*', { count: 'exact', head: true });
+
+    if (category && category !== 'all') {
+      countQuery = countQuery.eq('category', category);
+    }
+
+    const { count, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error('fetchProductsPaginated count error:', countError);
+      return { success: false, msg: 'Could not fetch products count' };
+    }
+
+    let query = supabase
+      .from('affiliate_products')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('fetchProductsPaginated error:', error);
+      return { success: false, msg: 'Could not fetch products' };
+    }
+
+    const products: AffiliateProduct[] = data?.map(item => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      price: parseFloat(item.price),
+      originalPrice: item.original_price ? parseFloat(item.original_price) : undefined,
+      currency: item.currency,
+      images: Array.isArray(item.images) ? item.images : [item.images].filter(Boolean),
+      category: item.category,
+      brand: item.brand,
+      affiliateUrl: item.affiliate_url,
+      affiliateNetwork: item.affiliate_network,
+      commission: parseFloat(item.commission),
+      rating: item.rating ? parseFloat(item.rating) : undefined,
+      reviewCount: item.review_count || 0,
+      availability: item.availability,
+      tags: Array.isArray(item.tags) ? item.tags : []
+    })) || [];
+
+    const hasMore = (offset + limit) < (count || 0);
+    const nextOffset = hasMore ? offset + limit : offset;
+
+    return {
+      success: true,
+      data: {
+        data: products,
+        hasMore,
+        total: count || 0,
+        nextOffset
+      }
+    };
+  } catch (error) {
+    console.error('fetchProductsPaginated error:', error);
     return { success: false, msg: 'Could not fetch products' };
   }
 };

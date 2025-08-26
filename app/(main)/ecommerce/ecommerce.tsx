@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Alert, View, Text } from "react-native";
+import React, { useState, useCallback } from "react";
+import { Alert, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -7,19 +7,19 @@ import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "../../../context/AuthContext";
 import { hp } from "../../../helpers/common";
 import Header from "../../../components/Header";
-import Loading from "../../../components/Loading";
 import { AffiliateProduct, ProductCategory } from "../../../services/types";
 import SearchBar from "../../../components/ecommerce/SearchBar";
 import CategoryFilter from "../../../components/ecommerce/CategoryFilter";
 import ProductGrid from "../../../components/ecommerce/ProductGrid";
 import {
-  fetchProducts,
+  fetchProductsPaginated,
   searchProducts,
   getProductCategories,
-  getFeaturedProducts,
   trackProductClick,
 } from "../../../services/ecommerceService";
 import { seedEcommerceData, clearEcommerceData } from "../../../services/seedDataService";
+import ErrorBoundary from "../../../components/ecommerce/ErrorBoundary";
+import useNetworkError from "../../../hooks/useNetworkError";
 
 const Container = styled.View`
   flex: 1;
@@ -97,6 +97,7 @@ const Ecommerce: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const theme = useStyledTheme();
+  const { error, executeWithRetry, clearError } = useNetworkError();
 
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
@@ -104,44 +105,94 @@ const Ecommerce: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentOffset, setCurrentOffset] = useState(0);
 
-  const loadProducts = async (isRefresh = false) => {
+  // Funzione per rimuovere prodotti duplicati
+  const removeDuplicateProducts = (products: AffiliateProduct[]): AffiliateProduct[] => {
+    const seen = new Set<string>();
+    return products.filter(product => {
+      if (seen.has(product.id)) {
+        return false;
+      }
+      seen.add(product.id);
+      return true;
+    });
+  };
+
+  const loadProducts = async (isRefresh = false, loadMore = false) => {
     if (isRefresh) {
       setRefreshing(true);
+      setCurrentOffset(0);
+      setHasMore(true);
+    } else if (loadMore) {
+      setLoadingMore(true);
     } else {
       setLoading(true);
+      setCurrentOffset(0);
+      setHasMore(true);
     }
-    setError("");
+    clearError();
+
+    const offset = isRefresh || !loadMore ? 0 : currentOffset;
 
     try {
-      let result;
+      await executeWithRetry(async () => {
+        let result;
 
-      if (searchQuery.trim()) {
-        result = await searchProducts(
-          searchQuery,
-          selectedCategory === "all" ? undefined : selectedCategory
-        );
-      } else {
-        result = await fetchProducts(
-          selectedCategory === "all" ? undefined : selectedCategory,
-          20,
-          0
-        );
-      }
+        if (searchQuery.trim()) {
+          // Per la ricerca, usiamo la funzione esistente (senza paginazione per ora)
+          result = await searchProducts(
+            searchQuery,
+            selectedCategory === "all" ? undefined : selectedCategory
+          );
 
-      if (result.success && result.data) {
-        setProducts(result.data);
-      } else {
-        setProducts(getMockProducts());
-      }
+          if (result.success && result.data) {
+            setProducts(removeDuplicateProducts(result.data));
+            setHasMore(false); // La ricerca non supporta paginazione per ora
+          } else {
+            throw new Error(result.msg || "Errore nella ricerca prodotti");
+          }
+        } else {
+          // Per il browse normale, usiamo la paginazione
+          result = await fetchProductsPaginated(
+            selectedCategory === "all" ? undefined : selectedCategory,
+            20,
+            offset
+          );
+
+          if (result.success && result.data) {
+            if (isRefresh || !loadMore) {
+              setProducts(removeDuplicateProducts(result.data.data));
+            } else {
+              setProducts(prev => removeDuplicateProducts([...prev, ...result.data.data]));
+            }
+            setHasMore(result.data.hasMore);
+            setCurrentOffset(result.data.nextOffset);
+          } else {
+            throw new Error(result.msg || "Errore nel caricamento prodotti");
+          }
+        }
+      });
     } catch (error) {
       console.error("Error loading products:", error);
-      setError("Errore nel caricamento dei prodotti");
-      setProducts(getMockProducts());
+      // L'errore è già gestito dal hook useNetworkError
+      // Fallback ai dati mock solo se necessario
+      if (isRefresh || !loadMore) {
+        setProducts(removeDuplicateProducts(getMockProducts()));
+      }
+      setHasMore(false);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (!loadingMore && hasMore && !searchQuery.trim()) {
+      await loadProducts(false, true);
     }
   };
 
@@ -353,63 +404,69 @@ const Ecommerce: React.FC = () => {
   }
 
   return (
-    <ThemeWrapper>
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
-          }}
-        >
-          <Header title="Shop" showBackButton={false} />
+    <ErrorBoundary>
+      <ThemeWrapper>
+        <View style={{ flex: 1 }}>
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+            }}
+          >
+            <Header title="Shop" showBackButton={false} />
+          </View>
+
+          <Container theme={theme}>
+            <ContentContainer>
+              <SearchBar
+                value={searchQuery}
+                onChangeText={handleSearch}
+                placeholder="Cerca prodotti per il tuo micio..."
+              />
+
+              <ButtonsContainer>
+                <InitDataButton
+                  theme={theme}
+                  onPress={initializeData}
+                  disabled={loading}
+                >
+                  <InitDataButtonText>🔄 Inizializza Dati</InitDataButtonText>
+                </InitDataButton>
+
+                <ClearDataButton
+                  theme={theme}
+                  onPress={clearData}
+                  disabled={loading}
+                >
+                  <ClearDataButtonText>🗑️ Rimuovi Dati</ClearDataButtonText>
+                </ClearDataButton>
+              </ButtonsContainer>
+
+              <CategoryFilter
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategoryChange}
+              />
+
+              <ProductGrid
+                products={products}
+                loading={loading}
+                refreshing={refreshing}
+                onRefresh={() => loadProducts(true)}
+                onProductPress={handleProductPress}
+                onLoadMore={handleLoadMore}
+                loadingMore={loadingMore}
+                error={error || undefined}
+                onRetry={() => loadProducts()}
+              />
+            </ContentContainer>
+          </Container>
         </View>
-
-        <Container theme={theme}>
-          <ContentContainer>
-            <SearchBar
-              value={searchQuery}
-              onChangeText={handleSearch}
-              placeholder="Cerca prodotti per il tuo micio..."
-            />
-
-            <ButtonsContainer>
-              <InitDataButton
-                theme={theme}
-                onPress={initializeData}
-                disabled={loading}
-              >
-                <InitDataButtonText>🔄 Inizializza Dati</InitDataButtonText>
-              </InitDataButton>
-
-              <ClearDataButton
-                theme={theme}
-                onPress={clearData}
-                disabled={loading}
-              >
-                <ClearDataButtonText>🗑️ Rimuovi Dati</ClearDataButtonText>
-              </ClearDataButton>
-            </ButtonsContainer>
-
-            <CategoryFilter
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleCategoryChange}
-            />
-
-            <ProductGrid
-              products={products}
-              loading={loading}
-              refreshing={refreshing}
-              onRefresh={() => loadProducts(true)}
-              onProductPress={handleProductPress}
-            />
-          </ContentContainer>
-        </Container>
-      </View>
-    </ThemeWrapper>
+      </ThemeWrapper>
+    </ErrorBoundary>
   );
 };
 

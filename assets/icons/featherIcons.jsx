@@ -177,3 +177,15 @@ export const MoreHorizontalIcon = ({ size, color, ...props }) => (
 export const CoffeeIcon = ({ size, color, ...props }) => (
   <Icon name="coffee" size={size} color={color} {...props} />
 );
+
+export const RefreshCwIcon = ({ size, color, ...props }) => (
+  <Icon name="refresh-cw" size={size} color={color} {...props} />
+);
+
+export const WifiOffIcon = ({ size, color, ...props }) => (
+  <Icon name="wifi-off" size={size} color={color} {...props} />
+);
+
+export const AlertCircleIcon = ({ size, color, ...props }) => (
+  <Icon name="alert-circle" size={size} color={color} {...props} />
+);

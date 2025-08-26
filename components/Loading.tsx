@@ -9,6 +9,7 @@ interface LoadingProps {
   color?: string
   containerStyle?: ViewStyle
   fullscreen?: boolean
+  text?: string
 }
 
 const Container = styled.View<{ $fullscreen?: boolean; $isDarkMode?: boolean }>`
@@ -25,11 +26,19 @@ const Container = styled.View<{ $fullscreen?: boolean; $isDarkMode?: boolean }>`
   `}
 `;
 
+const LoadingText = styled.Text`
+  color: ${props => props.theme.colors.text};
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: center;
+`;
+
 const Loading: React.FC<LoadingProps> = ({
   size = 'large',
   color,
   containerStyle,
-  fullscreen = false
+  fullscreen = false,
+  text
 }) => {
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
@@ -45,6 +54,7 @@ const Loading: React.FC<LoadingProps> = ({
         size={size}
         color={indicatorColor}
       />
+      {text && <LoadingText>{text}</LoadingText>}
     </Container>
   )
 }
