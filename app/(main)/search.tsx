@@ -28,7 +28,7 @@ const SearchContainer = styled.View`
   margin-bottom: ${hp(1)}px;
   padding-left: ${wp(3)}px;
   padding-right: ${wp(3)}px;
-  height: ${hp(6)}px;
+  height: ${hp(5)}px;
   border-radius: ${props => props.theme.radius.lg}px;
   background-color: ${props => props.theme.colors.darkLight};
 `;

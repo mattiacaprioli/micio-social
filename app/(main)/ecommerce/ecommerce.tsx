@@ -5,7 +5,7 @@ import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
 import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "../../../context/AuthContext";
-import { hp } from "../../../helpers/common";
+import { hp, wp } from "../../../helpers/common";
 import Header from "../../../components/Header";
 import { AffiliateProduct, ProductCategory } from "../../../services/types";
 import SearchBar from "../../../components/ecommerce/SearchBar";
@@ -59,37 +59,46 @@ const RetryButtonText = styled.Text`
 
 const InitDataButton = styled.TouchableOpacity`
   background-color: ${(props) => props.theme.colors.primary};
-  padding: 8px 16px;
-  border-radius: 6px;
-  flex: 1;
+  padding: ${hp(1)}px ${wp(2)}px;
+  border-radius: ${wp(2)}px;
   align-items: center;
+  justify-content: center;
+  width: ${wp(10)}px;
+  height: ${hp(4)}px;
   opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  border: 1px solid ${(props) => props.theme.colors.darkLight};
 `;
 
 const InitDataButtonText = styled.Text`
   color: white;
-  font-size: 14px;
+  font-size: ${wp(4)}px;
   font-weight: 600;
 `;
 
 const ButtonsContainer = styled.View`
+  position: absolute;
+  bottom: ${hp(3)}px;
+  right: ${wp(4)}px;
   flex-direction: row;
-  margin: 8px 16px;
-  gap: 8px;
+  gap: ${wp(2)}px;
+  z-index: 1001;
 `;
 
 const ClearDataButton = styled.TouchableOpacity`
   background-color: ${(props) => props.theme.colors.rose};
-  padding: 8px 16px;
-  border-radius: 6px;
-  flex: 1;
+  padding: ${hp(1)}px ${wp(2)}px;
+  border-radius: ${wp(2)}px;
   align-items: center;
+  justify-content: center;
+  width: ${wp(10)}px;
+  height: ${hp(4)}px;
   opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  border: 1px solid ${(props) => props.theme.colors.darkLight};
 `;
 
 const ClearDataButtonText = styled.Text`
   color: white;
-  font-size: 14px;
+  font-size: ${wp(4)}px;
   font-weight: 600;
 `;
 
@@ -433,7 +442,7 @@ const Ecommerce: React.FC = () => {
                   onPress={initializeData}
                   disabled={loading}
                 >
-                  <InitDataButtonText>🔄 Inizializza Dati</InitDataButtonText>
+                  <InitDataButtonText>🔄</InitDataButtonText>
                 </InitDataButton>
 
                 <ClearDataButton
@@ -441,7 +450,7 @@ const Ecommerce: React.FC = () => {
                   onPress={clearData}
                   disabled={loading}
                 >
-                  <ClearDataButtonText>🗑️ Rimuovi Dati</ClearDataButtonText>
+                  <ClearDataButtonText>🗑️</ClearDataButtonText>
                 </ClearDataButton>
               </ButtonsContainer>
 

@@ -10,8 +10,8 @@ interface SearchBarProps {
 }
 
 const Container = styled.View`
-  margin-horizontal: 16px;
-  margin-vertical: 8px;
+  margin-horizontal: ${wp(4)}px;
+  margin-vertical: ${hp(1)}px;
 `;
 
 const SearchContainer = styled.View`
@@ -19,19 +19,19 @@ const SearchContainer = styled.View`
   align-items: center;
   background-color: ${(props) => props.theme.colors.card};
   border: 1px solid ${(props) => props.theme.colors.cardBorder};
-  border-radius: 12px;
-  padding: 12px 16px;
+  border-radius: ${wp(3)}px;
+  padding: ${hp(0.1)}px ${wp(3)}px;
 `;
 
 const SearchInput = styled.TextInput`
   flex: 1;
-  font-size: 16px;
+  font-size: ${wp(4)}px;
   color: ${(props) => props.theme.colors.text};
-  margin-left: 12px;
+  margin-left: ${wp(3)}px;
 `;
 
 const ClearButton = styled.TouchableOpacity`
-  padding: 4px;
+  padding: ${wp(1)}px;
 `;
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -44,7 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <SearchContainer>
         <Icon
           name="search"
-          size={20}
+          size={wp(5)}
           color="#666"
         />
         <SearchInput
@@ -60,7 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <ClearButton onPress={() => onChangeText('')}>
             <Icon
               name="x"
-              size={20}
+              size={wp(5)}
               color="#666"
             />
           </ClearButton>

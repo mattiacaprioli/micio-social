@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView } from "react-native";
 import styled from "styled-components/native";
+import { useTheme as useStyledTheme } from "styled-components/native";
 import { ProductCategory } from "../../services/types";
 import Icon from "../../assets/icons";
 
@@ -29,8 +30,8 @@ const CategoryItem = styled.TouchableOpacity<{ isSelected: boolean }>`
       ? props.theme.colors.primary 
       : props.theme.colors.cardBorder
   };
-  padding: 12px 16px;
-  border-radius: 20px;
+  padding: 6px 8px;
+  border-radius: 10px;
   margin-right: 12px;
   flex-direction: row;
   align-items: center;
@@ -52,6 +53,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedCategory,
   onSelectCategory,
 }) => {
+  const theme = useStyledTheme();
   const getCategoryIcon = (categoryId: string) => {
     const iconMap = {
       'all': 'grid',
@@ -69,13 +71,20 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     const labelMap = {
       'all': 'Tutti',
       'food': 'Cibo',
-      'toys': 'Giochi', 
+      'toys': 'Giochi',
       'accessories': 'Accessori',
       'health': 'Salute',
       'grooming': 'Cura',
       'other': 'Altro'
     };
     return labelMap[categoryId as keyof typeof labelMap] || categoryId;
+  };
+
+  const getIconColor = (isSelected: boolean) => {
+    if (isSelected) {
+      return 'white';
+    }
+    return theme.colors.text;
   };
 
   const allCategories = [
@@ -99,7 +108,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
             <Icon
               name={getCategoryIcon(category.id)}
               size={16}
-              color={selectedCategory === category.id ? 'white' : undefined}
+              color={getIconColor(selectedCategory === category.id)}
             />
             <CategoryText isSelected={selectedCategory === category.id}>
               {getCategoryLabel(category.id)}
