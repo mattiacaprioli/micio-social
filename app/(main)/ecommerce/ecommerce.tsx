@@ -78,7 +78,7 @@ const InitDataButtonText = styled.Text`
 
 const ButtonsContainer = styled.View`
   position: absolute;
-  bottom: ${hp(5)}px;
+  bottom: ${hp(7)}px;
   right: ${wp(4)}px;
   flex-direction: row;
   gap: ${wp(2)}px;
