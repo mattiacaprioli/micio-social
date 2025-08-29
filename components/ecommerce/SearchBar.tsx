@@ -7,6 +7,8 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 const Container = styled.View`
@@ -38,6 +40,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   placeholder = "Cerca prodotti...",
+  onFocus,
+  onBlur,
 }) => {
   return (
     <Container>
@@ -55,6 +59,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
           autoCapitalize="none"
           autoCorrect={false}
           clearButtonMode="while-editing"
+          onFocus={onFocus}
+          onBlur={onBlur}
         />
         {value.length > 0 && (
           <ClearButton onPress={() => onChangeText('')}>

@@ -5,6 +5,7 @@ import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
 import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "../../../context/AuthContext";
+import { useTabBarVisibility } from "../_layout";
 import { hp, wp } from "../../../helpers/common";
 import Header from "../../../components/Header";
 import { AffiliateProduct, ProductCategory } from "../../../services/types";
@@ -27,9 +28,9 @@ const Container = styled.View`
   background-color: ${(props) => props.theme.colors.background};
 `;
 
-const ContentContainer = styled.View`
+const ContentContainer = styled.View<{ isInputFocused: boolean }>`
   flex: 1;
-  margin-bottom: 40px;
+  padding-bottom: ${(props) => (props.isInputFocused ? '0px' : '40px')};
 `;
 
 const ErrorContainer = styled.View`
@@ -77,7 +78,7 @@ const InitDataButtonText = styled.Text`
 
 const ButtonsContainer = styled.View`
   position: absolute;
-  bottom: ${hp(3)}px;
+  bottom: ${hp(5)}px;
   right: ${wp(4)}px;
   flex-direction: row;
   gap: ${wp(2)}px;
@@ -107,6 +108,7 @@ const Ecommerce: React.FC = () => {
   const router = useRouter();
   const theme = useStyledTheme();
   const { error, executeWithRetry, clearError } = useNetworkError();
+  const { setTabBarVisible } = useTabBarVisibility();
 
   const [products, setProducts] = useState<AffiliateProduct[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
@@ -117,6 +119,7 @@ const Ecommerce: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentOffset, setCurrentOffset] = useState(0);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Funzione per rimuovere prodotti duplicati
   const removeDuplicateProducts = (products: AffiliateProduct[]): AffiliateProduct[] => {
@@ -245,6 +248,16 @@ const Ecommerce: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  const handleSearchFocus = () => {
+    setTabBarVisible(false);
+    setIsInputFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    setTabBarVisible(true);
+    setIsInputFocused(false);
   };
 
   const initializeData = async () => {
@@ -429,49 +442,51 @@ const Ecommerce: React.FC = () => {
           </View>
 
           <Container theme={theme}>
-            <ContentContainer>
-              <SearchBar
-                value={searchQuery}
-                onChangeText={handleSearch}
-                placeholder="Cerca prodotti per il tuo micio..."
-              />
+              <ContentContainer isInputFocused={isInputFocused}>
+                <SearchBar
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                  placeholder="Cerca prodotti per il tuo micio..."
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
+                />
 
-              <ButtonsContainer>
-                <InitDataButton
-                  theme={theme}
-                  onPress={initializeData}
-                  disabled={loading}
-                >
-                  <InitDataButtonText>🔄</InitDataButtonText>
-                </InitDataButton>
+                <ButtonsContainer>
+                  <InitDataButton
+                    theme={theme}
+                    onPress={initializeData}
+                    disabled={loading}
+                  >
+                    <InitDataButtonText>🔄</InitDataButtonText>
+                  </InitDataButton>
 
-                <ClearDataButton
-                  theme={theme}
-                  onPress={clearData}
-                  disabled={loading}
-                >
-                  <ClearDataButtonText>🗑️</ClearDataButtonText>
-                </ClearDataButton>
-              </ButtonsContainer>
+                  <ClearDataButton
+                    theme={theme}
+                    onPress={clearData}
+                    disabled={loading}
+                  >
+                    <ClearDataButtonText>🗑️</ClearDataButtonText>
+                  </ClearDataButton>
+                </ButtonsContainer>
 
-              <CategoryFilter
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={handleCategoryChange}
-              />
+                <CategoryFilter
+                  categories={categories}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={handleCategoryChange}
+                />
 
-              <ProductGrid
-                products={products}
-                loading={loading}
-                refreshing={refreshing}
-                onRefresh={() => loadProducts(true)}
-                onProductPress={handleProductPress}
-                onLoadMore={handleLoadMore}
-                loadingMore={loadingMore}
-                error={error || undefined}
-                onRetry={() => loadProducts()}
-              />
-            </ContentContainer>
+                <ProductGrid
+                  products={products}
+                  loading={loading}
+                  refreshing={refreshing}
+                  onRefresh={() => loadProducts(true)}
+                  onProductPress={handleProductPress}
+                  onLoadMore={handleLoadMore}
+                  loadingMore={loadingMore}
+                  error={error || undefined}
+                  onRetry={() => loadProducts()}
+                />
+              </ContentContainer>
           </Container>
         </View>
       </ThemeWrapper>
