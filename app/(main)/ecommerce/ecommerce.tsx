@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { Alert, View } from "react-native";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Alert, View, AppState, Keyboard } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -120,6 +120,53 @@ const Ecommerce: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  
+  const isInputFocusedRef = useRef(false);
+  const lastFocusAction = useRef<'focus' | 'blur' | null>(null);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        setTimeout(() => {
+          if (!isInputFocusedRef.current) {
+            setTabBarVisible(true);
+            setIsInputFocused(false);
+          }
+        }, 200);
+      }
+    };
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      appStateSubscription?.remove();
+    };
+  }, [setTabBarVisible]);
+
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setTimeout(() => {
+        setTabBarVisible(true);
+        setIsInputFocused(false);
+        isInputFocusedRef.current = false;
+        lastFocusAction.current = 'blur';
+      }, 150);
+    });
+
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, [setTabBarVisible]);
+
+  useEffect(() => {
+    isInputFocusedRef.current = isInputFocused;
+  }, [isInputFocused]);
+
+  useEffect(() => {
+    return () => {
+      setTabBarVisible(true);
+    };
+  }, [setTabBarVisible]);
 
   // Funzione per rimuovere prodotti duplicati
   const removeDuplicateProducts = (products: AffiliateProduct[]): AffiliateProduct[] => {
@@ -251,13 +298,14 @@ const Ecommerce: React.FC = () => {
   };
 
   const handleSearchFocus = () => {
-    setTabBarVisible(false);
+    lastFocusAction.current = 'focus';
+    isInputFocusedRef.current = true;
     setIsInputFocused(true);
+    setTabBarVisible(false);
   };
 
   const handleSearchBlur = () => {
-    setTabBarVisible(true);
-    setIsInputFocused(false);
+    lastFocusAction.current = 'blur';
   };
 
   const initializeData = async () => {
@@ -325,9 +373,15 @@ const Ecommerce: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
+      if (!isInputFocusedRef.current || lastFocusAction.current === 'blur') {
+        setTabBarVisible(true);
+        setIsInputFocused(false);
+        isInputFocusedRef.current = false;
+      }
+      
       loadCategories();
       loadProducts();
-    }, [selectedCategory, searchQuery])
+    }, [selectedCategory, searchQuery, setTabBarVisible])
   );
 
   // Dati mock per testing

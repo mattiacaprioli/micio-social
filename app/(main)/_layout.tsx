@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
-import { View } from "react-native";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { View, AppState } from "react-native";
 import { Slot, usePathname } from "expo-router";
 import TabBar from "../../components/TabBar";
 import { RefreshProvider, useRefresh } from "../../context/RefreshContext";
@@ -41,6 +41,22 @@ const MainLayoutContent: React.FC = () => {
 
 const MainLayout: React.FC = () => {
   const [isTabBarVisible, setTabBarVisible] = useState(true);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        setTimeout(() => {
+          setTabBarVisible(prev => prev === false ? true : prev);
+        }, 100);
+      }
+    };
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      appStateSubscription?.remove();
+    };
+  }, []);
 
   return (
     <RefreshProvider>

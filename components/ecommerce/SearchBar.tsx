@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef } from "react";
+import { TextInput } from "react-native";
 import styled from "styled-components/native";
 import Icon from "../../assets/icons";
 import { hp, wp } from "../../helpers/common";
@@ -25,7 +26,7 @@ const SearchContainer = styled.View`
   padding: ${hp(0.1)}px ${wp(3)}px;
 `;
 
-const SearchInput = styled.TextInput`
+const SearchInput = styled(TextInput)`
   flex: 1;
   font-size: ${wp(4)}px;
   color: ${(props) => props.theme.colors.text};
@@ -43,6 +44,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onFocus,
   onBlur,
 }) => {
+  const inputRef = useRef<TextInput>(null);
+
+  const handleClearPress = () => {
+    onChangeText('');
+    inputRef.current?.focus();
+  };
+
   return (
     <Container>
       <SearchContainer>
@@ -52,6 +60,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           color="#666"
         />
         <SearchInput
+          ref={inputRef}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
@@ -61,9 +70,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
           clearButtonMode="while-editing"
           onFocus={onFocus}
           onBlur={onBlur}
+          returnKeyType="search"
+          blurOnSubmit={true}
         />
         {value.length > 0 && (
-          <ClearButton onPress={() => onChangeText('')}>
+          <ClearButton onPress={handleClearPress}>
             <Icon
               name="x"
               size={wp(5)}
