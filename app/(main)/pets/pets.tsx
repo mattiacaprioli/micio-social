@@ -26,24 +26,6 @@ const ContentContainer = styled.View`
   flex: 1;
 `;
 
-const AddButton = styled.TouchableOpacity`
-  position: absolute;
-  bottom: ${hp(3)}px;
-  right: ${wp(6)}px;
-  width: ${hp(7)}px;
-  height: ${hp(7)}px;
-  border-radius: ${hp(3.5)}px;
-  background-color: ${(props) => props.theme.colors.primary};
-  align-items: center;
-  justify-content: center;
-  shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.3;
-  shadow-radius: 8px;
-  elevation: 8;
-  z-index: 1000;
-`;
-
 const HeaderWithButton = styled.View`
   flex-direction: row;
   align-items: center;
@@ -53,8 +35,8 @@ const HeaderWithButton = styled.View`
 `;
 
 const AddHeaderButton = styled.TouchableOpacity`
-  padding: ${hp(1)}px ${wp(3)}px;
-  border-radius: ${(props) => props.theme.radius.lg}px;
+  padding: ${hp(0.5)}px ${wp(3)}px;
+  border-radius: ${(props) => props.theme.radius.xs}px;
   background-color: ${(props) => props.theme.colors.primary};
   flex-direction: row;
   align-items: center;
@@ -70,6 +52,23 @@ const AddButtonText = styled.Text`
 const ListContainer = styled.View`
   flex: 1;
   padding: 0 ${wp(2)}px;
+`;
+
+const AddButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 25px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${(props) => props.theme.colors.primary};
+  justify-content: center;
+  align-items: center;
+  shadow-color: ${(props) => props.theme.colors.primary};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 8px;
+  elevation: 5;
 `;
 
 const Pets: React.FC = () => {
@@ -217,18 +216,12 @@ const Pets: React.FC = () => {
                     />
                   }
                   contentContainerStyle={{
-                    paddingBottom: hp(10), // Spazio per il FAB
+                    paddingBottom: hp(10),
                   }}
                 />
               )}
             </ListContainer>
 
-            {/* Floating Action Button */}
-            {pets.length > 0 && (
-              <AddButton onPress={navigateToAddPet}>
-                <Icon name="plus" size={hp(3)} color="white" strokeWidth={2} />
-              </AddButton>
-            )}
           </ContentContainer>
         </Container>
       </View>

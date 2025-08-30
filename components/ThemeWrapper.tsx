@@ -13,7 +13,9 @@ const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children }) => {
   const theme = useStyledTheme();
 
   // Determina il colore di sfondo in base al tema
-  const backgroundColor = theme.colors.background;
+  const backgroundColor = typeof theme.colors.background === 'string' 
+    ? theme.colors.background 
+    : '#FFFFFF';
 
   // Determina lo stile della status bar in base al tema
   const statusBarStyle = isDarkMode ? 'light' : 'dark';

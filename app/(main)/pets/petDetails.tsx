@@ -47,9 +47,10 @@ const PetName = styled.Text`
 `;
 
 const PetSubtitle = styled.Text`
+  margin-top: ${hp(1)}px;
   font-size: ${hp(1.8)}px;
   color: ${(props) => props.theme.colors.textLight};
-  margin-bottom: ${hp(2)}px;
+  margin-bottom: ${hp(1)}px;
 `;
 
 const ActionsContainer = styled.View`
@@ -136,6 +137,7 @@ const TagContainer = styled.View`
   flex-wrap: wrap;
   gap: ${wp(2)}px;
   margin-top: ${hp(1)}px;
+  margin-bottom: ${hp(1)}px;
 `;
 
 const Tag = styled.View<{ color?: string }>`
@@ -293,8 +295,8 @@ const PetDetails: React.FC = () => {
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
           <Header title={pet.name} />
         </View>
-        
-        <Container style={{ paddingTop: 80 }}>
+
+        <Container style={{ paddingBottom: 20, paddingTop: 40 }}>
           <ContentContainer showsVerticalScrollIndicator={false}>
             {/* Sezione Profilo */}
             <ProfileSection>
@@ -304,8 +306,6 @@ const PetDetails: React.FC = () => {
                 rounded={theme.radius.xxl}
                 isDarkMode={isDarkMode}
               />
-              
-              <PetName>{pet.name}</PetName>
               
               {(pet.breed || calculateAge()) && (
                 <PetSubtitle>
@@ -353,7 +353,7 @@ const PetDetails: React.FC = () => {
               {pet.weight && (
                 <InfoRow>
                   <InfoIcon>
-                    <Icon name="info" size={hp(1.8)} color={theme.colors.primary} />
+                    <Icon name="package" size={hp(1.8)} color={theme.colors.primary} />
                   </InfoIcon>
                   <View style={{ flex: 1 }}>
                     <InfoLabel>Peso</InfoLabel>
@@ -365,7 +365,7 @@ const PetDetails: React.FC = () => {
               {pet.birthDate && (
                 <InfoRow>
                   <InfoIcon>
-                    <Icon name="calendar" size={hp(1.8)} color={theme.colors.primary} />
+                    <Icon name="clock" size={hp(1.8)} color={theme.colors.primary} />
                   </InfoIcon>
                   <View style={{ flex: 1 }}>
                     <InfoLabel>Data di nascita</InfoLabel>
@@ -376,7 +376,7 @@ const PetDetails: React.FC = () => {
 
               <InfoRow>
                 <InfoIcon>
-                  <Icon name="calendar" size={hp(1.8)} color={theme.colors.primary} />
+                  <Icon name="clock" size={hp(1.8)} color={theme.colors.primary} />
                 </InfoIcon>
                 <View style={{ flex: 1 }}>
                   <InfoLabel>Aggiunto il</InfoLabel>

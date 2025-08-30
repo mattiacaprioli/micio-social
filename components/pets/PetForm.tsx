@@ -165,8 +165,8 @@ const PetForm: React.FC<PetFormProps> = ({
   );
   const [bio, setBio] = useState(initialData?.bio || "");
   const [weight, setWeight] = useState(initialData?.weight?.toString() || "");
-  const [birthDate, setBirthDate] = useState<Date | undefined>(
-    initialData?.birthDate ? new Date(initialData.birthDate) : undefined
+  const [birthDate, setBirthDate] = useState<string>(
+    initialData?.birthDate ? moment(initialData.birthDate).format('DD/MM/YYYY') : ""
   );
   const [isNeutered, setIsNeutered] = useState(initialData?.isNeutered || false);
   const [medicalNotes, setMedicalNotes] = useState(initialData?.medicalNotes || "");
@@ -176,6 +176,17 @@ const PetForm: React.FC<PetFormProps> = ({
 
   // Modal states
   const [showGenderModal, setShowGenderModal] = useState(false);
+
+  // Funzione per formattare la data di nascita
+  const formatBirthday = (input: string): string => {
+    const digits = input.replace(/\D/g, "");
+    if (digits.length === 0) return "";
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return digits.slice(0, 2) + "/" + digits.slice(2);
+    return (
+      digits.slice(0, 2) + "/" + digits.slice(2, 4) + "/" + digits.slice(4, 8)
+    );
+  };
 
   const handleImagePick = async () => {
     try {
@@ -219,7 +230,7 @@ const PetForm: React.FC<PetFormProps> = ({
       gender: gender || undefined,
       bio: bio.trim() || undefined,
       weight: weight ? parseFloat(weight) : undefined,
-      birthDate: birthDate ? birthDate.toISOString() : undefined,
+      birthDate: birthDate ? moment(birthDate, 'DD/MM/YYYY').isValid() ? moment(birthDate, 'DD/MM/YYYY').toISOString() : undefined : undefined,
       isNeutered,
       medicalNotes: medicalNotes.trim() || undefined,
       image: typeof image === 'string' ? image : image?.uri || undefined,
@@ -311,21 +322,13 @@ const PetForm: React.FC<PetFormProps> = ({
 
           <Input
             placeholder="Data di nascita (GG/MM/AAAA)"
-            value={birthDate ? moment(birthDate).format('DD/MM/YYYY') : ''}
-            onChangeText={(text) => {
-              // Formato semplice per la data
-              const formatted = text.replace(/[^\d\/]/g, '');
-              if (formatted.length <= 10) {
-                try {
-                  const date = moment(formatted, 'DD/MM/YYYY', true);
-                  if (date.isValid()) {
-                    setBirthDate(date.toDate());
-                  }
-                } catch {}
-              }
-            }}
+            value={birthDate}
             keyboardType="numeric"
             maxLength={10}
+            onChangeText={(text) => {
+              const formatted = formatBirthday(text);
+              setBirthDate(formatted);
+            }}
           />
 
           <CheckboxContainer>
