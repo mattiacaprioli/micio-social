@@ -64,3 +64,97 @@ export interface PaginatedResponse<T> {
   total: number;
   nextOffset: number;
 }
+
+// ===============================
+// PETS INTERFACES
+// ===============================
+
+export interface Pet {
+  id: string;
+  userId: string;
+  name: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePetData {
+  userId: string;
+  name: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+}
+
+export interface UpdatePetData {
+  name?: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+}
+
+// Pets
+
+export interface Pet {
+  id: string;
+  userId: string;
+  name: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePetData {
+  userId: string;
+  name: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+}
+
+export interface UpdatePetData {
+  name?: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birthDate?: string;
+  isNeutered?: boolean;
+  medicalNotes?: string;
+}

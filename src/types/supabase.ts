@@ -29,6 +29,11 @@ export interface Database {
         Insert: Omit<MessageRow, "id" | "created_at">;
         Update: Partial<Omit<MessageRow, "id" | "created_at">>;
       };
+      pets: {
+        Row: PetRow;
+        Insert: Omit<PetRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<PetRow, "id" | "created_at" | "updated_at">>;
+      };
     };
   };
 }
@@ -81,4 +86,21 @@ export interface MessageRow {
   is_read?: boolean;
   is_deleted: boolean | null;
   updated_at: string | null
+}
+
+export interface PetRow {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  name: string;
+  breed?: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'unknown';
+  bio?: string;
+  image?: string;
+  weight?: number;
+  birth_date?: string;
+  is_neutered?: boolean;
+  medical_notes?: string;
 }

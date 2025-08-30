@@ -157,7 +157,7 @@ const TabBar: React.FC<TabBarProps> = ({ currentRoute = "/home", onRefresh }) =>
         </PlusButtonContainer>
 
         <TabButton
-          onPress={() => router.push("/pets/pets")}
+          onPress={() => router.push("/(main)/pets/pets")}
           isActive={currentRoute.startsWith("/pets")}
         >
           <Icon
