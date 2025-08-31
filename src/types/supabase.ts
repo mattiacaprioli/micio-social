@@ -58,6 +58,7 @@ export interface PostRow {
   body?: string;
   file?: string;
   category?: string;
+  pet_ids?: string[]; // Array di ID dei gatti taggati
 }
 
 export interface CommentRow {

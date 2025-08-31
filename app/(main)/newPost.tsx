@@ -24,6 +24,7 @@ import { getSupabaseFileUrl } from "../../services/imageService";
 import { Video } from "expo-av";
 import { createOrUpdatePost } from "../../services/postService";
 import { RichEditor } from "react-native-pell-rich-editor";
+import PetSelector from "../../components/pets/PetSelector";
 
 // Interfacce per i tipi
 interface PostParams {
@@ -83,7 +84,7 @@ const MediaContainer = styled.View`
   padding: 12px;
   padding-left: 18px;
   padding-right: 18px;
-  border-radius: ${(props) => props.theme.radius.xl}px;
+  border-radius: ${(props) => props.theme.radius.xs}px;
   border-color: ${(props) => props.theme.colors.gray};
   margin-bottom: 15px;
 `;
@@ -103,7 +104,7 @@ const AddImageText = styled.Text`
 const FileContainer = styled.View`
   height: ${hp(30)}px;
   width: 100%;
-  border-radius: ${(props) => props.theme.radius.xl}px;
+  border-radius: ${(props) => props.theme.radius.xs}px;
   overflow: hidden;
 `;
 
@@ -131,15 +132,15 @@ const CategoryLabel = styled.Text`
 const CategoryOptionsContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const CategoryOption = styled.TouchableOpacity<{ isSelected?: boolean }>`
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  border-radius: ${(props) => props.theme.radius.md}px;
+  padding-left: 13px;
+  padding-right: 13px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  border-radius: ${(props) => props.theme.radius.xs}px;
   background-color: ${(props) =>
     props.isSelected
       ? props.theme.colors.primary
@@ -163,6 +164,7 @@ const NewPost: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     undefined
   );
+  const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
@@ -261,6 +263,7 @@ const NewPost: React.FC = () => {
       body: bodyRef.current,
       userId: user?.id,
       category: selectedCategory,
+      petIds: selectedPetIds.length > 0 ? selectedPetIds : undefined,
     } as any; // Utilizziamo any per evitare problemi di tipo
 
     if (post && post.id) {
@@ -301,7 +304,7 @@ const NewPost: React.FC = () => {
               <Avatar
                 uri={user && "image" in user ? user.image : undefined}
                 size={hp(6.5)}
-                rounded={theme.radius.xl}
+                rounded={theme.radius.xs}
                 isDarkMode={isDarkMode}
               />
               <View style={{ gap: 2 }}>
@@ -371,9 +374,15 @@ const NewPost: React.FC = () => {
                 ))}
               </CategoryOptionsContainer>
             </CategoryContainer>
+
+            <PetSelector
+              selectedPetIds={selectedPetIds}
+              onSelectionChange={setSelectedPetIds}
+              maxSelections={5}
+            />
           </ScrollView>
           <Button
-            buttonStyle={{ height: hp(6.2) }}
+            buttonStyle={{ height: hp(4.5) }}
             title={post && post.id ? "Update" : "Post"}
             loading={loading}
             hasShadow={false}

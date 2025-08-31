@@ -21,6 +21,7 @@ export interface CreatePostData {
   body?: string;
   userId: string;
   id?: string;
+  petIds?: string[];
 }
 
 // Interfacce per l'ecommerce affiliate

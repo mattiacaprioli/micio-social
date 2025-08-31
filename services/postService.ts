@@ -14,6 +14,7 @@ interface CreatePostInput {
   body?: string;
   file?: PostFile | string;
   category?: string;
+  petIds?: string[];
 }
 
 export interface PostWithRelations extends PostRow {
@@ -24,6 +25,11 @@ export interface PostWithRelations extends PostRow {
   };
   postLikes: Array<any>;
   comments: Array<any> | { count: number };
+  pets?: Array<{
+    id: string;
+    name: string;
+    image?: string;
+  }>;
 }
 
 interface PostLike {
@@ -60,7 +66,8 @@ export const createOrUpdatePost = async (post: CreatePostInput): Promise<ApiResp
         body: post.body,
         file: post.file,
         // La colonna 'category' ora esiste nel database
-        category: post.category
+        category: post.category,
+        pet_ids: post.petIds
       })
       .select()
       .single();

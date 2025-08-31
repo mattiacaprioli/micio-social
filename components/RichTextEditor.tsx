@@ -31,8 +31,8 @@ const EditorContainer = styled.View<{ minHeight?: number }>`
 `
 
 const StyledRichToolbar = styled(RichToolbar)`
-  border-top-right-radius: ${props => props.theme.radius.xl}px;
-  border-top-left-radius: ${props => props.theme.radius.xl}px;
+  border-top-right-radius: ${props => props.theme.radius.xs}px;
+  border-top-left-radius: ${props => props.theme.radius.xs}px;
   background-color: ${props => props.theme.colors.gray};
 `
 
@@ -41,8 +41,8 @@ const StyledRichEditor = styled(RichEditor)`
   flex: 1;
   border-width: 1.5px;
   border-top-width: 0;
-  border-bottom-left-radius: ${props => props.theme.radius.xl}px;
-  border-bottom-right-radius: ${props => props.theme.radius.xl}px;
+  border-bottom-left-radius: ${props => props.theme.radius.xs}px;
+  border-bottom-right-radius: ${props => props.theme.radius.xs}px;
   border-color: ${props => props.theme.colors.gray};
   padding: 5px;
 `
