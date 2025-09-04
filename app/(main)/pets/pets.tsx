@@ -161,6 +161,13 @@ const Pets: React.FC = () => {
     }, [user?.id])
   );
 
+  const rightButton = (
+    <AddHeaderButton onPress={navigateToAddPet}>
+      <Icon name="plus" size={hp(1.8)} color="white" />
+      <AddButtonText>Add</AddButtonText>
+    </AddHeaderButton>
+  );
+
   // Loading iniziale
   if (loading) {
     return (
@@ -183,19 +190,11 @@ const Pets: React.FC = () => {
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title="I Miei Gatti" showBackButton={false} />
+          <Header title="My cats" showBackButton={false} rightButton={rightButton} />
         </View>
 
         <Container theme={theme}>
           <ContentContainer>
-            {/* Header con pulsante aggiungi */}
-            <HeaderWithButton>
-              <View /> {/* Spacer */}
-              <AddHeaderButton onPress={navigateToAddPet}>
-                <Icon name="plus" size={hp(1.8)} color="white" />
-                <AddButtonText>Aggiungi</AddButtonText>
-              </AddHeaderButton>
-            </HeaderWithButton>
 
             {/* Lista dei gatti o stato vuoto */}
             <ListContainer>

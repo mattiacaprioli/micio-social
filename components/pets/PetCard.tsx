@@ -25,38 +25,29 @@ interface PetCardProps {
 }
 
 const Container = styled.TouchableOpacity`
-  background-color: ${(props) => props.theme.colors.background};
-  border-radius: ${(props) => props.theme.radius.xs}px;
+  background-color: ${(props) => props.theme.colors.card};
+  border-radius: ${wp(3)}px;
   margin: ${hp(1)}px ${wp(2)}px;
   shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.15;
-  shadow-radius: 12px;
-  elevation: 8;
+  shadow-offset: 0px 6px;
+  shadow-opacity: 0.12;
+  shadow-radius: 16px;
+  elevation: 12;
   overflow: hidden;
+  border: 1px solid ${(props) => props.theme.colors.cardBorder}30;
+  transform: scale(1);
 `;
 
 const ImageSection = styled.View`
   position: relative;
-  height: ${hp(20)}px;
-  background-color: ${(props) => props.theme.colors.gray}10;
+  height: ${hp(22)}px;
+  background-color: ${(props) => props.theme.colors.primary}20;
   overflow: hidden;
-  border-top-left-radius: ${(props) => props.theme.radius.xs}px;
-  border-top-right-radius: ${(props) => props.theme.radius.xs}px;
 `;
 
 const PetImage = styled(Image)`
   width: 100%;
   height: 100%;
-`;
-
-const ImageOverlay = styled.View`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-  padding: ${hp(1.5)}px ${wp(3)}px;
 `;
 
 const QuickActions = styled.View`
@@ -86,44 +77,40 @@ const QuickActionButton = styled.TouchableOpacity<{ variant?: 'edit' | 'delete' 
 `;
 
 const ContentSection = styled.View`
-  padding: ${hp(1.5)}px ${wp(3)}px ${hp(2)}px;
+  padding: ${hp(2)}px ${wp(4)}px ${hp(2.5)}px;
+  background-color: ${(props) => props.theme.colors.card};
 `;
 
 const MainInfo = styled.View`
-  margin-bottom: ${hp(1)}px;
+  margin-bottom: ${hp(1.5)}px;
 `;
 
 const PetName = styled.Text`
-  font-size: ${hp(2.4)}px;
-  font-weight: 700;
+  font-size: ${hp(2.6)}px;
+  font-weight: 800;
   color: ${(props) => props.theme.colors.textDark};
-  margin-bottom: ${hp(0.5)}px;
-`;
-
-const InfoRow = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${hp(0.5)}px;
+  margin-bottom: ${hp(1)}px;
+  letter-spacing: 0.3px;
 `;
 
 const InfoBadges = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  gap: ${wp(1.5)}px;
+  gap: ${wp(2)}px;
 `;
 
 const InfoBadge = styled.View<{ color?: string }>`
-  background-color: ${(props) => props.color || props.theme.colors.primary}15;
-  padding: ${hp(0.4)}px ${wp(2)}px;
-  border-radius: ${(props) => props.theme.radius.xs}px;
-  border: 1px solid ${(props) => props.color || props.theme.colors.primary}30;
+  background-color: ${(props) => props.color || props.theme.colors.primary}12;
+  padding: ${hp(0.6)}px ${wp(3)}px;
+  border-radius: ${wp(2)}px;
+  border: 1.5px solid ${(props) => props.color || props.theme.colors.primary}25;
 `;
 
 const BadgeText = styled.Text<{ color?: string }>`
   color: ${(props) => props.color || props.theme.colors.primary};
-  font-size: ${hp(1.3)}px;
-  font-weight: 600;
+  font-size: ${hp(1.4)}px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 `;
 
 const GenderBadge = styled.View<{ gender?: string }>`
@@ -161,33 +148,37 @@ const GenderText = styled.Text<{ gender?: string }>`
 `;
 
 const BioBadge = styled.View`
-  background-color: ${(props) => props.theme.colors.gray}08;
-  border-radius: ${(props) => props.theme.radius.xs}px;
-  padding: ${hp(1)}px ${wp(2.5)}px;
-  margin-top: ${hp(1)}px;
-  border-left: 3px solid ${(props) => props.theme.colors.primary};
+  background-color: ${(props) => props.theme.colors.primary}08;
+  border-radius: ${wp(2)}px;
+  padding: ${hp(1.2)}px ${wp(3.5)}px;
+  margin-top: ${hp(1.5)}px;
+  border: 1px solid ${(props) => props.theme.colors.primary}15;
+  position: relative;
 `;
 
 const BioText = styled.Text`
   font-size: ${hp(1.5)}px;
   color: ${(props) => props.theme.colors.textLight};
-  line-height: ${hp(2.2)}px;
+  line-height: ${hp(2.3)}px;
   font-style: italic;
+  font-weight: 500;
 `;
 
 const AgeIndicator = styled.View`
   position: absolute;
-  top: ${hp(1)}px;
-  left: ${wp(2)}px;
+  top: ${hp(1.5)}px;
+  left: ${wp(3)}px;
   background-color: rgba(0, 0, 0, 0.8);
-  padding: ${hp(0.5)}px ${wp(2)}px;
-  border-radius: ${(props) => props.theme.radius.xs}px;
+  padding: ${hp(0.7)}px ${wp(3)}px;
+  border-radius: ${wp(4)}px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 `;
 
 const AgeText = styled.Text`
-  color: white;
+  color: ${(props) => props.theme.colors.textDark};
   font-size: ${hp(1.4)}px;
-  font-weight: 700;
+  font-weight: 800;
 `;
 
 const PetCard: React.FC<PetCardProps> = ({ 
@@ -238,12 +229,12 @@ const PetCard: React.FC<PetCardProps> = ({
     <Container onPress={() => onPress?.(pet)} activeOpacity={0.95}>
       {/* Sezione Immagine */}
       <ImageSection>
-        <PetImage 
+        <PetImage
           source={getUserImageSrc(pet.image)}
           contentFit="cover"
-          transition={200}
+          transition={300}
         />
-        
+
         {/* Age Indicator */}
         {calculateAge() && (
           <AgeIndicator>
@@ -297,15 +288,15 @@ const PetCard: React.FC<PetCardProps> = ({
 
             {/* Peso */}
             {pet.weight && (
-              <InfoBadge color="#10B981">
-                <BadgeText color="#10B981">{pet.weight} kg</BadgeText>
+              <InfoBadge color="#06D6A0">
+                <BadgeText color="#06D6A0">{pet.weight} kg</BadgeText>
               </InfoBadge>
             )}
 
             {/* Sterilizzato */}
             {pet.isNeutered && (
-              <InfoBadge>
-                <BadgeText>
+              <InfoBadge color="#F72585">
+                <BadgeText color="#F72585">
                   Sterilizzat{pet.gender === 'female' ? 'a' : 'o'}
                 </BadgeText>
               </InfoBadge>

@@ -15,6 +15,7 @@ import Icon from "../../assets/icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { CreatePetData, UpdatePetData, Pet } from "../../services/types";
+import { getUserImageSrc } from "../../services/imageService";
 import moment from "moment";
 
 interface PetFormProps {
@@ -39,7 +40,6 @@ const SectionTitle = styled.Text`
   font-size: ${hp(2)}px;
   font-weight: 600;
   color: ${(props) => props.theme.colors.textDark};
-  margin-bottom: ${hp(1)}px;
 `;
 
 const AvatarContainer = styled.View`
@@ -254,12 +254,14 @@ const PetForm: React.FC<PetFormProps> = ({
   };
 
   const getImageSource = () => {
-    if (typeof image === 'string') {
-      return { uri: image };
-    }
-    if (image?.uri) {
+    if (image && typeof image === 'object' && 'uri' in image) {
       return { uri: image.uri };
     }
+
+    if (typeof image === 'string') {
+      return getUserImageSrc(image);
+    }
+
     return require("../../assets/images/defaultUser.png");
   };
 
@@ -344,20 +346,24 @@ const PetForm: React.FC<PetFormProps> = ({
           {/* Bio e note */}
           <SectionTitle>Descrizione</SectionTitle>
           
+          <CheckboxText>descrivi il tuo gatto</CheckboxText>
           <Input
             placeholder="Racconta qualcosa del tuo gatto..."
             value={bio}
             onChangeText={setBio}
             multiline
-            numberOfLines={3}
+            numberOfLines={4}
+            containerStyle={{ height: hp(10) }}
           />
 
+          <CheckboxText>Note mediche (opzionale)</CheckboxText>
           <Input
             placeholder="Note mediche (opzionale)"
             value={medicalNotes}
             onChangeText={setMedicalNotes}
             multiline
-            numberOfLines={2}
+            numberOfLines={4}
+            containerStyle={{ height: hp(10) }}
           />
 
           {/* Bottoni */}

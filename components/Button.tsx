@@ -20,7 +20,7 @@ interface ButtonProps {
 
 const StyledPressable = styled.Pressable<{ hasShadow: boolean; theme: Theme }>`
   background-color: ${props => props.theme.colors.primary};
-  height: ${hp(5)}px;
+  height: ${hp(4.5)}px;
   justify-content: center;
   align-items: center;
   border-radius: ${props => props.theme.radius.sm}px;

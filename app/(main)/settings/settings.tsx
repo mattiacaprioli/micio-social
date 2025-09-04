@@ -31,16 +31,22 @@ const ScreenContainer = styled.View`
 
 const Card = styled.View`
   margin-top: ${hp(2)}px;
-  background-color: ${props => props.theme.colors.darkLight};
-  border-radius: ${props => props.theme.radius.xxl}px;
+  background-color: ${(props) => props.theme.colors.card};
+  border-radius: ${wp(3)}px;
   padding-top: ${hp(1.5)}px;
   padding-bottom: ${hp(1.5)}px;
   padding-left: ${wp(2)}px;
   padding-right: ${wp(2)}px;
   border-width: 0.5px;
   border-color: ${props => props.theme.colors.dark};
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
   gap: ${hp(2)}px;
+  shadow-color: #000;
+  shadow-offset: 0px 6px;
+  shadow-opacity: 0.12;
+  shadow-radius: 16px;
+  elevation: 12;
+  overflow: hidden;
+  border: 1px solid ${(props) => props.theme.colors.cardBorder}30;
 `;
 
 const Item = styled.TouchableOpacity`
@@ -52,7 +58,7 @@ const Item = styled.TouchableOpacity`
   padding-bottom: ${hp(1)}px;
   padding-left: ${wp(3)}px;
   padding-right: ${wp(3)}px;
-  border-radius: ${(props) => props.theme.radius.lg}px;
+  border-radius: ${(props) => props.theme.radius.xs}px;
   background-color: ${(props) => props.theme.colors.background};
 `;
 
