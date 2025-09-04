@@ -26,6 +26,7 @@ import { useTheme } from "../context/ThemeContext";
 import { User } from "../src/types";
 import { Router } from "expo-router";
 import RBSheet from "react-native-raw-bottom-sheet";
+import TaggedPets from "./TaggedPets";
 
 interface PostLike {
   userId: string;
@@ -484,6 +485,11 @@ const PostCard: React.FC<PostCardProps> = ({
               </AnimatedHeart>
             )}
           </MediaContainer>
+        )}
+
+        {/* Tagged pets */}
+        {item?.pets && item.pets.length > 0 && (
+          <TaggedPets pets={item.pets} maxVisible={4} />
         )}
 
         {/* like, comment & share */}

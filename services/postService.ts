@@ -83,6 +83,27 @@ export const createOrUpdatePost = async (post: CreatePostInput): Promise<ApiResp
   }
 };
 
+const fetchPetsByIds = async (petIds: string[]): Promise<Array<{ id: string; name: string; image?: string }>> => {
+  if (!petIds || petIds.length === 0) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from("pets")
+      .select("id, name, image")
+      .in("id", petIds);
+
+    if (error) {
+      console.log("fetchPetsByIds error: ", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.log("fetchPetsByIds error: ", error);
+    return [];
+  }
+};
+
 export const fetchPost = async (limit = 10, userId?: string, category?: string, searchQuery?: string): Promise<ApiResponse<PostWithRelations[]>> => {
   try {
     let query = supabase
@@ -116,7 +137,17 @@ export const fetchPost = async (limit = 10, userId?: string, category?: string, 
       return { success: false, msg: "Could not fetch the posts" };
     }
 
-    return { success: true, data };
+    const postsWithPets = await Promise.all(
+      (data || []).map(async (post) => {
+        if (post.pet_ids && post.pet_ids.length > 0) {
+          const pets = await fetchPetsByIds(post.pet_ids);
+          return { ...post, pets };
+        }
+        return { ...post, pets: [] };
+      })
+    );
+
+    return { success: true, data: postsWithPets };
   } catch (error) {
     console.log("fetchPost error: ", error);
     return { success: false, msg: "Could not fetch the posts" };
@@ -155,7 +186,15 @@ export const fetchPostDetails = async (postId: string): Promise<ApiResponse<Post
       return { success: false, msg: "Could not fetch the post" };
     }
 
-    return { success: true, data };
+    let postWithPets = data;
+    if (data.pet_ids && data.pet_ids.length > 0) {
+      const pets = await fetchPetsByIds(data.pet_ids);
+      postWithPets = { ...data, pets };
+    } else {
+      postWithPets = { ...data, pets: [] };
+    }
+
+    return { success: true, data: postWithPets };
   } catch (error) {
     console.log("fetchPostDetails error: ", error);
     return { success: false, msg: "Could not fetch the post" };

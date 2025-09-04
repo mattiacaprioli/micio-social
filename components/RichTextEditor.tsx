@@ -15,7 +15,7 @@ import { useTheme } from "../context/ThemeContext"
 type ToolbarAction = typeof actions[keyof typeof actions];
 
 interface RichTextEditorProps {
-  editorRef: React.RefObject<RichEditor>
+  editorRef: React.RefObject<RichEditor | null>
   onChange: (text: string) => void
   initialContent?: string
   placeholder?: string

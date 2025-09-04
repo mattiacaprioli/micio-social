@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  Text,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components/native";
@@ -32,6 +31,7 @@ interface PostParams {
   body?: string;
   file?: string;
   category?: string;
+  petIds?: string[];
   [key: string]: any;
 }
 
@@ -182,6 +182,21 @@ const NewPost: React.FC = () => {
       bodyRef.current = post.body || "";
       setFile(post.file || null);
       setSelectedCategory(post.category);
+
+      if (post.petIds) {
+        try {
+          const petIds = typeof post.petIds === 'string'
+            ? JSON.parse(post.petIds)
+            : post.petIds;
+
+          if (Array.isArray(petIds)) {
+            setSelectedPetIds(petIds);
+          }
+        } catch (error) {
+          console.log("Error parsing petIds:", error);
+        }
+      }
+
       setTimeout(() => {
         editorRef.current?.setContentHTML(post.body || "");
       }, 300);

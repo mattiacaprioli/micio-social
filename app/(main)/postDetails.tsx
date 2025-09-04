@@ -103,6 +103,12 @@ interface PostWithComments extends Omit<Post, 'createdAt'> {
   user_id: string;     // dal backend arriva come user_id invece di userId
   comments: Comment[];
   category?: string;   // categoria del post
+  pet_ids?: string[];  // array di ID dei gatti taggati
+  pets?: Array<{       // dati dei gatti taggati
+    id: string;
+    name: string;
+    image?: string;
+  }>;
 }
 
 const PostDetails: React.FC = () => {
@@ -265,7 +271,8 @@ const PostDetails: React.FC = () => {
       params: {
         ...item,
         file: typeof item.file === "string" ? item.file : undefined,
-        user: item.user ? JSON.stringify(item.user) : undefined
+        user: item.user ? JSON.stringify(item.user) : undefined,
+        petIds: post?.pet_ids ? JSON.stringify(post.pet_ids) : undefined
       }
     });
   };
@@ -311,7 +318,8 @@ const PostDetails: React.FC = () => {
               image: post.user.image || null
             } : undefined,
             postLikes: post.postLikes || [],
-            category: post.category
+            category: post.category,
+            pets: post.pets || []
           } as any}
           currentUser={user as User | null}
           router={router}
@@ -330,7 +338,6 @@ const PostDetails: React.FC = () => {
             </CategoryBadge>
           </CategoryContainer>
         )}
-
         <InputContainer>
           <Input
             inputRef={inputRef}
