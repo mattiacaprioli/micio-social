@@ -25,7 +25,7 @@ interface PetCardProps {
 }
 
 const Container = styled.TouchableOpacity`
-  background-color: ${(props) => props.theme.colors.card};
+  background-color: ${props => props.theme.colors.background};
   border-radius: ${wp(3)}px;
   margin: ${hp(1)}px ${wp(2)}px;
   shadow-color: #000;
@@ -78,7 +78,7 @@ const QuickActionButton = styled.TouchableOpacity<{ variant?: 'edit' | 'delete' 
 
 const ContentSection = styled.View`
   padding: ${hp(2)}px ${wp(4)}px ${hp(2.5)}px;
-  background-color: ${(props) => props.theme.colors.card};
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const MainInfo = styled.View`
@@ -176,7 +176,7 @@ const AgeIndicator = styled.View`
 `;
 
 const AgeText = styled.Text`
-  color: ${(props) => props.theme.colors.textDark};
+  color: #FFFFFF;
   font-size: ${hp(1.4)}px;
   font-weight: 800;
 `;

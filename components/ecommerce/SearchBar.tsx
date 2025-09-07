@@ -21,7 +21,6 @@ const SearchContainer = styled.View`
   flex-direction: row;
   align-items: center;
   background-color: ${(props) => props.theme.colors.card};
-  border: 1px solid ${(props) => props.theme.colors.cardBorder};
   border-radius: ${wp(3)}px;
   padding: ${hp(0.1)}px ${wp(3)}px;
 `;

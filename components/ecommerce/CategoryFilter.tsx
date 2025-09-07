@@ -25,11 +25,6 @@ const CategoryItem = styled.TouchableOpacity<{ isSelected: boolean }>`
       ? props.theme.colors.primary 
       : props.theme.colors.card
   };
-  border: 1px solid ${(props) => 
-    props.isSelected 
-      ? props.theme.colors.primary 
-      : props.theme.colors.cardBorder
-  };
   padding: 6px 8px;
   border-radius: 10px;
   margin-right: 12px;

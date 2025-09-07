@@ -11,16 +11,19 @@ interface ProductCardProps {
 }
 
 const Card = styled.TouchableOpacity`
-  background-color: ${(props) => props.theme.colors.card};
+  background-color: ${props => props.theme.colors.background};
   border: 1px solid ${(props) => props.theme.colors.cardBorder};
   border-radius: 12px;
   margin: 8px;
   padding: 12px;
-  shadow-color: ${(props) => props.theme.colors.cardShadow};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 3;
+  shadow-color: #444040ff;
+  shadow-offset: 0px 6px;
+  shadow-opacity: 0.12;
+  shadow-radius: 16px;
+  elevation: 12;
+  overflow: hidden;
+  border: 1px solid ${(props) => props.theme.colors.cardBorder}30;
+  transform: scale(1);
   flex: 1;
   min-width: ${wp(42)}px;
   max-width: ${wp(45)}px;
