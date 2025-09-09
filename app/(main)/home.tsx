@@ -93,6 +93,29 @@ const NoPostText = styled.Text`
   color: ${(props) => props.theme.colors.text};
 `;
 
+const EmptyStateContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: ${wp(8)}px;
+  margin-top: ${hp(10)}px;
+`;
+
+const EmptyStateTitle = styled.Text`
+  font-size: ${hp(2.5)}px;
+  font-weight: ${(props) => props.theme.fonts.bold};
+  color: ${(props) => props.theme.colors.text};
+  text-align: center;
+  margin-bottom: ${hp(1)}px;
+`;
+
+const EmptyStateSubtitle = styled.Text`
+  font-size: ${hp(1.8)}px;
+  color: ${(props) => props.theme.colors.textLight};
+  text-align: center;
+  line-height: ${hp(2.5)}px;
+`;
+
 const CategoriesContainer = styled.View`
   flex-direction: row;
   margin-left: ${wp(4)}px;
@@ -147,7 +170,7 @@ const PillText = styled.Text`
   font-weight: ${(props) => props.theme.fonts.bold};
 `;
 
-var limit = 0;
+
 
 const Home: React.FC = () => {
   const { user } = useAuth();
@@ -163,20 +186,27 @@ const Home: React.FC = () => {
     undefined
   );
   const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+  const [limit, setLimit] = useState<number>(0);
   const fadeAnim = useRef(new Animated.Value(1)).current; // Valore iniziale per l'opacità: 1
+
+  // Cache intelligente per i post per categoria
+  const postsCache = useRef<Map<string, { posts: PostWithRelations[], timestamp: number, limit: number }>>(new Map()).current;
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
+
+  // Funzione per ottenere la chiave della cache
+  const getCacheKey = (category: string | undefined): string => {
+    return category || 'all';
+  };
 
   // Carica la categoria selezionata da AsyncStorage all'avvio
   useEffect(() => {
     const loadSelectedCategory = async () => {
       try {
-        const savedCategory = await AsyncStorage.getItem("selectedCategory");
-        if (savedCategory !== null) {
-          setSelectedCategory(
-            savedCategory === "undefined" ? undefined : savedCategory
-          );
-        }
+        // Sempre inizia con "All" per evitare problemi di cache
+        setSelectedCategory(undefined);
+        await AsyncStorage.setItem("selectedCategory", "undefined");
       } catch (error) {
-        console.error("Error loading selected category:", error);
+        console.error("Error setting default category:", error);
       }
     };
 
@@ -209,6 +239,9 @@ const Home: React.FC = () => {
             }
           : undefined;
       setPosts((prevPosts) => [newPost, ...prevPosts]);
+
+      // Invalida la cache per tutte le categorie quando viene aggiunto un nuovo post
+      postsCache.clear();
     }
     if (payload.eventType === "DELETE" && payload?.old?.id) {
       setPosts((prevPosts) => {
@@ -217,6 +250,9 @@ const Home: React.FC = () => {
         );
         return updatedPosts;
       });
+
+      // Invalida la cache per tutte le categorie quando viene eliminato un post
+      postsCache.clear();
     }
     if (payload.eventType === "UPDATE" && payload?.new?.id) {
       setPosts((prevPosts) => {
@@ -229,6 +265,9 @@ const Home: React.FC = () => {
         });
         return updatedPosts;
       });
+
+      // Invalida la cache per tutte le categorie quando viene aggiornato un post
+      postsCache.clear();
     }
   };
 
@@ -332,10 +371,13 @@ const Home: React.FC = () => {
     // Imposta lo stato di caricamento
     setCategoryLoading(true);
 
+    // Svuota immediatamente i post per evitare di vedere quelli vecchi
+    setPosts([]);
+
     // Animazione di dissolvenza in uscita
     Animated.timing(fadeAnim, {
       toValue: 0,
-      duration: 200,
+      duration: 150,
       useNativeDriver: true,
     }).start(async () => {
       // Carica i nuovi post mentre l'animazione è completata
@@ -347,51 +389,110 @@ const Home: React.FC = () => {
       // Animazione di dissolvenza in entrata
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }).start();
     });
   };
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
-    // call the api here
-    if (!hasMore && !isRefreshing) return;
+    const cacheKey = getCacheKey(selectedCategory);
+    const cachedData = postsCache.get(cacheKey);
+    const now = Date.now();
 
-    if (isRefreshing) {
-      limit = 10; // Resetta il limite durante il refresh
-      // Svuota i post durante il caricamento di una nuova categoria
-      if (categoryLoading) {
-        setPosts([]);
-      }
-    } else {
-      limit += 10;
+    // Se non è un refresh e abbiamo dati in cache validi, usali
+    if (!isRefreshing && cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
+      setPosts(cachedData.posts);
+      setLimit(cachedData.limit);
+      setHasMore(cachedData.posts.length >= cachedData.limit);
+      return;
     }
 
-    console.log("fetching post: ", limit, "category:", selectedCategory);
-    let res = await fetchPost(limit, undefined, selectedCategory);
+    // Altrimenti, carica i dati dall'API
+    if (!hasMore && !isRefreshing) return;
+
+    let currentLimit = cachedData?.limit || limit;
+    if (isRefreshing) {
+      currentLimit = 10; // Resetta il limite durante il refresh
+    } else {
+      currentLimit += 10;
+    }
+
+    let res = await fetchPost(currentLimit, undefined, selectedCategory);
     if (res.success && res.data) {
-      if (posts.length === res.data.length && !isRefreshing) {
+      // Se è un refresh e non ci sono post, significa che la categoria è vuota
+      if (isRefreshing && res.data.length === 0) {
+        setHasMore(false);
+        setPosts([]);
+      } else if (posts.length === res.data.length && !isRefreshing) {
         setHasMore(false);
       } else {
         setHasMore(true);
       }
-      setPosts(res.data);
+
+      if (res.data.length > 0) {
+        setPosts(res.data);
+        // Salva nella cache
+        postsCache.set(cacheKey, {
+          posts: res.data,
+          timestamp: now,
+          limit: currentLimit
+        });
+        setLimit(currentLimit);
+      } else if (isRefreshing) {
+        setPosts([]);
+        // Pulisci la cache per questa categoria
+        postsCache.delete(cacheKey);
+      }
     }
     if (isRefreshing) {
       setRefreshing(false);
     }
   };
 
+  // Ref per tracciare se è il primo caricamento
+  const isInitialLoad = useRef(true);
+
+  // Effetto per il focus della schermata (caricamento iniziale e ritorno da altre schermate)
   useFocusEffect(
     useCallback(() => {
-      animateCategoryChange(true);
+      const cacheKey = getCacheKey(selectedCategory);
+      const cachedData = postsCache.get(cacheKey);
+      const now = Date.now();
+
+      // Carica solo se:
+      // 1. Non stiamo già caricando
+      // 2. Non ci sono dati in cache O la cache è scaduta
+      if (!categoryLoading && (!cachedData || (now - cachedData.timestamp) > CACHE_DURATION)) {
+        console.log("Loading posts on focus for category:", selectedCategory);
+        animateCategoryChange(true);
+      } else if (cachedData) {
+        console.log("Using cached posts on focus for category:", selectedCategory);
+        setPosts(cachedData.posts);
+        setLimit(cachedData.limit);
+        setHasMore(cachedData.posts.length >= cachedData.limit);
+      }
     }, [selectedCategory])
   );
+
+  // Effetto separato per gestire i cambi di categoria
+  useEffect(() => {
+    // Salta il primo render (gestito da useFocusEffect)
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // Esegui il cambio categoria solo se non stiamo già caricando
+    if (!categoryLoading) {
+      animateCategoryChange(true);
+    }
+  }, [selectedCategory]);
 
   const onRefresh = useCallback((): void => {
     setRefreshing(true);
     animateCategoryChange(true);
-  }, [selectedCategory]);
+  }, []);
 
   useEffect(() => {
     homeRefreshRef.current = onRefresh;
@@ -446,10 +547,6 @@ const Home: React.FC = () => {
                   setSelectedCategory(undefined);
                   // Salva la categoria selezionata in AsyncStorage
                   AsyncStorage.setItem("selectedCategory", "undefined");
-                  setRefreshing(true);
-                  // Svuota immediatamente i post per evitare di vedere i post vecchi
-                  setPosts([]);
-                  animateCategoryChange(true);
                 }
               }}
             >
@@ -468,10 +565,6 @@ const Home: React.FC = () => {
                     setSelectedCategory(category.id);
                     // Salva la categoria selezionata in AsyncStorage
                     AsyncStorage.setItem("selectedCategory", category.id);
-                    setRefreshing(true);
-                    // Svuota immediatamente i post per evitare di vedere i post vecchi
-                    setPosts([]);
-                    animateCategoryChange(true);
                   }
                 }}
               >
@@ -528,6 +621,24 @@ const Home: React.FC = () => {
                   >
                     <Loading />
                   </View>
+                ) : posts.length === 0 ? (
+                  <EmptyStateContainer>
+                    <Icon
+                      name={selectedCategory ? "search" : "plus"}
+                      size={hp(6)}
+                      color={theme.colors.textLight}
+                      style={{ marginBottom: hp(2), opacity: 0.5 }}
+                    />
+                    <EmptyStateTitle>
+                      {selectedCategory ? "No posts in this category" : "No posts yet"}
+                    </EmptyStateTitle>
+                    <EmptyStateSubtitle>
+                      {selectedCategory
+                        ? `There are no posts in the "${categories.find(c => c.id === selectedCategory)?.label || selectedCategory}" category yet.`
+                        : "Be the first to share something! Create a new post to get the conversation started."
+                      }
+                    </EmptyStateSubtitle>
+                  </EmptyStateContainer>
                 ) : (
                   <View style={{ marginVertical: 30 }}>
                     <NoPostText>No more posts</NoPostText>
