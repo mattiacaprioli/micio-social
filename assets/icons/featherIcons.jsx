@@ -193,3 +193,7 @@ export const AlertCircleIcon = ({ size, color, ...props }) => (
 export const ListIcon = ({ size, color, ...props }) => (
   <Icon name="list" size={size} color={color} {...props} />
 );
+
+export const PlayIcon = ({ size, color, ...props }) => (
+  <Icon name="play" size={size} color={color} {...props} />
+);

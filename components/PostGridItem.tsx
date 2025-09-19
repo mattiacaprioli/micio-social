@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import styled from 'styled-components/native';
 import { Image } from 'expo-image';
+import { Video, ResizeMode } from 'expo-av';
 import { wp, hp } from '../helpers/common';
 import { getSupabaseFileUrl } from '../services/imageService';
 import { PostWithRelations } from '../services/postService';
@@ -28,21 +29,109 @@ const PostImage = styled(Image)<{ size: number }>`
   height: ${props => props.size}px;
 `;
 
+const PostVideo = styled(Video)<{ size: number }>`
+  width: ${props => props.size}px;
+  height: ${props => props.size}px;
+`;
+
+const VideoOverlay = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+`;
+
+const PlayButton = styled.View`
+  width: ${hp(6)}px;
+  height: ${hp(6)}px;
+  border-radius: ${hp(3)}px;
+  background-color: rgba(31, 28, 28, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  justify-content: center;
+  align-items: center;
+  shadow-color: rgba(0, 0, 0, 0.3);
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 8px;
+  elevation: 8;
+`;
+
 const NoImageContainer = styled.View<{ size: number }>`
   width: ${props => props.size}px;
   height: ${props => props.size}px;
   justify-content: center;
   align-items: center;
   background-color: ${props => props.theme.colors.darkLight};
-  padding: ${wp(2)}px;
+  padding: ${wp(3)}px;
+  position: relative;
+  overflow: hidden;
+`;
+
+const TextGradientOverlay = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: ${props => props.theme.colors.primary}08;
+  opacity: 0.6;
+`;
+
+const ColorAccent = styled.View`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 40%;
+  background-color: ${props => props.theme.colors.rose}15;
+  border-bottom-left-radius: ${wp(8)}px;
+`;
+
+const ColorAccent2 = styled.View`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  height: 30%;
+  background-color: ${props => props.theme.colors.primary}10;
+  border-top-right-radius: ${wp(6)}px;
+`;
+
+const TextContentContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
 `;
 
 const NoImageText = styled.Text`
-  color: ${props => props.theme.colors.textLight};
-  font-size: ${hp(1.4)}px;
+  color: ${props => props.theme.colors.text};
+  font-size: ${hp(1.5)}px;
   text-align: center;
-  line-height: ${hp(1.8)}px;
-  font-weight: ${props => props.theme.fonts.medium};
+  line-height: ${hp(2)}px;
+  font-weight: ${props => props.theme.fonts.semibold};
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+`;
+
+const QuoteIcon = styled.View`
+  position: absolute;
+  top: ${hp(1)}px;
+  left: ${wp(2)}px;
+  opacity: 0.3;
+`;
+
+const PostTypeIndicator = styled.View`
+  position: absolute;
+  bottom: ${hp(1)}px;
+  right: ${wp(2)}px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: ${wp(2)}px;
+  padding: ${wp(1)}px ${wp(1.5)}px;
 `;
 
 const OverlayContainer = styled.View`
@@ -109,14 +198,16 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
 }) => {
   const theme = useStyledTheme();
   
-  // Verifica se il post ha un'immagine
+  // Verifica se il post ha un'immagine o un video
   const hasImage = item?.file && item.file.includes("postImages");
+  const hasVideo = item?.file && item.file.includes("postVideos");
+  const hasMedia = hasImage || hasVideo;
   
-  // Calcola il numero di like e commenti
+  // Calcola il numero di like e commenti (stesso modo di PostCard)
   const likesCount = item?.postLikes?.length || 0;
-  const commentsCount = Array.isArray(item?.comments) 
-    ? item.comments.length 
-    : item?.comments?.count || 0;
+  const commentsCount = Array.isArray(item?.comments)
+    ? item.comments.length
+    : (item?.comments as { count: number })?.count || 0;
 
   // Estrae il testo dal body HTML (versione semplificata)
   const getTextFromHtml = (html: string): string => {
@@ -134,17 +225,36 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
 
   return (
     <GridItemContainer size={size} onPress={onPress} activeOpacity={0.8}>
-      {hasImage ? (
+      {hasMedia ? (
         <>
-          <PostImage
-            source={getSupabaseFileUrl(item.file)}
-            contentFit="cover"
-            size={size}
-            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-            transition={200}
-            cachePolicy="memory-disk"
-          />
-          
+          {hasImage ? (
+            <PostImage
+              source={getSupabaseFileUrl(item.file!)}
+              contentFit="cover"
+              size={size}
+              placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+              transition={200}
+              cachePolicy="memory-disk"
+            />
+          ) : hasVideo ? (
+            <>
+              <PostVideo
+                source={{ uri: getSupabaseFileUrl(item.file!).uri }}
+                shouldPlay={false}
+                isLooping={false}
+                isMuted={true}
+                resizeMode={ResizeMode.COVER}
+                size={size}
+                useNativeControls={false}
+              />
+              <VideoOverlay>
+                <PlayButton>
+                  <Icon name="play" size={hp(2.5)} color="rgba(255, 255, 255, 0.9)" />
+                </PlayButton>
+              </VideoOverlay>
+            </>
+          ) : null}
+
           {/* Indicatori sovrapposti */}
           {likesCount > 0 && (
             <LikesContainer>
@@ -152,7 +262,7 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
               <LikesText>{likesCount}</LikesText>
             </LikesContainer>
           )}
-          
+
           {commentsCount > 0 && (
             <CommentsContainer>
               <Icon name="messageCircle" size={hp(1.4)} color="white" />
@@ -162,50 +272,44 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
         </>
       ) : (
         <NoImageContainer size={size}>
-          <Icon 
-            name="edit" 
-            size={hp(2.5)} 
-            color={theme.colors.textLight} 
-            style={{ marginBottom: hp(1) }}
-          />
-          <NoImageText numberOfLines={4}>
-            {textContent || 'Post senza contenuto'}
-          </NoImageText>
-          
-          {/* Indicatori per post senza immagine */}
-          {(likesCount > 0 || commentsCount > 0) && (
-            <View style={{ 
-              flexDirection: 'row', 
-              marginTop: hp(1), 
-              gap: wp(2),
-              alignItems: 'center' 
-            }}>
-              {likesCount > 0 && (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon name="heart" size={hp(1.2)} color={theme.colors.rose} />
-                  <Text style={{ 
-                    color: theme.colors.textLight, 
-                    fontSize: hp(1.1),
-                    marginLeft: wp(0.5)
-                  }}>
-                    {likesCount}
-                  </Text>
-                </View>
-              )}
-              
-              {commentsCount > 0 && (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Icon name="messageCircle" size={hp(1.2)} color={theme.colors.primary} />
-                  <Text style={{ 
-                    color: theme.colors.textLight, 
-                    fontSize: hp(1.1),
-                    marginLeft: wp(0.5)
-                  }}>
-                    {commentsCount}
-                  </Text>
-                </View>
-              )}
-            </View>
+          {/* Elementi decorativi di sfondo */}
+          <ColorAccent />
+          <ColorAccent2 />
+          <TextGradientOverlay />
+
+          {/* Icona virgolette decorativa */}
+          <QuoteIcon>
+            <Icon
+              name="messageCircle"
+              size={hp(2)}
+              color={theme.colors.primary}
+            />
+          </QuoteIcon>
+
+          <TextContentContainer>
+            <NoImageText numberOfLines={5}>
+              {textContent || 'Condividi i tuoi pensieri...'}
+            </NoImageText>
+          </TextContentContainer>
+
+          {/* Indicatore tipo post */}
+          <PostTypeIndicator>
+            <Icon name="edit" size={hp(1.2)} color="rgba(255, 255, 255, 0.8)" />
+          </PostTypeIndicator>
+
+          {/* Indicatori like e commenti sovrapposti */}
+          {likesCount > 0 && (
+            <LikesContainer>
+              <Icon name="heart" size={hp(1.4)} color="white" />
+              <LikesText>{likesCount}</LikesText>
+            </LikesContainer>
+          )}
+
+          {commentsCount > 0 && (
+            <CommentsContainer>
+              <Icon name="messageCircle" size={hp(1.4)} color="white" />
+              <CommentsText>{commentsCount}</CommentsText>
+            </CommentsContainer>
           )}
         </NoImageContainer>
       )}
