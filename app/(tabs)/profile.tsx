@@ -10,6 +10,7 @@ import {
   Linking,
 } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
+import { useFocusEffect } from "expo-router";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
@@ -30,6 +31,9 @@ import {
 } from "../../services/followsService";
 import { User } from "../../src/types";
 import type { PostWithRelations } from "../../services/postService";
+import { getUserPets } from "../../services/petService";
+import { Pet } from "../../services/types";
+import PetCard from "../../components/pets/PetCard";
 
 // Styled Components
 
@@ -91,6 +95,28 @@ const NoPostText = styled.Text`
   font-size: ${hp(2)}px;
   text-align: center;
   color: ${props => props.theme.colors.text};
+`;
+
+const AddCatButton = styled.TouchableOpacity`
+  background-color: ${props => props.theme.colors.primary};
+  margin: ${hp(2)}px ${wp(4)}px;
+  padding: ${hp(1.5)}px;
+  border-radius: ${props => props.theme.radius.lg}px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: ${wp(2)}px;
+  shadow-color: ${props => props.theme.colors.primary};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 8px;
+  elevation: 5;
+`;
+
+const AddCatButtonText = styled.Text`
+  color: white;
+  font-size: ${hp(1.8)}px;
+  font-weight: 600;
 `;
 
 const FollowContainer = styled.View`
@@ -223,6 +249,7 @@ const Profile: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -251,13 +278,43 @@ const Profile: React.FC = () => {
     }
   };
 
+  const getPets = async (): Promise<void> => {
+    if (!user?.id) return;
+
+    const res = await getUserPets(user.id);
+    if (res.success && res.data) {
+      setPets(res.data);
+    }
+  };
+
   const onRefresh = useCallback((): void => {
     setRefreshing(true);
-    getPosts(true);
-  }, []);
+    if (viewMode === 'grid') {
+      getPosts(true);
+    } else {
+      getPets().finally(() => {
+        setRefreshing(false);
+      });
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    getPets();
+  }, [user?.id]);
+
+  // Ricarica i pets quando si torna al profilo (dopo aver aggiunto un gatto)
+  useFocusEffect(
+    useCallback(() => {
+      getPets();
+    }, [user?.id])
+  );
 
   const handlePostPress = (post: PostWithRelations) => {
     router.push({ pathname: "/postDetails", params: { postId: post.id } });
+  };
+
+  const handleAddCat = () => {
+    router.push("/(main)/pets/addPet");
   };
 
   const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
@@ -277,23 +334,51 @@ const Profile: React.FC = () => {
     />
   );
 
+  const renderPetItem: ListRenderItem<Pet> = ({ item }) => (
+    <PetCard
+      pet={item}
+      onPress={(pet) => router.push({
+        pathname: "/(main)/pets/petDetails",
+        params: { petId: pet.id }
+      })}
+      showActions={false}
+    />
+  );
+
   const renderFooter = (): React.ReactElement | null => {
-    if (hasMore) {
+    if (viewMode === 'grid') {
+      if (hasMore) {
+        return (
+          <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
+            <Loading />
+          </View>
+        );
+      }
+
+      if (posts.length === 0) {
+        return (
+          <View style={{ marginVertical: 80 }}>
+            <NoPostText>No posts yet</NoPostText>
+          </View>
+        );
+      }
+    } else {
+      // Vista lista (pets)
       return (
-        <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
-          <Loading />
+        <View>
+          {pets.length === 0 && (
+            <View style={{ marginVertical: 80 }}>
+              <NoPostText>No cats yet</NoPostText>
+            </View>
+          )}
+          <AddCatButton onPress={handleAddCat}>
+            <Icon name="plus" size={hp(2)} color="white" />
+            <AddCatButtonText>Add Cat</AddCatButtonText>
+          </AddCatButton>
         </View>
       );
     }
-    
-    if (posts.length === 0) {
-      return (
-        <View style={{ marginVertical: 80 }}>
-          <NoPostText>No posts yet</NoPostText>
-        </View>
-      );
-    }
-    
+
     return (<></>);
   };
 
@@ -318,62 +403,119 @@ const Profile: React.FC = () => {
         </View>
 
         {/* Contenuto scrollabile */}
-        <FlatList
-          data={posts}
-          ListHeaderComponent={
-            <>
-              {user && 'name' in user && <UserHeader user={user} router={router} />}
+        {viewMode === 'grid' ? (
+          <FlatList
+            key="grid-view"
+            data={posts}
+            ListHeaderComponent={
+              <>
+                {user && 'name' in user && <UserHeader user={user} router={router} />}
 
-              {/* Toggle per cambiare vista */}
-              <ViewToggleContainer>
-                <ViewToggleButton
-                  isActive={viewMode === 'grid'}
-                  onPress={() => setViewMode('grid')}
-                >
-                  <Icon
-                    name="grid"
-                    size={hp(2)}
-                    color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
-                  />
-                </ViewToggleButton>
-                <ViewToggleButton
-                  isActive={viewMode === 'list'}
-                  onPress={() => setViewMode('list')}
-                >
-                  <Icon
-                    name="list"
-                    size={hp(2)}
-                    color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
-                  />
-                </ViewToggleButton>
-              </ViewToggleContainer>
-            </>
-          }
-          ListHeaderComponentStyle={{ marginBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            ListStyle,
-            {
-              paddingTop: hp(8),
-              paddingHorizontal: 0,
+                {/* Toggle per cambiare vista */}
+                <ViewToggleContainer>
+                  <ViewToggleButton
+                    isActive={viewMode === 'grid'}
+                    onPress={() => setViewMode('grid')}
+                  >
+                    <Icon
+                      name="grid"
+                      size={hp(2)}
+                      color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
+                    />
+                  </ViewToggleButton>
+                  <ViewToggleButton
+                    isActive={viewMode === 'list'}
+                    onPress={() => setViewMode('list')}
+                  >
+                    <Icon
+                      name="list"
+                      size={hp(2)}
+                      color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
+                    />
+                  </ViewToggleButton>
+                </ViewToggleContainer>
+              </>
             }
-          ]}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={viewMode === 'grid' ? renderGridItem : renderItem}
-          numColumns={viewMode === 'grid' ? 3 : 1}
-          key={viewMode} // Forza il re-render quando cambia la modalità
-          onEndReached={() => getPosts()}
-          onEndReachedThreshold={0}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[theme.colors.primary]}
-            />
-          }
-          ListFooterComponent={renderFooter}
-          ListFooterComponentStyle={{ marginBottom: 50 }}
-        />
+            ListHeaderComponentStyle={{ marginBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              ListStyle,
+              {
+                paddingTop: hp(8),
+                paddingHorizontal: 0,
+              }
+            ]}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderGridItem}
+            numColumns={3}
+            onEndReached={() => getPosts()}
+            onEndReachedThreshold={0}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[theme.colors.primary]}
+              />
+            }
+            ListFooterComponent={renderFooter}
+            ListFooterComponentStyle={{ marginBottom: 50 }}
+          />
+        ) : (
+          <FlatList
+            key="list-view"
+            data={pets}
+            ListHeaderComponent={
+              <>
+                {user && 'name' in user && <UserHeader user={user} router={router} />}
+
+                {/* Toggle per cambiare vista */}
+                <ViewToggleContainer>
+                  <ViewToggleButton
+                    isActive={viewMode === 'grid'}
+                    onPress={() => setViewMode('grid')}
+                  >
+                    <Icon
+                      name="grid"
+                      size={hp(2)}
+                      color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
+                    />
+                  </ViewToggleButton>
+                  <ViewToggleButton
+                    isActive={viewMode === 'list'}
+                    onPress={() => setViewMode('list')}
+                  >
+                    <Icon
+                      name="list"
+                      size={hp(2)}
+                      color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
+                    />
+                  </ViewToggleButton>
+                </ViewToggleContainer>
+              </>
+            }
+            ListHeaderComponentStyle={{ marginBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              ListStyle,
+              {
+                paddingTop: hp(8),
+                paddingHorizontal: wp(2),
+              }
+            ]}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderPetItem}
+            numColumns={1}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[theme.colors.primary]}
+              />
+            }
+            ListFooterComponent={renderFooter}
+            ListFooterComponentStyle={{ marginBottom: 50 }}
+          />
+        )}
       </View>
     </ThemeWrapper>
   );
