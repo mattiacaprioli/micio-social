@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { View, AppState } from "react-native";
-import { Slot, usePathname } from "expo-router";
-import TabBar from "../../components/TabBar";
-import { RefreshProvider, useRefresh } from "../../context/RefreshContext";
+import { Slot } from "expo-router";
+import { RefreshProvider } from "../../context/RefreshContext";
 
 // Context per gestire la visibilità del TabBar
 const TabBarVisibilityContext = createContext<{
@@ -16,25 +15,9 @@ const TabBarVisibilityContext = createContext<{
 export const useTabBarVisibility = () => useContext(TabBarVisibilityContext);
 
 const MainLayoutContent: React.FC = () => {
-  const pathname = usePathname();
-  const { homeRefreshRef } = useRefresh();
-  const { isTabBarVisible } = useTabBarVisibility();
-
-  const handleHomeRefresh = () => {
-    if (homeRefreshRef.current) {
-      homeRefreshRef.current();
-    }
-  };
-
-  const hideTabBarRoutes = ['/newPost', '/postDetails', '/chat', '/notifications', '/settings', '/search', '/editProfile', '/userProfile', '/ecommerce/productDetails', '/pets/addPet', '/pets/editPet', '/pets/petDetails'];
-  const shouldHideTabBar = hideTabBarRoutes.some(route => pathname.startsWith(route));
-
   return (
     <View style={{ flex: 1 }}>
       <Slot />
-      {!shouldHideTabBar && isTabBarVisible && (
-        <TabBar currentRoute={pathname} onRefresh={handleHomeRefresh} />
-      )}
     </View>
   );
 };

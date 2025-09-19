@@ -112,7 +112,7 @@ const Search: React.FC = () => {
   // Gestisce la navigazione al profilo utente
   const navigateToUserProfile = (userId: string) => {
     if (userId === user?.id) {
-      router.push("/profile");
+      router.push("/(tabs)/profile");
     } else {
       router.push({
         pathname: "/userProfile",

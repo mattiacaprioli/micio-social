@@ -83,7 +83,7 @@ const Followers: React.FC = () => {
 
   const openUserProfile = (followerId: string): void => {
     if (followerId === currentUser?.id) {
-      router.push("/profile");
+      router.push("/(tabs)/profile");
     } else {
       router.push({
         pathname: "/userProfile",

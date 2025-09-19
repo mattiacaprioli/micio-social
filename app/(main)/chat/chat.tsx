@@ -19,7 +19,6 @@ import {
   hideConversation,
 } from "../../../services/chatService";
 import { searchUsers, UserWithBasicInfo } from "../../../services/userService";
-import TabBar from "../../../components/TabBar";
 import { usePathname } from "expo-router";
 
 const Container = styled.View`

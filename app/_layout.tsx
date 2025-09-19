@@ -47,7 +47,7 @@ const MainLayout: React.FC = () => {
       if (session) {
         setAuth(session.user);
         updateUserData(session.user, session.user.email);
-        router.replace("/home" as any);
+        router.replace("/(tabs)/home" as any);
       } else {
         setAuth(null);
         router.replace("/welcome" as any);
@@ -66,6 +66,18 @@ const MainLayout: React.FC = () => {
         headerShown: false,
       }}
     >
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="(main)"
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="(main)/postDetails"
         options={{

@@ -270,7 +270,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const openUserProfile = () => {
     if (item?.user?.id === currentUser?.id) {
-      router.push("/profile");
+      router.push("/(tabs)/profile");
     } else {
       router.push({
         pathname: "/userProfile",
@@ -352,7 +352,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const navigateToUserProfile = (userId: string) => {
     likesModalRef.current?.close();
     if (userId === currentUser?.id) {
-      router.push("/profile");
+      router.push("/(tabs)/profile");
     } else {
       router.push({
         pathname: "/userProfile",

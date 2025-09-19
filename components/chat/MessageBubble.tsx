@@ -105,7 +105,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   const openUserProfile = (userId: string) => {
     if (message.sender.id === currentUser?.id) {
-      router.push("/profile");
+      router.push("/(tabs)/profile");
     } else {
       router.push({
         pathname: "/userProfile",
