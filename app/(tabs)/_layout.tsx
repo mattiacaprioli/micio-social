@@ -119,7 +119,7 @@ const TabsLayout: React.FC = () => {
         />
         
         <Tabs.Screen
-          name="pets"
+          name="explore"
           options={{
             tabBarIcon: ({ color }) => (
               <Icon name="catIcon" size={hp(3)} color={color} />
