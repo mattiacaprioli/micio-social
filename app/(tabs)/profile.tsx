@@ -22,6 +22,7 @@ import { useTheme } from "../../context/ThemeContext";
 import Avatar from "../../components/Avatar";
 import { fetchPost, getUserPostsCount } from "../../services/postService";
 import PostCard from "../../components/PostCard";
+import PostGridItem from "../../components/PostGridItem";
 import Loading from "../../components/Loading";
 import {
   getFollowersCount,
@@ -193,6 +194,24 @@ const ModernSettingsButton = styled.TouchableOpacity`
   border: 1px solid ${props => props.theme.colors.gray}20;
 `;
 
+const ViewToggleContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  margin: ${hp(2)}px ${wp(4)}px ${hp(1)}px ${wp(4)}px;
+  background-color: ${props => props.theme.colors.darkLight};
+  border-radius: ${props => props.theme.radius.lg}px;
+  padding: ${wp(1)}px;
+`;
+
+const ViewToggleButton = styled.TouchableOpacity<{ isActive: boolean }>`
+  flex: 1;
+  padding: ${hp(1)}px;
+  border-radius: ${props => props.theme.radius.md}px;
+  background-color: ${props => props.isActive ? props.theme.colors.background : 'transparent'};
+  align-items: center;
+  justify-content: center;
+`;
+
 interface UserHeaderProps {
   user: User;
   router: ReturnType<typeof useRouter>;
@@ -206,6 +225,7 @@ const Profile: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const theme = useStyledTheme();
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
@@ -236,6 +256,10 @@ const Profile: React.FC = () => {
     getPosts(true);
   }, []);
 
+  const handlePostPress = (post: PostWithRelations) => {
+    router.push({ pathname: "/postDetails", params: { postId: post.id } });
+  };
+
   const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
     <PostCard
       item={item}
@@ -245,17 +269,33 @@ const Profile: React.FC = () => {
     />
   );
 
-  const renderFooter = (): React.ReactElement => (
-    hasMore ? (
-      <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
-        <Loading />
-      </View>
-    ) : (
-      <View style={{ marginVertical: 30 }}>
-        <NoPostText>No more posts</NoPostText>
-      </View>
-    )
+  const renderGridItem = ({ item }: { item: PostWithRelations }) => (
+    <PostGridItem
+      item={item}
+      onPress={() => handlePostPress(item)}
+      size={wp(100) / 3 - 1}
+    />
   );
+
+  const renderFooter = (): React.ReactElement | null => {
+    if (hasMore) {
+      return (
+        <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
+          <Loading />
+        </View>
+      );
+    }
+    
+    if (posts.length === 0) {
+      return (
+        <View style={{ marginVertical: 80 }}>
+          <NoPostText>No posts yet</NoPostText>
+        </View>
+      );
+    }
+    
+    return (<></>);
+  };
 
   const settingsButton = (
     <SettingsButton
@@ -280,12 +320,48 @@ const Profile: React.FC = () => {
         {/* Contenuto scrollabile */}
         <FlatList
           data={posts}
-          ListHeaderComponent={user && 'name' in user ? <UserHeader user={user} router={router} /> : null}
-          ListHeaderComponentStyle={{ marginBottom: 30 }}
+          ListHeaderComponent={
+            <>
+              {user && 'name' in user && <UserHeader user={user} router={router} />}
+
+              {/* Toggle per cambiare vista */}
+              <ViewToggleContainer>
+                <ViewToggleButton
+                  isActive={viewMode === 'grid'}
+                  onPress={() => setViewMode('grid')}
+                >
+                  <Icon
+                    name="grid"
+                    size={hp(2)}
+                    color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
+                  />
+                </ViewToggleButton>
+                <ViewToggleButton
+                  isActive={viewMode === 'list'}
+                  onPress={() => setViewMode('list')}
+                >
+                  <Icon
+                    name="list"
+                    size={hp(2)}
+                    color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
+                  />
+                </ViewToggleButton>
+              </ViewToggleContainer>
+            </>
+          }
+          ListHeaderComponentStyle={{ marginBottom: 20 }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[ListStyle, { paddingTop: hp(8) }]}
+          contentContainerStyle={[
+            ListStyle,
+            {
+              paddingTop: hp(8),
+              paddingHorizontal: 0,
+            }
+          ]}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
+          renderItem={viewMode === 'grid' ? renderGridItem : renderItem}
+          numColumns={viewMode === 'grid' ? 3 : 1}
+          key={viewMode} // Forza il re-render quando cambia la modalità
           onEndReached={() => getPosts()}
           onEndReachedThreshold={0}
           refreshControl={
@@ -296,6 +372,7 @@ const Profile: React.FC = () => {
             />
           }
           ListFooterComponent={renderFooter}
+          ListFooterComponentStyle={{ marginBottom: 50 }}
         />
       </View>
     </ThemeWrapper>

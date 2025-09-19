@@ -189,3 +189,7 @@ export const WifiOffIcon = ({ size, color, ...props }) => (
 export const AlertCircleIcon = ({ size, color, ...props }) => (
   <Icon name="alert-circle" size={size} color={color} {...props} />
 );
+
+export const ListIcon = ({ size, color, ...props }) => (
+  <Icon name="list" size={size} color={color} {...props} />
+);

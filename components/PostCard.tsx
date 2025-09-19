@@ -43,20 +43,21 @@ interface PostCardProps {
   showDelete?: boolean;
   onDelete?: (item: PostWithRelations) => void;
   onEdit?: (item: PostWithRelations) => void;
-  variant?: 'classic' | 'edgeToEdge';
+  variant?: 'classic' | 'edgeToEdge' | 'modal';
 }
 
 const Container = styled.View<{ hasShadow?: boolean; variant?: string }>`
   gap: 10px;
-  margin-bottom: 15px;
-  border-radius: ${props => props.theme.radius.xxl * 1.1}px;
+  margin-bottom: ${props => props.variant === 'modal' ? 0 : 15}px;
+  border-radius: ${props => props.variant === 'modal' ? 0 : props.theme.radius.xxl * 1.1}px;
   padding-top: 12px;
   padding-bottom: 12px;
   background-color: ${props => props.theme.colors.background};
-  border-width: ${props => props.variant === 'edgeToEdge' ? '0px' : '0.5px'};
+  border-width: ${props => props.variant === 'edgeToEdge' || props.variant === 'modal' ? 0 : 0.5}px;
   border-color: ${props => props.theme.colors.gray};
   ${(props) =>
     props.hasShadow &&
+    props.variant !== 'modal' &&
     css`
       box-shadow: 0px ${props.variant === 'edgeToEdge' ? '1px 3px' : '2px 6px'} rgba(0, 0, 0, ${props.variant === 'edgeToEdge' ? '0.03' : '0.05'});
       elevation: ${props.variant === 'edgeToEdge' ? '0.5' : '1'};

@@ -20,6 +20,7 @@ import { wp, hp } from "../../helpers/common";
 import Avatar from "../../components/Avatar";
 import { fetchPost, getUserPostsCount } from "../../services/postService";
 import PostCard from "../../components/PostCard";
+import PostGridItem from "../../components/PostGridItem";
 import Loading from "../../components/Loading";
 import {
   followUser,
@@ -35,6 +36,7 @@ import { User } from "../../src/types";
 import type { PostWithRelations } from "../../services/postService";
 import { createOrFindConversation } from "../../services/chatService";
 import { UserWithBasicInfo } from "../../services/userService";
+import Icon from "../../assets/icons";
 
 // Styled Components
 const Container = styled.View`
@@ -228,6 +230,30 @@ const ModernSecondaryButtonText = styled(ModernButtonText)`
   color: ${(props) => props.theme.colors.primary};
 `;
 
+const ViewToggleContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  margin: ${hp(2)}px ${wp(4)}px ${hp(1)}px ${wp(4)}px;
+  background-color: ${props => props.theme.colors.darkLight};
+  border-radius: ${props => props.theme.radius.lg}px;
+  padding: ${wp(1)}px;
+`;
+
+const ViewToggleButton = styled.TouchableOpacity<{ isActive: boolean }>`
+  flex: 1;
+  padding: ${hp(1)}px;
+  border-radius: ${props => props.theme.radius.md}px;
+  background-color: ${props => props.isActive ? props.theme.colors.background : 'transparent'};
+  align-items: center;
+  justify-content: center;
+`;
+
+const ViewToggleText = styled.Text<{ isActive: boolean }>`
+  font-size: ${hp(1.6)}px;
+  font-weight: ${props => props.theme.fonts.medium};
+  color: ${props => props.isActive ? props.theme.colors.text : props.theme.colors.textLight};
+`;
+
 interface UserHeaderProps {
   user: User | null;
   router: ReturnType<typeof useRouter>;
@@ -242,6 +268,7 @@ const UserProfile: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const theme = useStyledTheme();
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
@@ -282,6 +309,10 @@ const UserProfile: React.FC = () => {
     }
   }, [userId]);
 
+  const handlePostPress = (post: PostWithRelations) => {
+    router.push({ pathname: "/postDetails", params: { postId: post.id } });
+  };
+
   const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
     <PostCard
       item={item}
@@ -290,6 +321,34 @@ const UserProfile: React.FC = () => {
       isUserProfile={true}
     />
   );
+
+  const renderGridItem = ({ item }: { item: PostWithRelations }) => (
+    <PostGridItem
+      item={item}
+      onPress={() => handlePostPress(item)}
+      size={wp(100) / 3 - 1}
+    />
+  );
+
+   const renderFooter = (): React.ReactElement | null => {
+    if (hasMore) {
+      return (
+        <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
+          <Loading />
+        </View>
+      );
+    }
+    
+    if (posts.length === 0) {
+      return (
+        <View style={{ marginVertical: 80 }}>
+          <NoPostText>No posts yet</NoPostText>
+        </View>
+      );
+    }
+    
+    return (<></>);
+  };
 
   return (
     <ThemeWrapper>
@@ -300,12 +359,48 @@ const UserProfile: React.FC = () => {
 
         <FlatList
           data={posts}
-          ListHeaderComponent={<UserHeader user={userData} router={router} />}
+          ListHeaderComponent={
+            <>
+              <UserHeader user={userData} router={router} />
+
+              {/* Toggle per cambiare vista */}
+              <ViewToggleContainer>
+                <ViewToggleButton
+                  isActive={viewMode === 'grid'}
+                  onPress={() => setViewMode('grid')}
+                >
+                  <Icon
+                    name="grid"
+                    size={hp(2)}
+                    color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
+                  />
+                </ViewToggleButton>
+                <ViewToggleButton
+                  isActive={viewMode === 'list'}
+                  onPress={() => setViewMode('list')}
+                >
+                  <Icon
+                    name="list"
+                    size={hp(2)}
+                    color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
+                  />
+                </ViewToggleButton>
+              </ViewToggleContainer>
+            </>
+          }
           ListHeaderComponentStyle={{ marginBottom: 30 }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[ListStyle, { paddingTop: hp(8) }]}
+          contentContainerStyle={[
+            ListStyle,
+            {
+              paddingTop: hp(8),
+              paddingHorizontal: 0
+            }
+          ]}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
+          renderItem={viewMode === 'grid' ? renderGridItem : renderItem}
+          numColumns={viewMode === 'grid' ? 3 : 1}
+          key={viewMode} // Forza il re-render quando cambia la modalità
           onEndReached={() => getPosts()}
           onEndReachedThreshold={0}
           refreshControl={
@@ -315,17 +410,7 @@ const UserProfile: React.FC = () => {
               colors={[theme.colors.primary]}
             />
           }
-          ListFooterComponent={
-            hasMore ? (
-              <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
-                <Loading />
-              </View>
-            ) : (
-              <View style={{ marginVertical: 30 }}>
-                <NoPostText>Non ci sono altri post</NoPostText>
-              </View>
-            )
-          }
+          ListFooterComponent={renderFooter}
         />
       </View>
     </ThemeWrapper>

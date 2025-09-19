@@ -48,6 +48,7 @@ import {
   RefreshCwIcon,
   WifiOffIcon,
   AlertCircleIcon,
+  ListIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -99,6 +100,8 @@ const icons = {
   refreshCw: RefreshCwIcon,
   wifiOff: WifiOffIcon,
   alertCircle: AlertCircleIcon,
+  list: ListIcon,
+  close: XIcon,
 }
 
 const Icon = ({name, ...props}) => {
