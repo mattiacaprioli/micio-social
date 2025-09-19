@@ -104,7 +104,7 @@ const fetchPetsByIds = async (petIds: string[]): Promise<Array<{ id: string; nam
   }
 };
 
-export const fetchPost = async (limit = 10, userId?: string, category?: string, searchQuery?: string): Promise<ApiResponse<PostWithRelations[]>> => {
+export const fetchPost = async (limit = 10, userId?: string, category?: string, searchQuery?: string, followingOnly = false, currentUserId?: string): Promise<ApiResponse<PostWithRelations[]>> => {
   try {
     let query = supabase
       .from("posts")
@@ -119,6 +119,33 @@ export const fetchPost = async (limit = 10, userId?: string, category?: string, 
 
     if (userId) {
       query = query.eq("userId", userId); // Utilizziamo userId (camelCase) invece di user_id (snake_case)
+    }
+
+    // Se followingOnly è true, ottieni solo i post delle persone che segui
+    if (followingOnly && currentUserId) {
+      // Prima otteniamo la lista degli utenti che segui
+      const { data: followingData, error: followingError } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", currentUserId);
+
+      if (followingError) {
+        console.log("Error fetching following list: ", followingError);
+        return { success: false, msg: "Could not fetch following list" };
+      }
+
+      // Estrai gli ID degli utenti seguiti
+      const followingIds = followingData?.map(follow => follow.following_id) || [];
+
+      // Aggiungi anche i propri post
+      followingIds.push(currentUserId);
+
+      if (followingIds.length > 0) {
+        query = query.in("userId", followingIds);
+      } else {
+        // Se non segui nessuno, mostra solo i tuoi post
+        query = query.eq("userId", currentUserId);
+      }
     }
 
     // La colonna 'category' ora esiste nel database

@@ -3,10 +3,8 @@ import {
   Pressable,
   RefreshControl,
   View,
-  Animated,
 } from "react-native";
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -116,42 +114,6 @@ const EmptyStateSubtitle = styled.Text`
   line-height: ${hp(2.5)}px;
 `;
 
-const CategoriesContainer = styled.View`
-  flex-direction: row;
-  margin-left: ${wp(4)}px;
-  margin-right: ${wp(0)}px;
-  margin-bottom: 15px;
-  align-items: center;
-`;
-
-const CategoryLabel = styled.Text`
-  font-size: ${hp(1.8)}px;
-  font-weight: ${(props) => props.theme.fonts.bold};
-  color: ${(props) => props.theme.colors.textLight};
-  margin-right: 10px;
-`;
-
-const CategoryScroll = styled.ScrollView`
-  flex-grow: 0;
-`;
-
-const CategoryButton = styled.TouchableOpacity<{ isActive?: boolean }>`
-  padding-left: ${wp(2)}px;
-  padding-right: ${wp(2)}px;
-  padding-top: ${hp(0.5)}px;
-  padding-bottom: ${hp(0.5)}px;
-  border-radius: ${(props) => props.theme.radius.md}px;
-  margin-right: 8px;
-  background-color: ${(props) =>
-    props.isActive ? props.theme.colors.primary : props.theme.colors.darkLight};
-`;
-
-const CategoryText = styled.Text<{ isActive?: boolean }>`
-  font-size: ${hp(1.6)}px;
-  font-weight: ${(props) => props.theme.fonts.medium};
-  color: ${(props) => (props.isActive ? "white" : props.theme.colors.text)};
-`;
-
 const Pill = styled.View`
   position: absolute;
   right: -10px;
@@ -182,45 +144,8 @@ const Home: React.FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
-  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+
   const [limit, setLimit] = useState<number>(0);
-  const fadeAnim = useRef(new Animated.Value(1)).current; // Valore iniziale per l'opacità: 1
-
-  // Cache intelligente per i post per categoria
-  const postsCache = useRef<Map<string, { posts: PostWithRelations[], timestamp: number, limit: number }>>(new Map()).current;
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
-
-  // Funzione per ottenere la chiave della cache
-  const getCacheKey = (category: string | undefined): string => {
-    return category || 'all';
-  };
-
-  // Carica la categoria selezionata da AsyncStorage all'avvio
-  useEffect(() => {
-    const loadSelectedCategory = async () => {
-      try {
-        // Sempre inizia con "All" per evitare problemi di cache
-        setSelectedCategory(undefined);
-        await AsyncStorage.setItem("selectedCategory", "undefined");
-      } catch (error) {
-        console.error("Error setting default category:", error);
-      }
-    };
-
-    loadSelectedCategory();
-  }, []);
-
-  // Categorie disponibili
-  const categories = [
-    { id: 'funny', label: 'Funny' },
-    { id: 'cute', label: 'Cute' },
-    { id: 'amazing', label: 'Amazing' },
-    { id: 'pets', label: 'Pets' },
-    { id: 'nature', label: 'Nature' },
-  ];
 
   const handlePostEvent = async (payload: PostEventPayload): Promise<void> => {
     // console.log('payload: ', payload);
@@ -240,8 +165,6 @@ const Home: React.FC = () => {
           : undefined;
       setPosts((prevPosts) => [newPost, ...prevPosts]);
 
-      // Invalida la cache per tutte le categorie quando viene aggiunto un nuovo post
-      postsCache.clear();
     }
     if (payload.eventType === "DELETE" && payload?.old?.id) {
       setPosts((prevPosts) => {
@@ -251,8 +174,6 @@ const Home: React.FC = () => {
         return updatedPosts;
       });
 
-      // Invalida la cache per tutte le categorie quando viene eliminato un post
-      postsCache.clear();
     }
     if (payload.eventType === "UPDATE" && payload?.new?.id) {
       setPosts((prevPosts) => {
@@ -266,8 +187,6 @@ const Home: React.FC = () => {
         return updatedPosts;
       });
 
-      // Invalida la cache per tutte le categorie quando viene aggiornato un post
-      postsCache.clear();
     }
   };
 
@@ -366,61 +285,22 @@ const Home: React.FC = () => {
     };
   }, [user, posts]);
 
-  // Funzione per animare il cambio di categoria
-  const animateCategoryChange = async (isRefreshing = false): Promise<void> => {
-    // Imposta lo stato di caricamento
-    setCategoryLoading(true);
 
-    // Svuota immediatamente i post per evitare di vedere quelli vecchi
-    setPosts([]);
-
-    // Animazione di dissolvenza in uscita
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(async () => {
-      // Carica i nuovi post mentre l'animazione è completata
-      await getPosts(isRefreshing);
-
-      // Rimuovi lo stato di caricamento
-      setCategoryLoading(false);
-
-      // Animazione di dissolvenza in entrata
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
-    const cacheKey = getCacheKey(selectedCategory);
-    const cachedData = postsCache.get(cacheKey);
-    const now = Date.now();
-
-    // Se non è un refresh e abbiamo dati in cache validi, usali
-    if (!isRefreshing && cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
-      setPosts(cachedData.posts);
-      setLimit(cachedData.limit);
-      setHasMore(cachedData.posts.length >= cachedData.limit);
-      return;
-    }
-
     // Altrimenti, carica i dati dall'API
     if (!hasMore && !isRefreshing) return;
 
-    let currentLimit = cachedData?.limit || limit;
+    let currentLimit = limit;
     if (isRefreshing) {
       currentLimit = 10; // Resetta il limite durante il refresh
     } else {
       currentLimit += 10;
     }
 
-    let res = await fetchPost(currentLimit, undefined, selectedCategory);
+    let res = await fetchPost(currentLimit, undefined, undefined, undefined, true, user?.id);
     if (res.success && res.data) {
-      // Se è un refresh e non ci sono post, significa che la categoria è vuota
+      // Se è un refresh e non ci sono post
       if (isRefreshing && res.data.length === 0) {
         setHasMore(false);
         setPosts([]);
@@ -432,17 +312,9 @@ const Home: React.FC = () => {
 
       if (res.data.length > 0) {
         setPosts(res.data);
-        // Salva nella cache
-        postsCache.set(cacheKey, {
-          posts: res.data,
-          timestamp: now,
-          limit: currentLimit
-        });
         setLimit(currentLimit);
       } else if (isRefreshing) {
         setPosts([]);
-        // Pulisci la cache per questa categoria
-        postsCache.delete(cacheKey);
       }
     }
     if (isRefreshing) {
@@ -450,48 +322,17 @@ const Home: React.FC = () => {
     }
   };
 
-  // Ref per tracciare se è il primo caricamento
-  const isInitialLoad = useRef(true);
-
   // Effetto per il focus della schermata (caricamento iniziale e ritorno da altre schermate)
   useFocusEffect(
     useCallback(() => {
-      const cacheKey = getCacheKey(selectedCategory);
-      const cachedData = postsCache.get(cacheKey);
-      const now = Date.now();
-
-      // Carica solo se:
-      // 1. Non stiamo già caricando
-      // 2. Non ci sono dati in cache O la cache è scaduta
-      if (!categoryLoading && (!cachedData || (now - cachedData.timestamp) > CACHE_DURATION)) {
-        console.log("Loading posts on focus for category:", selectedCategory);
-        animateCategoryChange(true);
-      } else if (cachedData) {
-        console.log("Using cached posts on focus for category:", selectedCategory);
-        setPosts(cachedData.posts);
-        setLimit(cachedData.limit);
-        setHasMore(cachedData.posts.length >= cachedData.limit);
-      }
-    }, [selectedCategory])
+      console.log("Loading posts on focus");
+      getPosts(true);
+    }, [])
   );
-
-  // Effetto separato per gestire i cambi di categoria
-  useEffect(() => {
-    // Salta il primo render (gestito da useFocusEffect)
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      return;
-    }
-
-    // Esegui il cambio categoria solo se non stiamo già caricando
-    if (!categoryLoading) {
-      animateCategoryChange(true);
-    }
-  }, [selectedCategory]);
 
   const onRefresh = useCallback((): void => {
     setRefreshing(true);
-    animateCategoryChange(true);
+    getPosts(true);
   }, []);
 
   useEffect(() => {
@@ -533,121 +374,60 @@ const Home: React.FC = () => {
           </IconsContainer>
         </Header>
 
-        {/* Categorie */}
-        <CategoriesContainer>
-          <CategoryLabel>categories</CategoryLabel>
-          {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
-          <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
-            <CategoryButton
-              isActive={selectedCategory === undefined}
-              disabled={categoryLoading}
-              style={{ opacity: categoryLoading ? 0.6 : 1 }}
-              onPress={() => {
-                if (selectedCategory !== undefined && !categoryLoading) {
-                  setSelectedCategory(undefined);
-                  // Salva la categoria selezionata in AsyncStorage
-                  AsyncStorage.setItem("selectedCategory", "undefined");
-                }
-              }}
-            >
-              <CategoryText isActive={selectedCategory === undefined}>
-                all
-              </CategoryText>
-            </CategoryButton>
-            {categories.map((category) => (
-              <CategoryButton
-                key={category.id}
-                isActive={selectedCategory === category.id}
-                disabled={categoryLoading}
-                style={{ opacity: categoryLoading ? 0.6 : 1 }}
-                onPress={() => {
-                  if (selectedCategory !== category.id && !categoryLoading) {
-                    setSelectedCategory(category.id);
-                    // Salva la categoria selezionata in AsyncStorage
-                    AsyncStorage.setItem("selectedCategory", category.id);
-                  }
-                }}
-              >
-                <CategoryText isActive={selectedCategory === category.id}>
-                  {category.label}
-                </CategoryText>
-              </CategoryButton>
-            ))}
-          </CategoryScroll>
-        </CategoriesContainer>
-
         {/* posts */}
-        {categoryLoading ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 50,
-            }}
-          >
-            <Loading />
-          </View>
-        ) : (
-          <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
-            <FlatList
-              data={posts}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={ListStyle}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <PostCard
-                  item={item}
-                  currentUser={user as User | null}
-                  router={router}
-                />
-              )}
-              onEndReached={() => {
-                getPosts();
-                console.log("got to the end");
-              }}
-              onEndReachedThreshold={0}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={[theme.colors.primary]}
-                />
-              }
-              ListFooterComponent={
-                hasMore ? (
-                  <View
-                    style={{ marginVertical: posts.length === 0 ? 200 : 30 }}
-                  >
-                    <Loading />
-                  </View>
-                ) : posts.length === 0 ? (
-                  <EmptyStateContainer>
-                    <Icon
-                      name={selectedCategory ? "search" : "plus"}
-                      size={hp(6)}
-                      color={theme.colors.textLight}
-                      style={{ marginBottom: hp(2), opacity: 0.5 }}
-                    />
-                    <EmptyStateTitle>
-                      {selectedCategory ? "No posts in this category" : "No posts yet"}
-                    </EmptyStateTitle>
-                    <EmptyStateSubtitle>
-                      {selectedCategory
-                        ? `There are no posts in the "${categories.find(c => c.id === selectedCategory)?.label || selectedCategory}" category yet.`
-                        : "Be the first to share something! Create a new post to get the conversation started."
-                      }
-                    </EmptyStateSubtitle>
-                  </EmptyStateContainer>
-                ) : (
-                  <View style={{ marginVertical: 30 }}>
-                    <NoPostText>No more posts</NoPostText>
-                  </View>
-                )
-              }
+        <FlatList
+          data={posts}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={ListStyle}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <PostCard
+              item={item}
+              currentUser={user as User | null}
+              router={router}
             />
-          </Animated.View>
-        )}
+          )}
+          onEndReached={() => {
+            getPosts();
+            console.log("got to the end");
+          }}
+          onEndReachedThreshold={0}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+            />
+          }
+          ListFooterComponent={
+            hasMore ? (
+              <View
+                style={{ marginVertical: posts.length === 0 ? 200 : 30 }}
+              >
+                <Loading />
+              </View>
+            ) : posts.length === 0 ? (
+              <EmptyStateContainer>
+                <Icon
+                  name="plus"
+                  size={hp(6)}
+                  color={theme.colors.textLight}
+                  style={{ marginBottom: hp(2), opacity: 0.5 }}
+                />
+                <EmptyStateTitle>
+                  No posts yet
+                </EmptyStateTitle>
+                <EmptyStateSubtitle>
+                  Follow some users to see their posts in your feed!
+                </EmptyStateSubtitle>
+              </EmptyStateContainer>
+            ) : (
+              <View style={{ marginVertical: 30 }}>
+                <NoPostText>No more posts</NoPostText>
+              </View>
+            )
+          }
+        />
       </Container>
     </ThemeWrapper>
   );
