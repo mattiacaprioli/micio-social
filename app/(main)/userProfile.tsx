@@ -130,12 +130,29 @@ const ModernProfileSection = styled.View`
 `;
 
 const ModernAvatarContainer = styled.View`
+  position: relative;
   margin-bottom: ${hp(2)}px;
   shadow-color: #000;
   shadow-offset: 0px 4px;
   shadow-opacity: 0.15;
   shadow-radius: 12px;
   elevation: 8;
+`;
+
+const FollowIcon = styled.Pressable<{ isFollowing: boolean }>`
+  position: absolute;
+  bottom: -14px;
+  right: -16px;
+  padding: 8px;
+  border-radius: 50px;
+  background-color: ${props => props.isFollowing ? props.theme.colors.rose : props.theme.colors.primary};
+  /* Ombra per iOS e Android */
+  box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.2);
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.2;
+  shadow-radius: 5px;
+  elevation: 5;
 `;
 
 const UserInfoSection = styled.View`
@@ -254,6 +271,12 @@ const ViewToggleText = styled.Text<{ isActive: boolean }>`
   color: ${props => props.isActive ? props.theme.colors.text : props.theme.colors.textLight};
 `;
 
+const ChatButton = styled.Pressable`
+  padding: 5px;
+  border-radius: ${props => props.theme.radius.sm}px;
+  background-color: ${props => props.theme.colors.darkLight};
+`;
+
 interface UserHeaderProps {
   user: User | null;
   router: ReturnType<typeof useRouter>;
@@ -270,6 +293,7 @@ const UserProfile: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const theme = useStyledTheme();
+  const { user: currentUser } = useAuth();
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
     if (!hasMore && !isRefreshing) return;
@@ -350,11 +374,54 @@ const UserProfile: React.FC = () => {
     return (<></>);
   };
 
+  const handleHeaderChatPress = async () => {
+    if (!userData || !currentUser?.id) return;
+
+    try {
+      const result = await createOrFindConversation(
+        currentUser.id,
+        userData.id
+      );
+
+      if (result.success && result.data) {
+        router.push({
+          pathname: "/chat/chatDetails",
+          params: {
+            conversationId: result.data.id,
+            otherUserId: userData.id,
+            otherUserName: userData.name,
+            otherUserImage: userData.image || "",
+          },
+        });
+      } else {
+        Alert.alert(
+          "Error",
+          "Could not create conversation. Please try again."
+        );
+      }
+    } catch (error) {
+      console.log("Error creating conversation:", error);
+      Alert.alert("Error", "Could not create conversation. Please try again.");
+    }
+  };
+
+  const chatButton = userData && currentUser?.id !== userData.id ? (
+      <ChatButton
+        onPress={handleHeaderChatPress}
+      >
+        <Icon
+          name="messageCircle"
+          size={hp(2.5)}
+          color={theme.colors.textDark}
+        />
+      </ChatButton>
+    ) : null;
+
   return (
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title={userData?.name || "profile"} mb={30} />
+          <Header title={userData?.name || "profile"} mb={30} rightButton={chatButton} />
         </View>
 
         <FlatList
@@ -531,7 +598,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   return (
     <HeaderContainer>
       <ModernProfileSection>
-        {/* Avatar con ombra migliorata */}
+        {/* Avatar con ombra migliorata e bottone follow */}
         <ModernAvatarContainer>
           <Avatar
             uri={user?.image}
@@ -539,6 +606,20 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
             rounded={theme.radius.xxl}
             isDarkMode={isDarkMode}
           />
+          {/* Bottone Follow/Unfollow sull'avatar */}
+          {currentUser?.id !== user?.id && (
+            <FollowIcon
+              isFollowing={isFollowing}
+              onPress={handleFollowToggle}
+              theme={theme}
+            >
+              <Icon
+                name={isFollowing ? "userDelete" : "userAdd"}
+                size={hp(2.2)}
+                color="white"
+              />
+            </FollowIcon>
+          )}
         </ModernAvatarContainer>
 
         {/* Informazioni utente */}
@@ -597,27 +678,6 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           <ModernStatLabel>Following</ModernStatLabel>
         </ModernStatItem>
       </ModernStatsContainer>
-
-      {/* Bottoni di azione moderni */}
-      {currentUser?.id !== user?.id && (
-        <ModernButtonsContainer>
-          <ModernPrimaryButton onPress={handleFollowToggle}>
-            <ModernPrimaryButtonText>
-              {isFollowing ? "Non seguire più" : "Segui"}
-            </ModernPrimaryButtonText>
-          </ModernPrimaryButton>
-
-          <ModernSecondaryButton
-            onPress={() => handleChatPress(user)}
-            disabled={creating}
-            style={{ opacity: creating ? 0.6 : 1 }}
-          >
-            <ModernSecondaryButtonText>
-              {creating ? "Caricamento..." : "Chat"}
-            </ModernSecondaryButtonText>
-          </ModernSecondaryButton>
-        </ModernButtonsContainer>
-      )}
     </HeaderContainer>
   );
 };

@@ -17,6 +17,14 @@ export const UserIcon = ({ size, color, ...props }) => (
   <Icon name="user" size={size} color={color} {...props} />
 );
 
+export const UserAddIcon = ({ size, color, ...props }) => (
+  <Icon name="user-plus" size={size} color={color} {...props} />
+);
+
+export const UserDeleteIcon = ({ size, color, ...props }) => (
+  <Icon name="user-minus" size={size} color={color} {...props} />
+);
+
 export const HeartIcon = ({ size, color, ...props }) => (
   <Icon name="heart" size={size} color={color} {...props} />
 );

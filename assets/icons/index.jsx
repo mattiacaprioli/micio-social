@@ -50,6 +50,8 @@ import {
   AlertCircleIcon,
   ListIcon,
   PlayIcon,
+  UserAddIcon,
+  UserDeleteIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -104,6 +106,8 @@ const icons = {
   list: ListIcon,
   close: XIcon,
   play: PlayIcon,
+  userAdd: UserAddIcon,
+  userDelete: UserDeleteIcon,
 }
 
 const Icon = ({name, ...props}) => {
