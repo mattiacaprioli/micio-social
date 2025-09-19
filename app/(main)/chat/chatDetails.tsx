@@ -97,6 +97,9 @@ const ChatDetails: React.FC = () => {
         setMessages((prev) => [...result.data!, ...prev]);
       } else {
         setMessages(result.data);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }, 100);
       }
 
       setHasMoreMessages(result.data.length === 50);
@@ -277,8 +280,8 @@ const ChatDetails: React.FC = () => {
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 300);
     }
   }, [messages]);
 
@@ -389,10 +392,15 @@ const ChatDetails: React.FC = () => {
   if (loading) {
     return (
       <ThemeWrapper>
-        <Container theme={theme}>
-          <Header title={otherUserName} showBackButton />
-          <Loading />
-        </Container>
+        <View style={{ flex: 1 }}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+            <Header title={otherUserName} showBackButton />
+          </View>
+
+          <Container theme={theme}>
+            <Loading />
+          </Container>
+        </View>
       </ThemeWrapper>
     );
   }
@@ -421,7 +429,18 @@ const ChatDetails: React.FC = () => {
               onEndReachedThreshold={0.1}
               ListHeaderComponent={loadingMore ? <Loading /> : null}
               onContentSizeChange={() => {
-                flatListRef.current?.scrollToEnd({ animated: false });
+                if (!loadingMore) {
+                  setTimeout(() => {
+                    flatListRef.current?.scrollToEnd({ animated: false });
+                  }, 50);
+                }
+              }}
+              onLayout={() => {
+                if (messages.length > 0) {
+                  setTimeout(() => {
+                    flatListRef.current?.scrollToEnd({ animated: false });
+                  }, 100);
+                }
               }}
             />
           </MessagesContainer>
