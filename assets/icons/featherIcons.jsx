@@ -205,3 +205,7 @@ export const ListIcon = ({ size, color, ...props }) => (
 export const PlayIcon = ({ size, color, ...props }) => (
   <Icon name="play" size={size} color={color} {...props} />
 );
+
+export const CompassIcon = ({ size, color, ...props }) => (
+  <Icon name="compass" size={size} color={color} {...props} />
+);

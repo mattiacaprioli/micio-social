@@ -52,6 +52,7 @@ import {
   PlayIcon,
   UserAddIcon,
   UserDeleteIcon,
+  CompassIcon,
 } from './featherIcons'
 import { theme } from '../../constants/theme'
 
@@ -108,6 +109,7 @@ const icons = {
   play: PlayIcon,
   userAdd: UserAddIcon,
   userDelete: UserDeleteIcon,
+  compass: CompassIcon,
 }
 
 const Icon = ({name, ...props}) => {

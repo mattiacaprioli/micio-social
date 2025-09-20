@@ -194,7 +194,7 @@ const CommentsText = styled.Text`
 const PostGridItem: React.FC<PostGridItemProps> = ({
   item,
   onPress,
-  size = wp(100) / 3 - 1 // Default: 3 colonne a tutta larghezza
+  size = wp(100) / 3 - 1
 }) => {
   const theme = useStyledTheme();
   
@@ -205,9 +205,6 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
   
   // Calcola il numero di like e commenti (stesso modo di PostCard)
   const likesCount = item?.postLikes?.length || 0;
-  const commentsCount = Array.isArray(item?.comments)
-    ? item.comments.length
-    : (item?.comments as { count: number })?.count || 0;
 
   // Estrae il testo dal body HTML (versione semplificata)
   const getTextFromHtml = (html: string): string => {
@@ -263,12 +260,6 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
             </LikesContainer>
           )}
 
-          {commentsCount > 0 && (
-            <CommentsContainer>
-              <Icon name="messageCircle" size={hp(1.4)} color="white" />
-              <CommentsText>{commentsCount}</CommentsText>
-            </CommentsContainer>
-          )}
         </>
       ) : (
         <NoImageContainer size={size}>
@@ -303,13 +294,6 @@ const PostGridItem: React.FC<PostGridItemProps> = ({
               <Icon name="heart" size={hp(1.4)} color="white" />
               <LikesText>{likesCount}</LikesText>
             </LikesContainer>
-          )}
-
-          {commentsCount > 0 && (
-            <CommentsContainer>
-              <Icon name="messageCircle" size={hp(1.4)} color="white" />
-              <CommentsText>{commentsCount}</CommentsText>
-            </CommentsContainer>
           )}
         </NoImageContainer>
       )}

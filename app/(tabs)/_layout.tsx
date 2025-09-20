@@ -122,7 +122,7 @@ const TabsLayout: React.FC = () => {
           name="explore"
           options={{
             tabBarIcon: ({ color }) => (
-              <Icon name="catIcon" size={hp(3)} color={color} />
+              <Icon name="compass" size={hp(3)} color={color} />
             ),
             tabBarItemStyle: {
               marginRight: hp(3),

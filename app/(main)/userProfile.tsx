@@ -38,27 +38,11 @@ import { createOrFindConversation } from "../../services/chatService";
 import { UserWithBasicInfo } from "../../services/userService";
 import Icon from "../../assets/icons";
 
-// Styled Components
-const Container = styled.View`
-  flex: 1;
-`;
-
 const HeaderContainer = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
 `;
 
-const AvatarContainer = styled.View`
-  height: ${hp(12)}px;
-  width: ${hp(12)}px;
-  align-self: center;
-`;
-
-const UserName = styled.Text`
-  font-size: ${hp(3)}px;
-  font-weight: 500;
-  color: ${(props) => props.theme.colors.textDark};
-`;
 
 const InfoText = styled.Text`
   font-size: ${hp(1.6)}px;
@@ -76,53 +60,6 @@ const NoPostText = styled.Text`
   color: ${(props) => props.theme.colors.text};
 `;
 
-const FollowContainer = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 10px;
-`;
-
-const FollowItem = styled.View`
-  align-items: center;
-`;
-
-const FollowCount = styled.Text`
-  font-size: ${hp(2.5)}px;
-  font-weight: bold;
-  color: ${(props) => props.theme.colors.textDark};
-`;
-
-const FollowLabel = styled.Text`
-  font-size: ${hp(1.6)}px;
-  color: ${(props) => props.theme.colors.textLight};
-`;
-
-const FollowButton = styled.Pressable`
-  background-color: ${(props) => props.theme.colors.primary};
-  align-self: center;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 20px;
-  padding-right: 20px;
-  border-radius: 20px;
-  margin-top: 10px;
-`;
-
-const FollowButtonText = styled.Text`
-  color: #fff;
-  font-size: ${hp(2)}px;
-  font-weight: 500;
-`;
-
-const RowContainer = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 10px;
-`;
-
-// Nuovi styled components per il design migliorato
 const ModernProfileSection = styled.View`
   align-items: center;
   padding: ${hp(2)}px;
@@ -145,7 +82,8 @@ const FollowIcon = styled.Pressable<{ isFollowing: boolean }>`
   right: -16px;
   padding: 8px;
   border-radius: 50px;
-  background-color: ${props => props.isFollowing ? props.theme.colors.rose : props.theme.colors.primary};
+  background-color: ${(props) =>
+    props.isFollowing ? props.theme.colors.rose : props.theme.colors.primary};
   /* Ombra per iOS e Android */
   box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.2);
   shadow-color: #000;
@@ -203,78 +141,10 @@ const ModernStatLabel = styled.Text`
   letter-spacing: 0.8px;
 `;
 
-const ModernButtonsContainer = styled.View`
-  flex-direction: row;
-  gap: ${wp(3)}px;
-  padding: 0 ${wp(4)}px;
-  margin-top: ${hp(1)}px;
-`;
-
-const ModernPrimaryButton = styled.TouchableOpacity`
-  background-color: ${(props) => props.theme.colors.primary};
-  padding: ${hp(1.4)}px ${wp(6)}px;
-  border-radius: ${(props) => props.theme.radius.xl}px;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  shadow-color: ${(props) => props.theme.colors.primary};
-  shadow-offset: 0px 3px;
-  shadow-opacity: 0.25;
-  shadow-radius: 6px;
-  elevation: 4;
-`;
-
-const ModernSecondaryButton = styled.TouchableOpacity`
-  background-color: transparent;
-  border: 2px solid ${(props) => props.theme.colors.primary};
-  padding: ${hp(1.2)}px ${wp(6)}px;
-  border-radius: ${(props) => props.theme.radius.xl}px;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-`;
-
-const ModernButtonText = styled.Text`
-  font-weight: 600;
-  font-size: ${hp(1.6)}px;
-`;
-
-const ModernPrimaryButtonText = styled(ModernButtonText)`
-  color: white;
-`;
-
-const ModernSecondaryButtonText = styled(ModernButtonText)`
-  color: ${(props) => props.theme.colors.primary};
-`;
-
-const ViewToggleContainer = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  margin: ${hp(2)}px ${wp(4)}px ${hp(1)}px ${wp(4)}px;
-  background-color: ${props => props.theme.colors.darkLight};
-  border-radius: ${props => props.theme.radius.lg}px;
-  padding: ${wp(1)}px;
-`;
-
-const ViewToggleButton = styled.TouchableOpacity<{ isActive: boolean }>`
-  flex: 1;
-  padding: ${hp(1)}px;
-  border-radius: ${props => props.theme.radius.md}px;
-  background-color: ${props => props.isActive ? props.theme.colors.background : 'transparent'};
-  align-items: center;
-  justify-content: center;
-`;
-
-const ViewToggleText = styled.Text<{ isActive: boolean }>`
-  font-size: ${hp(1.6)}px;
-  font-weight: ${props => props.theme.fonts.medium};
-  color: ${props => props.isActive ? props.theme.colors.text : props.theme.colors.textLight};
-`;
-
 const ChatButton = styled.Pressable`
   padding: 5px;
-  border-radius: ${props => props.theme.radius.sm}px;
-  background-color: ${props => props.theme.colors.darkLight};
+  border-radius: ${(props) => props.theme.radius.sm}px;
+  background-color: ${(props) => props.theme.colors.darkLight};
 `;
 
 interface UserHeaderProps {
@@ -291,7 +161,6 @@ const UserProfile: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const theme = useStyledTheme();
   const { user: currentUser } = useAuth();
 
@@ -337,15 +206,6 @@ const UserProfile: React.FC = () => {
     router.push({ pathname: "/postDetails", params: { postId: post.id } });
   };
 
-  const renderItem: ListRenderItem<PostWithRelations> = ({ item }) => (
-    <PostCard
-      item={item}
-      currentUser={userData}
-      router={router}
-      isUserProfile={true}
-    />
-  );
-
   const renderGridItem = ({ item }: { item: PostWithRelations }) => (
     <PostGridItem
       item={item}
@@ -354,7 +214,7 @@ const UserProfile: React.FC = () => {
     />
   );
 
-   const renderFooter = (): React.ReactElement | null => {
+  const renderFooter = (): React.ReactElement | null => {
     if (hasMore) {
       return (
         <View style={{ marginVertical: posts.length === 0 ? 100 : 30 }}>
@@ -362,7 +222,7 @@ const UserProfile: React.FC = () => {
         </View>
       );
     }
-    
+
     if (posts.length === 0) {
       return (
         <View style={{ marginVertical: 80 }}>
@@ -370,8 +230,8 @@ const UserProfile: React.FC = () => {
         </View>
       );
     }
-    
-    return (<></>);
+
+    return <></>;
   };
 
   const handleHeaderChatPress = async () => {
@@ -405,10 +265,9 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const chatButton = userData && currentUser?.id !== userData.id ? (
-      <ChatButton
-        onPress={handleHeaderChatPress}
-      >
+  const chatButton =
+    userData && currentUser?.id !== userData.id ? (
+      <ChatButton onPress={handleHeaderChatPress}>
         <Icon
           name="messageCircle"
           size={hp(2.5)}
@@ -420,54 +279,37 @@ const UserProfile: React.FC = () => {
   return (
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title={userData?.name || "profile"} mb={30} rightButton={chatButton} />
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}
+        >
+          <Header
+            title={userData?.name || "profile"}
+            mb={30}
+            rightButton={chatButton}
+          />
         </View>
 
         <FlatList
           data={posts}
-          ListHeaderComponent={
-            <>
-              <UserHeader user={userData} router={router} />
-
-              {/* Toggle per cambiare vista */}
-              <ViewToggleContainer>
-                <ViewToggleButton
-                  isActive={viewMode === 'grid'}
-                  onPress={() => setViewMode('grid')}
-                >
-                  <Icon
-                    name="grid"
-                    size={hp(2)}
-                    color={viewMode === 'grid' ? theme.colors.text : theme.colors.textLight}
-                  />
-                </ViewToggleButton>
-                <ViewToggleButton
-                  isActive={viewMode === 'list'}
-                  onPress={() => setViewMode('list')}
-                >
-                  <Icon
-                    name="list"
-                    size={hp(2)}
-                    color={viewMode === 'list' ? theme.colors.text : theme.colors.textLight}
-                  />
-                </ViewToggleButton>
-              </ViewToggleContainer>
-            </>
-          }
+          ListHeaderComponent={<UserHeader user={userData} router={router} />}
           ListHeaderComponentStyle={{ marginBottom: 30 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             ListStyle,
             {
               paddingTop: hp(8),
-              paddingHorizontal: 0
-            }
+              paddingHorizontal: 0,
+            },
           ]}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={viewMode === 'grid' ? renderGridItem : renderItem}
-          numColumns={viewMode === 'grid' ? 3 : 1}
-          key={viewMode} // Forza il re-render quando cambia la modalità
+          renderItem={renderGridItem}
+          numColumns={3}
           onEndReached={() => getPosts()}
           onEndReachedThreshold={0}
           refreshControl={
@@ -490,15 +332,15 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [postsCount, setPostsCount] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
-  const [creating, setCreating] = useState(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
 
   const openWebsite = async (url: string): Promise<void> => {
     try {
-      const formattedUrl = url.startsWith('http://') || url.startsWith('https://')
-        ? url
-        : `https://${url}`;
+      const formattedUrl =
+        url.startsWith("http://") || url.startsWith("https://")
+          ? url
+          : `https://${url}`;
 
       const supported = await Linking.canOpenURL(formattedUrl);
       if (supported) {
@@ -561,40 +403,6 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
     setFollowersCount(followers);
   };
 
-  const handleChatPress = async (selectedUser: User) => {
-    if (!currentUser?.id || creating) return;
-
-    setCreating(true);
-
-    try {
-      const result = await createOrFindConversation(
-        currentUser.id,
-        selectedUser.id
-      );
-
-      if (result.success && result.data) {
-        router.push({
-          pathname: "/chat/chatDetails",
-          params: {
-            conversationId: result.data.id,
-            otherUserId: selectedUser.id,
-            otherUserName: selectedUser.name,
-            otherUserImage: selectedUser.image || "",
-          },
-        });
-      } else {
-        Alert.alert(
-          "Error",
-          "Could not create conversation. Please try again."
-        );
-      }
-    } catch (error) {
-      console.log("Error creating conversation:", error);
-      Alert.alert("Error", "Could not create conversation. Please try again.");
-    }
-
-    setCreating(false);
-  };
   return (
     <HeaderContainer>
       <ModernProfileSection>
@@ -626,21 +434,25 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
         <UserInfoSection>
           {user?.website && (
             <TouchableOpacity onPress={() => openWebsite(user.website!)}>
-              <InfoText style={{
-                color: theme.colors.primary,
-                textDecorationLine: 'underline',
-                fontSize: hp(1.7)
-              }}>
+              <InfoText
+                style={{
+                  color: theme.colors.primary,
+                  textDecorationLine: "underline",
+                  fontSize: hp(1.7),
+                }}
+              >
                 {user.website}
               </InfoText>
             </TouchableOpacity>
           )}
           {user?.bio && (
-            <InfoText style={{
-              textAlign: 'center',
-              lineHeight: hp(2.2),
-              paddingHorizontal: wp(4)
-            }}>
+            <InfoText
+              style={{
+                textAlign: "center",
+                lineHeight: hp(2.2),
+                paddingHorizontal: wp(4),
+              }}
+            >
               {user.bio}
             </InfoText>
           )}
