@@ -4,14 +4,22 @@ import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useRouter } from "expo-router";
 import { hp, wp } from "../../helpers/common";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { searchUsers, UserWithBasicInfo } from "../../services/userService";
 import UserCard from "../../components/UserCard";
 import Header from "../../components/Header";
 import Icon from "../../assets/icons";
-import { useTranslation } from "react-i18next";
+
 import ThemeWrapper from "../../components/ThemeWrapper";
 import { useAuth } from "../../context/AuthContext";
+import {
+  loadRecentSearches,
+  saveRecentSearch,
+  removeRecentSearch,
+  clearAllRecentSearches,
+  RecentSearch
+} from "../../services/recentSearchService";
 
 // Styled Components
 const Container = styled.View`
@@ -55,6 +63,47 @@ const NoResultsText = styled.Text`
   margin-top: ${hp(2)}px;
 `;
 
+const RecentSearchesContainer = styled.View`
+  flex: 1;
+  margin-top: ${hp(2)}px;
+`;
+
+const SectionHeader = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${hp(1.5)}px;
+  padding-horizontal: ${wp(1)}px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: ${hp(2)}px;
+  font-weight: ${props => props.theme.fonts.bold};
+  color: ${props => props.theme.colors.text};
+`;
+
+const ClearAllButton = styled.TouchableOpacity`
+  padding: ${hp(0.5)}px ${wp(2)}px;
+`;
+
+const ClearAllText = styled.Text`
+  font-size: ${hp(1.6)}px;
+  color: ${props => props.theme.colors.primary};
+  font-weight: ${props => props.theme.fonts.medium};
+`;
+
+const RecentUserCard = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: ${props => props.theme.colors.background};
+`;
+
+const RemoveButton = styled.TouchableOpacity`
+  padding: ${hp(0.5)}px;
+  margin-left: ${wp(2)}px;
+`;
+
 // Rimosso LoadingContainer non utilizzato
 
 const Search: React.FC = () => {
@@ -66,8 +115,23 @@ const Search: React.FC = () => {
   const [users, setUsers] = useState<UserWithBasicInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 
-  // Funzione per cercare gli utenti
+  const loadRecentSearchesData = useCallback(async () => {
+    try {
+      const recent = await loadRecentSearches();
+      setRecentSearches(recent);
+    } catch (error) {
+      console.error('Error loading recent searches:', error);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentSearchesData();
+    }, [loadRecentSearchesData])
+  );
+
   const searchForUsers = useCallback(async (): Promise<void> => {
 
     setLoading(true);
@@ -100,8 +164,13 @@ const Search: React.FC = () => {
     }
   }, [ searchQuery, initialLoading]);
 
-  // Effettua la ricerca quando cambia la categoria, il tipo di ricerca o la query di ricerca
   useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setUsers([]);
+      setInitialLoading(false);
+      return;
+    }
+
     const delaySearch = setTimeout(() => {
       searchForUsers();
     }, 500);
@@ -110,7 +179,12 @@ const Search: React.FC = () => {
   }, [searchQuery, searchForUsers]);
 
   // Gestisce la navigazione al profilo utente
-  const navigateToUserProfile = (userId: string) => {
+  const navigateToUserProfile = async (userId: string, userData?: UserWithBasicInfo) => {
+    if (userId !== user?.id && userData) {
+      await saveRecentSearch(userData);
+      loadRecentSearchesData();
+    }
+
     if (userId === user?.id) {
       router.push("/(tabs)/profile");
     } else {
@@ -121,12 +195,56 @@ const Search: React.FC = () => {
     }
   };
 
-  // Renderizza un utente
+  const handleRemoveRecentSearch = async (userId: string) => {
+    await removeRecentSearch(userId);
+    loadRecentSearchesData();
+  };
+
+  const handleClearAllRecentSearches = async () => {
+    Alert.alert(
+      "Clear Recent Searches",
+      "Are you sure you want to clear all recent searches?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear All",
+          style: "destructive",
+          onPress: async () => {
+            await clearAllRecentSearches();
+            loadRecentSearchesData();
+          }
+        }
+      ]
+    );
+  };
+
   const renderUser = useCallback(
     ({ item }: { item: UserWithBasicInfo }): React.ReactElement => (
-      <UserCard user={item} onPress={navigateToUserProfile} currentUserId={user?.id} />
+      <UserCard
+        user={item}
+        onPress={(userId) => navigateToUserProfile(userId, item)}
+        currentUserId={user?.id}
+      />
     ),
     [user?.id, navigateToUserProfile]
+  );
+
+  const renderRecentUser = useCallback(
+    ({ item }: { item: RecentSearch }): React.ReactElement => (
+      <RecentUserCard>
+        <View style={{ flex: 1 }}>
+          <UserCard
+            user={item}
+            onPress={(userId) => navigateToUserProfile(userId, item)}
+            currentUserId={user?.id}
+          />
+        </View>
+        <RemoveButton onPress={() => handleRemoveRecentSearch(item.id)}>
+          <Icon name="x" size={hp(2)} color={theme.colors.textLight} />
+        </RemoveButton>
+      </RecentUserCard>
+    ),
+    [user?.id, navigateToUserProfile, handleRemoveRecentSearch, theme.colors.textLight]
   );
 
   return (
@@ -166,6 +284,29 @@ const Search: React.FC = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: hp(20) }}
           />
+        ) : searchQuery.trim() === "" ? (
+          recentSearches.length > 0 ? (
+            <RecentSearchesContainer>
+              <SectionHeader>
+                <SectionTitle>Recent</SectionTitle>
+                <ClearAllButton onPress={handleClearAllRecentSearches}>
+                  <ClearAllText>Clear All</ClearAllText>
+                </ClearAllButton>
+              </SectionHeader>
+              <FlatList
+                data={recentSearches}
+                renderItem={renderRecentUser}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: hp(20) }}
+              />
+            </RecentSearchesContainer>
+          ) : (
+            <NoResultsContainer>
+              <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
+              <NoResultsText>Search for users to see them here.</NoResultsText>
+            </NoResultsContainer>
+          )
         ) : (
           // Risultati di ricerca per gli utenti
           users.length > 0 ? (

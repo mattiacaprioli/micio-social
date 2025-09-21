@@ -20,6 +20,7 @@ import { useRouter } from "expo-router";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import ExploreSearchInput from "../../components/ExploreSearchInput";
 
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
@@ -502,6 +503,8 @@ const Explore: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
+        {/* Search Input */}
+        <ExploreSearchInput placeholder="Search users..." />
 
         {/* Categorie */}
         <CategoriesContainer>
