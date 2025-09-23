@@ -352,12 +352,12 @@ const Home: React.FC = () => {
             >
               <Icon name="messageCircle" size={hp(2.5)} color={theme.colors.text} />
             </Pressable>
-            <Pressable
+           {/*  <Pressable
               onPress={() => router.push("/(main)/search" as any)}
               style={{ marginRight: 15 }}
             >
               <Icon name="search" size={hp(2.5)} color={theme.colors.text} />
-            </Pressable>
+            </Pressable> */}
             <Pressable
               onPress={() => {
                 setNotificationCount(0);

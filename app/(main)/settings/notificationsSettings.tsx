@@ -33,11 +33,11 @@ const Card = styled.View`
   border-width: 0.5px;
   border-color: ${props => props.theme.colors.dark};
   gap: ${hp(2)}px;
-  shadow-color: #000;
-  shadow-offset: 0px 6px;
+  shadow-color: #444040ff;
+  shadow-offset: 0px 3px;
   shadow-opacity: 0.12;
   shadow-radius: 16px;
-  elevation: 12;
+  elevation: 8;
   overflow: hidden;
   border: 1px solid ${(props) => props.theme.colors.cardBorder}30;
 `;

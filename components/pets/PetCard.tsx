@@ -24,9 +24,9 @@ const Container = styled.TouchableOpacity`
   background-color: ${props => props.theme.colors.background};
   border-radius: ${wp(5)}px;
   margin: ${hp(0.5)}px ${wp(1.5)}px;
-  shadow-color: #000;
+  shadow-color: #444040ff;
   shadow-offset: 0px 2px;
-  shadow-opacity: 0.05;
+  shadow-opacity: 0.12;
   shadow-radius: 4px;
   elevation: 3;
   overflow: hidden;

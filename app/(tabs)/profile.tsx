@@ -171,9 +171,9 @@ const ModernStatsContainer = styled.View`
   padding: ${hp(0.5)}px ${wp(2.5)}px;
   margin: ${hp(1)}px ${wp(4)}px;
   border: 1px solid ${props => props.theme.colors.gray}15;
-  shadow-color: #000;
+  shadow-color: #444040ff;
   shadow-offset: 0px 2px;
-  shadow-opacity: 0.08;
+  shadow-opacity: 0.12;
   shadow-radius: 8px;
   elevation: 3;
 `;

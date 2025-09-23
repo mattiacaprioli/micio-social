@@ -19,7 +19,12 @@ import RenderHtml from "react-native-render-html";
 import { Image } from "expo-image";
 import { downloadFile, getSupabaseFileUrl } from "../services/imageService";
 import { Video, ResizeMode } from "expo-av";
-import { createPostLike, removePostLike, PostWithRelations, getPostLikeUsers } from "../services/postService";
+import {
+  createPostLike,
+  removePostLike,
+  PostWithRelations,
+  getPostLikeUsers,
+} from "../services/postService";
 import Loading from "./Loading";
 import { createNotification } from "../services/notificationService";
 import { useTheme } from "../context/ThemeContext";
@@ -43,24 +48,27 @@ interface PostCardProps {
   showDelete?: boolean;
   onDelete?: (item: PostWithRelations) => void;
   onEdit?: (item: PostWithRelations) => void;
-  variant?: 'classic' | 'edgeToEdge' | 'modal';
+  variant?: "classic" | "edgeToEdge" | "modal";
 }
 
 const Container = styled.View<{ hasShadow?: boolean; variant?: string }>`
   gap: 10px;
-  margin-bottom: ${props => props.variant === 'modal' ? 0 : 15}px;
-  border-radius: ${props => props.variant === 'modal' ? 0 : props.theme.radius.xxl * 1.1}px;
+  margin-bottom: ${(props) => (props.variant === "modal" ? 0 : 15)}px;
+  border-radius: ${(props) =>
+    props.variant === "modal" ? 0 : props.theme.radius.xxl * 1.1}px;
   padding-top: 12px;
   padding-bottom: 12px;
-  background-color: ${props => props.theme.colors.background};
-  border-width: ${props => props.variant === 'edgeToEdge' || props.variant === 'modal' ? 0 : 0.5}px;
-  border-color: ${props => props.theme.colors.gray};
+  background-color: ${(props) => props.theme.colors.background};
+  border-width: ${(props) =>
+    props.variant === "edgeToEdge" || props.variant === "modal" ? 0 : 0.5}px;
+  border-color: ${(props) => props.theme.colors.gray};
   ${(props) =>
     props.hasShadow &&
-    props.variant !== 'modal' &&
+    props.variant !== "modal" &&
     css`
-      box-shadow: 0px ${props.variant === 'edgeToEdge' ? '1px 3px' : '2px 6px'} rgba(0, 0, 0, ${props.variant === 'edgeToEdge' ? '0.03' : '0.05'});
-      elevation: ${props.variant === 'edgeToEdge' ? '0.5' : '1'};
+      box-shadow: 0px ${props.variant === "edgeToEdge" ? "1px 3px" : "2px 6px"}
+        rgba(0, 0, 0, ${props.variant === "edgeToEdge" ? "0.03" : "0.05"});
+      elevation: ${props.variant === "edgeToEdge" ? "0.5" : "1"};
     `}
 `;
 
@@ -78,12 +86,12 @@ const UserInfo = styled.TouchableOpacity`
 `;
 
 const CategoryBadge = styled.View`
-  background-color: ${props => props.theme.colors.primary};
+  background-color: ${(props) => props.theme.colors.primary};
   padding-left: 8px;
   padding-right: 8px;
   padding-top: 4px;
   padding-bottom: 4px;
-  border-radius: ${props => props.theme.radius.md}px;
+  border-radius: ${(props) => props.theme.radius.md}px;
   margin-left: 5px;
   align-self: flex-start;
 `;
@@ -91,19 +99,19 @@ const CategoryBadge = styled.View`
 const CategoryText = styled.Text`
   color: white;
   font-size: ${hp(1.3)}px;
-  font-weight: ${props => props.theme.fonts.medium};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 const UserName = styled.Text`
   font-size: ${hp(1.7)}px;
-  color: ${props => props.theme.colors.textDark};
-  font-weight: ${props => props.theme.fonts.medium};
+  color: ${(props) => props.theme.colors.textDark};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 const PostTime = styled.Text`
   font-size: ${hp(1.4)}px;
-  color: ${props => props.theme.colors.textLight};
-  font-weight: ${props => props.theme.fonts.medium};
+  color: ${(props) => props.theme.colors.textLight};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 const Content = styled.View`
@@ -159,7 +167,7 @@ const Actions = styled.View`
 `;
 
 const Count = styled.Text`
-  color: ${props => props.theme.colors.text};
+  color: ${(props) => props.theme.colors.text};
   font-size: ${hp(1.8)}px;
   padding: ${hp(0.3)}px;
 `;
@@ -171,8 +179,8 @@ const ModalContent = styled.View`
 
 const ModalTitle = styled.Text`
   font-size: ${hp(2.2)}px;
-  font-weight: ${props => props.theme.fonts.bold};
-  color: ${props => props.theme.colors.textDark};
+  font-weight: ${(props) => props.theme.fonts.bold};
+  color: ${(props) => props.theme.colors.textDark};
   text-align: center;
   margin-bottom: ${hp(2)}px;
 `;
@@ -184,10 +192,16 @@ const UserItem = styled.TouchableOpacity`
   gap: ${wp(3)}px;
 `;
 
+const ReadMoreText = styled.Text`
+  color: ${(props) => props.theme.colors.primary};
+  font-size: ${hp(1.6)}px;
+  margin-top: 5px;
+`;
+
 const UserItemName = styled.Text`
   font-size: ${hp(1.8)}px;
-  color: ${props => props.theme.colors.textDark};
-  font-weight: ${props => props.theme.fonts.medium};
+  color: ${(props) => props.theme.colors.textDark};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -200,7 +214,7 @@ const PostCard: React.FC<PostCardProps> = ({
   showDelete = false,
   onDelete = () => {},
   onEdit = () => {},
-  variant = 'edgeToEdge',
+  variant = "edgeToEdge",
 }) => {
   const [likes, setLikes] = useState<PostLike[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -222,12 +236,12 @@ const PostCard: React.FC<PostCardProps> = ({
           toValue: 1,
           useNativeDriver: true,
           tension: 100,
-          friction: 3
+          friction: 3,
         }),
         Animated.timing(heartScale, {
           toValue: 0,
           duration: 300,
-          useNativeDriver: true
+          useNativeDriver: true,
         }),
       ]).start(() => setShowHeart(false));
       onLike();
@@ -237,7 +251,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleSingleTap = () => {
     const now = Date.now();
     const DOUBLE_PRESS_DELAY = 300;
-    if (lastTap.current && (now - lastTap.current) < DOUBLE_PRESS_DELAY) {
+    if (lastTap.current && now - lastTap.current < DOUBLE_PRESS_DELAY) {
       handleDoubleTap();
     }
     lastTap.current = now;
@@ -306,7 +320,7 @@ const PostCard: React.FC<PostCardProps> = ({
           let notify = {
             senderId: currentUser.id,
             receiverId: item.user.id,
-            title: 'likedYourPost',
+            title: "likedYourPost",
             data: JSON.stringify({ postId: item.id }),
           };
           createNotification(notify);
@@ -321,7 +335,9 @@ const PostCard: React.FC<PostCardProps> = ({
   };
 
   const onShare = async () => {
-    let content: { message: string; url?: string } = { message: stripHtmlTags(item?.body || '') };
+    let content: { message: string; url?: string } = {
+      message: stripHtmlTags(item?.body || ""),
+    };
     if (item?.file) {
       // download the file then share the local uri
       setLoading(true);
@@ -357,7 +373,7 @@ const PostCard: React.FC<PostCardProps> = ({
     } else {
       router.push({
         pathname: "/userProfile",
-        params: { userId }
+        params: { userId },
       });
     }
   };
@@ -373,6 +389,42 @@ const PostCard: React.FC<PostCardProps> = ({
       <UserItemName>{likeItem.users?.name}</UserItemName>
     </UserItem>
   );
+
+  const CollapsibleText = ({ html, tagsStyles }) => {
+    const [showMore, setShowMore] = useState(false);
+    const [textExceeds, setTextExceeds] = useState(false);
+
+    return (
+      <>
+        <RenderHtml
+          source={{ html }}
+          contentWidth={wp(100)}
+          tagsStyles={tagsStyles}
+          baseStyle={{
+            color: "#000",
+            fontSize: hp(1.75),
+          }}
+          defaultTextProps={{
+            numberOfLines: showMore ? undefined : 3, // massimo 3 righe
+            ellipsizeMode: "tail",
+            onTextLayout: (e) => {
+              if (e.nativeEvent.lines.length > 3 && !textExceeds) {
+                setTextExceeds(true); // se supera le 3 righe, mostra "Leggi tutto"
+              }
+            },
+          }}
+        />
+
+        {textExceeds && (
+          <TouchableOpacity onPress={() => setShowMore(!showMore)}>
+            <ReadMoreText>
+              {showMore ? "Mostra meno" : "Leggi tutto"}
+            </ReadMoreText>
+          </TouchableOpacity>
+        )}
+      </>
+    );
+  };
 
   const handlePostDelete = () => {
     Alert.alert("Confirm", "Are you sure you want to do this?", [
@@ -390,7 +442,8 @@ const PostCard: React.FC<PostCardProps> = ({
   };
 
   const createdAt = moment(item?.created_at).format("MMM D");
-  const liked = likes.filter((like) => like.userId === currentUser?.id).length > 0;
+  const liked =
+    likes.filter((like) => like.userId === currentUser?.id).length > 0;
 
   return (
     <Container hasShadow={hasShadow} variant={variant}>
@@ -406,7 +459,7 @@ const PostCard: React.FC<PostCardProps> = ({
             isDarkMode={isDarkMode}
           />
           <View style={{ gap: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <UserName>{item?.user?.name}</UserName>
               {item?.category && (
                 <CategoryBadge>
@@ -444,11 +497,7 @@ const PostCard: React.FC<PostCardProps> = ({
       <Content>
         <PostBody>
           {item?.body && (
-            <RenderHtml
-              source={{ html: item?.body }}
-              contentWidth={wp(100)}
-              tagsStyles={tagsStyles}
-            />
+            <CollapsibleText html={item?.body} tagsStyles={tagsStyles} />
           )}
         </PostBody>
 
@@ -503,7 +552,10 @@ const PostCard: React.FC<PostCardProps> = ({
                 <Icon name="heart" size={24} color={theme.colors.textLight} />
               )}
             </TouchableOpacity>
-            <TouchableOpacity disabled={likes.length === 0} onPress={openLikesModal}>
+            <TouchableOpacity
+              disabled={likes.length === 0}
+              onPress={openLikesModal}
+            >
               <Count>{likes?.length}</Count>
             </TouchableOpacity>
           </FooterButton>
@@ -512,7 +564,9 @@ const PostCard: React.FC<PostCardProps> = ({
               <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
             <Count>
-              {Array.isArray(item?.comments) ? item?.comments[0]?.count : item?.comments?.count}
+              {Array.isArray(item?.comments)
+                ? item?.comments[0]?.count
+                : item?.comments?.count}
             </Count>
           </FooterButton>
           <FooterButton>
@@ -550,11 +604,13 @@ const PostCard: React.FC<PostCardProps> = ({
               renderItem={renderLikeUser}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <Text style={{
-                  textAlign: 'center',
-                  color: theme.colors.textLight,
-                  marginTop: hp(2)
-                }}>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: theme.colors.textLight,
+                    marginTop: hp(2),
+                  }}
+                >
                   No likes yet
                 </Text>
               }

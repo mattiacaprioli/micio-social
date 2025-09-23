@@ -34,15 +34,15 @@ const Item = styled.TouchableOpacity`
   align-items: center;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
-  padding-top: ${hp(2)}px;
-  padding-bottom: ${hp(2)}px;
+  padding-top: ${hp(0.8)}px;
+  padding-bottom: ${hp(0.8)}px;
   border-bottom-width: 1px;
   border-color: ${props => props.theme.colors.darkLight};
 `;
 
 const FollowerName = styled.Text`
   margin-left: ${wp(4)}px;
-  font-size: ${hp(2.2)}px;
+  font-size: ${hp(2)}px;
   color: ${props => props.theme.colors.textDark};
 `;
 
@@ -96,7 +96,7 @@ const Followers: React.FC = () => {
     <Item onPress={() => openUserProfile(item.follower.id)}>
       <Avatar
         uri={item.follower.image}
-        size={hp(8)}
+        size={hp(6)}
         rounded={theme.radius.xl}
         isDarkMode={isDarkMode}
       />
