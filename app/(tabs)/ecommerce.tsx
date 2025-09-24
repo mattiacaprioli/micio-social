@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Alert, View, AppState, Keyboard } from "react-native";
+import { View, AppState, Keyboard } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -20,6 +20,8 @@ import {
 import { seedEcommerceData, clearEcommerceData } from "../../services/seedDataService";
 import ErrorBoundary from "../../components/ecommerce/ErrorBoundary";
 import useNetworkError from "../../hooks/useNetworkError";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 const Container = styled.View`
   flex: 1;
@@ -121,6 +123,8 @@ const Ecommerce: React.FC = () => {
   
   const isInputFocusedRef = useRef(false);
   const lastFocusAction = useRef<'focus' | 'blur' | null>(null);
+  
+  const { modalRef, showError, showSuccess, showConfirm } = useModal();
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
@@ -301,29 +305,22 @@ const Ecommerce: React.FC = () => {
 
   const initializeData = async () => {
     try {
-      Alert.alert(
-        "Inizializzazione Dati",
+      showConfirm(
         "Vuoi popolare il database con i dati di esempio?",
-        [
-          { text: "Annulla", style: "cancel" },
-          {
-            text: "Conferma",
-            onPress: async () => {
-              try {
-                setLoading(true);
-                await seedEcommerceData();
-                await loadProducts();
-                await loadCategories();
-                Alert.alert("Successo", "Dati inizializzati correttamente!");
-              } catch (error) {
-                console.error("Error seeding data:", error);
-                Alert.alert("Errore", "Errore durante l'inizializzazione dei dati");
-              } finally {
-                setLoading(false);
-              }
-            },
-          },
-        ]
+        async () => {
+          try {
+            setLoading(true);
+            await seedEcommerceData();
+            await loadProducts();
+            await loadCategories();
+            showSuccess("Dati inizializzati correttamente!", "Successo");
+          } catch (error) {
+            console.error("Error seeding data:", error);
+            showError("Errore durante l'inizializzazione dei dati", "Errore");
+          } finally {
+            setLoading(false);
+          }
+        }
       );
     } catch (error) {
       console.error("Error in initializeData:", error);
@@ -332,30 +329,22 @@ const Ecommerce: React.FC = () => {
 
   const clearData = async () => {
     try {
-      Alert.alert(
-        "Rimozione Dati",
+      showConfirm(
         "Vuoi rimuovere tutti i dati di test dal database?",
-        [
-          { text: "Annulla", style: "cancel" },
-          {
-            text: "Rimuovi",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                setLoading(true);
-                await clearEcommerceData();
-                await loadProducts();
-                await loadCategories();
-                Alert.alert("Successo", "Dati rimossi correttamente!");
-              } catch (error) {
-                console.error("Error clearing data:", error);
-                Alert.alert("Errore", "Errore durante la rimozione dei dati");
-              } finally {
-                setLoading(false);
-              }
-            },
-          },
-        ]
+        async () => {
+          try {
+            setLoading(true);
+            await clearEcommerceData();
+            await loadProducts();
+            await loadCategories();
+            showSuccess("Dati rimossi correttamente!", "Successo");
+          } catch (error) {
+            console.error("Error clearing data:", error);
+            showError("Errore durante la rimozione dei dati", "Errore");
+          } finally {
+            setLoading(false);
+          }
+        }
       );
     } catch (error) {
       console.error("Error in clearData:", error);
@@ -533,6 +522,10 @@ const Ecommerce: React.FC = () => {
               </ContentContainer>
           </Container>
         </View>
+        
+        <PrimaryModal
+          ref={modalRef}
+        />
       </ThemeWrapper>
     </ErrorBoundary>
   );

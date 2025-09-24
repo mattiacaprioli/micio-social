@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Alert,
   Switch,
   ScrollView,
   View,
@@ -22,6 +21,8 @@ import {
   validatePasswordStrength,
 } from "../../../services/authService";
 import { supabase } from "../../../lib/supabase";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 // Interfacce per i tipi
 interface PersonalInfo {
@@ -85,6 +86,7 @@ const LanguageText = styled.Text`
 
 const AccountSettings: React.FC = () => {
   const { user } = useAuth();
+  const { modalRef, showError, showSuccess, showConfirm } = useModal();
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: "",
     email: "",
@@ -106,43 +108,43 @@ const AccountSettings: React.FC = () => {
 
   const handleUpdatePersonalInfo = (): void => {
     if (!personalInfo.name || !personalInfo.email) {
-      Alert.alert("Error", "All fields are required");
+      showError("All fields are required", "Error");
       return;
     }
     console.log("Updated personal information:", personalInfo);
-    Alert.alert("Success", "Personal information updated");
+    showSuccess("Personal information updated", "Success");
   };
 
   const handleChangePassword = async (): Promise<void> => {
     if (!password.current || !password.new || !password.confirm) {
-      Alert.alert("Error", "All fields are required");
+      showError("All fields are required", "Error");
       return;
     }
 
     if (password.new !== password.confirm) {
-      Alert.alert("Error", "Passwords do not match");
+      showError("Passwords do not match", "Error");
       return;
     }
 
     if (!user?.email) {
-      Alert.alert("Error", "User not authenticated");
+      showError("User not authenticated", "Error");
       return;
     }
 
     const passwordValidation = validatePasswordStrength(password.new);
     if (!passwordValidation.isValid) {
-      Alert.alert(
-        "Invalid Password",
+      showError(
         passwordValidation.message ||
-          "Password does not meet security requirements"
+          "Password does not meet security requirements",
+        "Invalid Password"
       );
       return;
     }
 
     if (password.current === password.new) {
-      Alert.alert(
-        "Error",
-        "New password must be different from current password"
+      showError(
+        "New password must be different from current password",
+        "Error"
       );
       return;
     }
@@ -165,23 +167,18 @@ const AccountSettings: React.FC = () => {
           confirm: "",
         });
 
-        Alert.alert(
-          "Password Updated",
+        showSuccess(
           "Password changed successfully. For security reasons, you will be logged out and need to sign in again.",
-          [
-            {
-              text: "OK",
-              onPress: handleLogoutAfterPasswordChange,
-            },
-          ]
+          "Password Updated",
+          handleLogoutAfterPasswordChange
         );
       } else {
-        Alert.alert("Error", result.msg || "Error changing password");
+        showError(result.msg || "Error changing password", "Error");
       }
     } catch (error) {
       setLoading(false);
       console.error("Error changing password:", error);
-      Alert.alert("Error", "An unexpected error occurred");
+      showError("An unexpected error occurred", "Error");
     }
   };
 
@@ -190,41 +187,33 @@ const AccountSettings: React.FC = () => {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
-        Alert.alert("Error", "Error during logout");
+        showError("Error during logout", "Error");
       }
     } catch (error) {
       console.error("Logout error:", error);
-      Alert.alert("Error", "Error during logout");
+      showError("Error during logout", "Error");
     }
   };
 
   const handleDeactivateAccount = (): void => {
-    Alert.alert(
-      "Confirm",
+    showConfirm(
       "Are you sure you want to deactivate your account? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Deactivate",
-          onPress: () => console.log("Account deactivated"),
-          style: "destructive",
-        },
-      ]
+      () => console.log("Account deactivated")
     );
   };
 
   const handleToggleTheme = (): void => {
     toggleTheme();
-    Alert.alert(
-      "Theme Changed",
-      `Theme set to ${!isDarkMode ? "dark" : "light"}`
+    showSuccess(
+      `Theme set to ${!isDarkMode ? "dark" : "light"}`,
+      "Theme Changed"
     );
   };
 
   const toggleLanguage = (): void => {
     const newLanguage = language === "English" ? "Italiano" : "English";
     setLanguage(newLanguage);
-    Alert.alert("Language Changed", `Language set to ${newLanguage}`);
+    showSuccess(`Language set to ${newLanguage}`, "Language Changed");
     console.log("Language changed to:", newLanguage);
   };
 
@@ -395,6 +384,10 @@ const AccountSettings: React.FC = () => {
           </Container>
         </ScrollView>
       </View>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </ThemeWrapper>
   );
 };

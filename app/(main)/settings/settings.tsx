@@ -1,5 +1,4 @@
 import {
-  Alert,
   Image,
   View,
   ViewStyle,
@@ -13,6 +12,8 @@ import Header from "../../../components/Header";
 import { wp, hp } from "../../../helpers/common";
 import Icon from "../../../assets/icons";
 import { supabase } from "../../../lib/supabase";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 // Interfacce per i tipi
 interface SettingsOption {
@@ -97,28 +98,21 @@ const VersionText = styled.Text`
 const Settings: React.FC = () => {
   const router = useRouter();
   const theme = useStyledTheme();
+  const { modalRef, showError, showConfirm } = useModal();
 
   const onLogout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert("logout", "errorSigningOut");
+      showError("errorSigningOut", "logout");
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     // show confirm modal
-    Alert.alert("Confirm", "Are you sure you want to log out?", [
-      {
-        text: "cancel",
-        onPress: () => console.log("Modal cancelled"),
-        style: "cancel",
-      },
-      {
-        text: "logout",
-        onPress: () => onLogout(),
-        style: "destructive",
-      },
-    ]);
+    showConfirm(
+      "Are you sure you want to log out?",
+      () => onLogout()
+    );
   };
 
   const settingsOptions: SettingsOption[] = [
@@ -174,6 +168,10 @@ const Settings: React.FC = () => {
 
         </ScreenContainer>
       </View>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </ThemeWrapper>
   );
 };

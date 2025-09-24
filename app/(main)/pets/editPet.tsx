@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Alert } from "react-native";
+import { View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "../../../context/AuthContext";
@@ -9,10 +9,13 @@ import Loading from "../../../components/Loading";
 import { getPetById, updatePet } from "../../../services/petService";
 import { CreatePetData, UpdatePetData, Pet } from "../../../services/types";
 import { uploadFile } from "../../../services/imageService";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const EditPet: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { modalRef, showError, showSuccess } = useModal();
   const { petId } = useLocalSearchParams<{ petId: string }>();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +26,7 @@ const EditPet: React.FC = () => {
   useEffect(() => {
     const loadPet = async () => {
       if (!petId) {
-        Alert.alert("Errore", "ID gatto mancante");
+        showError("ID gatto mancante", "Errore");
         router.back();
         return;
       }
@@ -33,12 +36,12 @@ const EditPet: React.FC = () => {
         if (result.success && result.data) {
           setPet(result.data);
         } else {
-          Alert.alert("Errore", result.msg || "Gatto non trovato");
+          showError(result.msg || "Gatto non trovato", "Errore");
           router.back();
         }
       } catch (error) {
         console.error("Error loading pet:", error);
-        Alert.alert("Errore", "Errore nel caricamento del gatto");
+        showError("Errore nel caricamento del gatto", "Errore");
         router.back();
       } finally {
         setInitialLoading(false);
@@ -50,7 +53,7 @@ const EditPet: React.FC = () => {
 
   const handleSubmit = async (data: CreatePetData | UpdatePetData) => {
     if (!petId) {
-      Alert.alert("Errore", "ID gatto mancante");
+      showError("ID gatto mancante", "Errore");
       return;
     }
 
@@ -67,7 +70,7 @@ const EditPet: React.FC = () => {
         } else {
           // Se l'upload fallisce, manteniamo l'immagine esistente
           delete finalData.image;
-          Alert.alert("Avviso", "L'immagine non è stata aggiornata, ma le altre modifiche sono state salvate");
+          showError("L'immagine non è stata aggiornata, ma le altre modifiche sono state salvate", "Avviso");
         }
       }
 
@@ -75,22 +78,17 @@ const EditPet: React.FC = () => {
       const result = await updatePet(petId, finalData);
 
       if (result.success) {
-        Alert.alert(
-          "Successo", 
+        showSuccess(
           "Il profilo è stato aggiornato!",
-          [
-            {
-              text: "OK",
-              onPress: () => router.back()
-            }
-          ]
+          "Successo",
+          () => router.back()
         );
       } else {
-        Alert.alert("Errore", result.msg || "Errore nell'aggiornamento del profilo");
+        showError(result.msg || "Errore nell'aggiornamento del profilo", "Errore");
       }
     } catch (error) {
       console.error("Error updating pet:", error);
-      Alert.alert("Errore", "Errore inaspettato nell'aggiornamento del profilo");
+      showError("Errore inaspettato nell'aggiornamento del profilo", "Errore");
     } finally {
       setIsLoading(false);
     }
@@ -137,6 +135,8 @@ const EditPet: React.FC = () => {
           />
         </View>
       </View>
+      
+      <PrimaryModal ref={modalRef} />
     </ThemeWrapper>
   );
 };

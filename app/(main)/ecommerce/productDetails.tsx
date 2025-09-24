@@ -5,7 +5,6 @@ import {
   ScrollView,
   Image,
   Dimensions,
-  Alert,
   Linking,
   Share,
 } from "react-native";
@@ -20,6 +19,8 @@ import Header from "../../../components/Header";
 import { AffiliateProduct } from "../../../services/types";
 import { trackProductClick, getProductById } from "../../../services/ecommerceService";
 import { ProductDetailsSkeleton } from "../../../components/ecommerce/SkeletonLoader";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const { width } = Dimensions.get("window");
 
@@ -224,6 +225,7 @@ const AvailabilityText = styled.Text<{ available: boolean }>`
 
 const ProductDetails: React.FC = () => {
   const { user } = useAuth();
+  const { modalRef, showError } = useModal();
   const router = useRouter();
   const theme = useStyledTheme();
   const { productId } = useLocalSearchParams<{ productId: string }>();
@@ -275,7 +277,7 @@ const ProductDetails: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading product:", error);
-      Alert.alert("Errore", "Impossibile caricare i dettagli del prodotto");
+      showError("Impossibile caricare i dettagli del prodotto", "Errore");
     } finally {
       setLoading(false);
     }
@@ -297,7 +299,7 @@ const ProductDetails: React.FC = () => {
       try {
         await Linking.openURL(product.affiliateUrl);
       } catch (linkError) {
-        Alert.alert("Errore", "Impossibile aprire il link del prodotto");
+        showError("Impossibile aprire il link del prodotto", "Errore");
       }
     }
   };
@@ -546,6 +548,10 @@ const ProductDetails: React.FC = () => {
           </ContentContainer>
         </ScrollContainer>
       </Container>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </ThemeWrapper>
   );
 };

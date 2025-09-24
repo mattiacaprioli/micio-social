@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Alert } from "react-native";
+import { View } from "react-native";
 import { useRouter } from "expo-router";
 import ThemeWrapper from "../../../components/ThemeWrapper";
 import { useAuth } from "../../../context/AuthContext";
@@ -8,15 +8,18 @@ import PetForm from "../../../components/pets/PetForm";
 import { createPet, uploadPetImage } from "../../../services/petService";
 import { CreatePetData, UpdatePetData } from "../../../services/types";
 import { uploadFile } from "../../../services/imageService";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const AddPet: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { modalRef, showError, showSuccess } = useModal();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (data: CreatePetData | UpdatePetData) => {
     if (!user?.id) {
-      Alert.alert("Errore", "Utente non trovato");
+      showError("Utente non trovato", "Errore");
       return;
     }
 
@@ -36,7 +39,7 @@ const AddPet: React.FC = () => {
         } else {
           // Se l'upload fallisce, procediamo senza immagine
           finalPetData.image = undefined;
-          Alert.alert("Avviso", "L'immagine non è stata caricata, ma il profilo è stato salvato");
+          showError("L'immagine non è stata caricata, ma il profilo è stato salvato", "Avviso");
         }
       }
 
@@ -44,22 +47,17 @@ const AddPet: React.FC = () => {
       const result = await createPet(finalPetData);
 
       if (result.success) {
-        Alert.alert(
-          "Successo", 
+        showSuccess(
           `Il profilo di ${petData.name} è stato creato!`,
-          [
-            {
-              text: "OK",
-              onPress: () => router.back()
-            }
-          ]
+          "Successo",
+          () => router.back()
         );
       } else {
-        Alert.alert("Errore", result.msg || "Errore nella creazione del profilo");
+        showError(result.msg || "Errore nella creazione del profilo", "Errore");
       }
     } catch (error) {
       console.error("Error creating pet:", error);
-      Alert.alert("Errore", "Errore inaspettato nella creazione del profilo");
+      showError("Errore inaspettato nella creazione del profilo", "Errore");
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +83,8 @@ const AddPet: React.FC = () => {
           />
         </View>
       </View>
+      
+      <PrimaryModal ref={modalRef} />
     </ThemeWrapper>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Alert, ScrollView, TouchableOpacity, Linking } from "react-native";
+import { View, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
@@ -14,6 +14,8 @@ import { Pet } from "../../../services/types";
 import { hp, wp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
 import moment from "moment";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const Container = styled.View`
   flex: 1;
@@ -156,6 +158,7 @@ const TagText = styled.Text<{ color?: string }>`
 const PetDetails: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { modalRef, showError, showConfirm, showSuccess } = useModal();
   const { petId } = useLocalSearchParams<{ petId: string }>();
   const theme = useStyledTheme();
   const { isDarkMode } = useTheme();
@@ -167,7 +170,7 @@ const PetDetails: React.FC = () => {
   useEffect(() => {
     const loadPet = async () => {
       if (!petId) {
-        Alert.alert("Errore", "ID gatto mancante");
+        showError("ID gatto mancante", "Errore");
         router.back();
         return;
       }
@@ -177,12 +180,12 @@ const PetDetails: React.FC = () => {
         if (result.success && result.data) {
           setPet(result.data);
         } else {
-          Alert.alert("Errore", result.msg || "Gatto non trovato");
+          showError(result.msg || "Gatto non trovato", "Errore");
           router.back();
         }
       } catch (error) {
         console.error("Error loading pet:", error);
-        Alert.alert("Errore", "Errore nel caricamento del gatto");
+        showError("Errore nel caricamento del gatto", "Errore");
         router.back();
       } finally {
         setLoading(false);
@@ -204,17 +207,11 @@ const PetDetails: React.FC = () => {
   const handleDelete = () => {
     if (!pet) return;
 
-    Alert.alert(
-      "Elimina profilo",
+    showConfirm(
       `Sei sicuro di voler eliminare il profilo di ${pet.name}? Questa azione non può essere annullata.`,
-      [
-        { text: "Annulla", style: "cancel" },
-        { 
-          text: "Elimina", 
-          style: "destructive",
-          onPress: confirmDelete
-        },
-      ]
+      confirmDelete,
+      () => {},
+      "Elimina profilo"
     );
   };
 
@@ -224,22 +221,17 @@ const PetDetails: React.FC = () => {
     try {
       const result = await deletePet(pet.id);
       if (result.success) {
-        Alert.alert(
-          "Eliminato", 
+        showSuccess(
           `Il profilo di ${pet.name} è stato eliminato.`,
-          [
-            {
-              text: "OK",
-              onPress: () => router.back()
-            }
-          ]
+          "Eliminato",
+          () => router.back()
         );
       } else {
-        Alert.alert("Errore", result.msg || "Errore nell'eliminazione");
+        showError(result.msg || "Errore nell'eliminazione", "Errore");
       }
     } catch (error) {
       console.error("Error deleting pet:", error);
-      Alert.alert("Errore", "Errore nell'eliminazione del gatto");
+      showError("Errore nell'eliminazione del gatto", "Errore");
     }
   };
 
@@ -403,6 +395,10 @@ const PetDetails: React.FC = () => {
           </ContentContainer>
         </Container>
       </View>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </ThemeWrapper>
   );
 };
