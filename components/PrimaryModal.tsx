@@ -93,7 +93,7 @@ export interface CustomModalRef {
   hide: () => void;
 }
 
-const CustomModal = forwardRef<CustomModalRef, CustomModalProps>(
+const PrimaryModal = forwardRef<CustomModalRef, CustomModalProps>(
   ({ height = 300 }, ref) => {
     const rbSheetRef = useRef<any>(null);
     const theme = useTheme();
@@ -206,6 +206,6 @@ const CustomModal = forwardRef<CustomModalRef, CustomModalProps>(
   }
 );
 
-CustomModal.displayName = 'CustomModal';
+PrimaryModal.displayName = 'PrimaryModal';
 
-export default CustomModal;
+export default PrimaryModal;

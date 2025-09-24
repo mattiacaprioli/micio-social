@@ -1,5 +1,4 @@
 import {
-  Alert,
   FlatList,
   Pressable,
   Text,
@@ -37,6 +36,8 @@ import type { PostWithRelations } from "../../services/postService";
 import { createOrFindConversation } from "../../services/chatService";
 import { UserWithBasicInfo } from "../../services/userService";
 import Icon from "../../assets/icons";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 const HeaderContainer = styled.View`
   flex: 1;
@@ -157,6 +158,7 @@ let limit = 0;
 const UserProfile: React.FC = () => {
   const { userId } = useLocalSearchParams();
   const router = useRouter();
+  const { modalRef, showError } = useModal();
   const [userData, setUserData] = useState<User | null>(null);
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -254,14 +256,11 @@ const UserProfile: React.FC = () => {
           },
         });
       } else {
-        Alert.alert(
-          "Error",
-          "Could not create conversation. Please try again."
-        );
+        showError("Could not create conversation. Please try again.");
       }
     } catch (error) {
       console.log("Error creating conversation:", error);
-      Alert.alert("Error", "Could not create conversation. Please try again.");
+      showError("Could not create conversation. Please try again.");
     }
   };
 
@@ -321,6 +320,7 @@ const UserProfile: React.FC = () => {
           }
           ListFooterComponent={renderFooter}
         />
+        <PrimaryModal ref={modalRef} />
       </View>
     </ThemeWrapper>
   );
@@ -328,6 +328,7 @@ const UserProfile: React.FC = () => {
 
 const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { user: currentUser } = useAuth();
+  const { modalRef, showError } = useModal();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [postsCount, setPostsCount] = useState<number>(0);
@@ -346,10 +347,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (supported) {
         await Linking.openURL(formattedUrl);
       } else {
-        Alert.alert("Error", "Cannot open this URL");
+        showError("Cannot open this URL");
       }
     } catch (error) {
-      Alert.alert("Error", "Cannot open this URL");
+      showError("Cannot open this URL");
     }
   };
 
@@ -490,6 +491,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           <ModernStatLabel>Following</ModernStatLabel>
         </ModernStatItem>
       </ModernStatsContainer>
+      <PrimaryModal ref={modalRef} />
     </HeaderContainer>
   );
 };

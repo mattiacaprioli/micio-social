@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FlatList, RefreshControl, Alert, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -20,6 +20,8 @@ import {
 } from "../../../services/chatService";
 import { searchUsers, UserWithBasicInfo } from "../../../services/userService";
 import { usePathname } from "expo-router";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const Container = styled.View`
   flex: 1;
@@ -58,6 +60,7 @@ const UserItem = styled.View`
 
 const Chat: React.FC = () => {
   const { user } = useAuth();
+  const { modalRef, showError } = useModal();
   const router = useRouter();
   const theme = useStyledTheme();
   const pathname = usePathname();
@@ -134,14 +137,11 @@ const Chat: React.FC = () => {
           },
         });
       } else {
-        Alert.alert(
-          "Error",
-          "Could not create conversation. Please try again."
-        );
+        showError("Could not create conversation. Please try again.");
       }
     } catch (error) {
       console.log("Error creating conversation:", error);
-      Alert.alert("Error", "Could not create conversation. Please try again.");
+      showError("Could not create conversation. Please try again.");
     }
 
     setCreating(false);
@@ -157,7 +157,7 @@ const Chat: React.FC = () => {
         prev.filter((conv) => conv.id !== conversationId)
       );
     } else {
-      Alert.alert("Errore", "Non è stato possibile eliminare la chat");
+      showError("Could not delete the chat. Please try again.");
     }
   };
 
@@ -312,6 +312,7 @@ const Chat: React.FC = () => {
           )}
         </ContentContainer>
         </Container>
+        <PrimaryModal ref={modalRef} />
       </View>
     </ThemeWrapper>
   );

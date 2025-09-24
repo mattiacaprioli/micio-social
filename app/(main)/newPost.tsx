@@ -2,7 +2,6 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
@@ -24,6 +23,8 @@ import { Video } from "expo-av";
 import { createOrUpdatePost } from "../../services/postService";
 import { RichEditor } from "react-native-pell-rich-editor";
 import PetSelector from "../../components/pets/PetSelector";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 // Interfacce per i tipi
 interface PostParams {
@@ -156,6 +157,7 @@ const CategoryText = styled.Text<{ isSelected?: boolean }>`
 const NewPost: React.FC = () => {
   const post = useLocalSearchParams<PostParams>();
   const { user } = useAuth();
+  const { modalRef, showError } = useModal();
   const bodyRef = useRef<string>("");
   const editorRef = useRef<RichEditor | null>(null);
   const router = useRouter();
@@ -268,7 +270,7 @@ const NewPost: React.FC = () => {
 
   const onSubmit = async (): Promise<void> => {
     if (!bodyRef.current && !file) {
-      Alert.alert("Post", "Please add content or image");
+      showError("Please add content or image", "Post");
       return;
     }
 
@@ -294,7 +296,7 @@ const NewPost: React.FC = () => {
       editorRef.current?.setContentHTML("");
       router.back();
     } else {
-      Alert.alert("Post", res.msg || "Error creating post");
+      showError(res.msg || "Error creating post", "Post");
     }
   };
 
@@ -404,6 +406,7 @@ const NewPost: React.FC = () => {
             onPress={onSubmit}
           />
         </Container>
+        <PrimaryModal ref={modalRef} />
       </View>
     </ThemeWrapper>
   );

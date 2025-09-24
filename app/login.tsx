@@ -1,4 +1,4 @@
-import { Alert, Pressable, View, TouchableOpacity } from "react-native";
+import { Pressable, View, TouchableOpacity } from "react-native";
 import React, { useRef, useState } from "react";
 import styled from "styled-components/native";
 import AuthWrapper from "../components/AuthWrapper";
@@ -11,6 +11,8 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
+import PrimaryModal from "../components/PrimaryModal";
+import { useModal } from "../hooks/useModal";
 
 // Styled Components
 const Container = styled.View`
@@ -65,10 +67,11 @@ const Login: React.FC = () => {
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const { modalRef, showError } = useModal();
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      Alert.alert("login", "Please fill all required fields");
+      showError("Please fill all required fields", "Login");
       return;
     }
 
@@ -85,7 +88,7 @@ const Login: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      Alert.alert("login", error.message);
+      showError(error.message, "Login Error");
     }
   };
 
@@ -144,6 +147,8 @@ const Login: React.FC = () => {
           </Pressable>
         </FooterContainer>
       </Container>
+      
+      <PrimaryModal ref={modalRef} />
     </AuthWrapper>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FlatList, ActivityIndicator, Keyboard, Alert, View } from "react-native";
+import { FlatList, ActivityIndicator, Keyboard, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useRouter } from "expo-router";
@@ -20,6 +20,8 @@ import {
   clearAllRecentSearches,
   RecentSearch
 } from "../../services/recentSearchService";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 // Styled Components
 const Container = styled.View`
@@ -109,6 +111,7 @@ const RemoveButton = styled.TouchableOpacity`
 const Search: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { modalRef, showError, showConfirm } = useModal();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const theme = useStyledTheme();
 
@@ -152,11 +155,7 @@ const Search: React.FC = () => {
       setUsers([]);
       // Mostra un messaggio di errore solo se non è il primo caricamento
       if (!initialLoading) {
-        Alert.alert(
-          "Errore",
-          "Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.",
-          [{ text: "OK", onPress: () => {} }]
-        );
+        showError("Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.");
       }
     } finally {
       setLoading(false);
@@ -200,21 +199,15 @@ const Search: React.FC = () => {
     loadRecentSearchesData();
   };
 
-  const handleClearAllRecentSearches = async () => {
-    Alert.alert(
-      "Clear Recent Searches",
+  const handleClearAllRecentSearches = () => {
+    showConfirm(
       "Are you sure you want to clear all recent searches?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear All",
-          style: "destructive",
-          onPress: async () => {
-            await clearAllRecentSearches();
-            loadRecentSearchesData();
-          }
-        }
-      ]
+      async () => {
+        await clearAllRecentSearches();
+        loadRecentSearchesData();
+      },
+      () => {},
+      "Clear Recent Searches"
     );
   };
 
@@ -335,6 +328,7 @@ const Search: React.FC = () => {
         )}
         </Container>
       </View>
+      <PrimaryModal ref={modalRef} />
     </ThemeWrapper>
   );
 };

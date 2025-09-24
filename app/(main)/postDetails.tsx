@@ -1,9 +1,4 @@
-import {
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
@@ -27,6 +22,8 @@ import { createNotification } from "../../services/notificationService";
 import { TextInput } from "react-native";
 import { Post, Comment, User } from "../../src/types";
 import ThemeWrapper from "../../components/ThemeWrapper";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 // Styled Components
 const Container = styled.View`
@@ -42,12 +39,12 @@ const Center = styled.View`
 
 const NotFoundText = styled.Text`
   font-size: ${hp(2)}px;
-  color: ${props => props.theme.colors.textDark};
+  color: ${(props) => props.theme.colors.textDark};
 `;
 
 const BeFirstText = styled.Text`
   text-align: center;
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
   font-size: ${hp(1.8)}px;
 `;
 
@@ -78,33 +75,34 @@ const CategoryContainer = styled.View`
 
 const CategoryLabel = styled.Text`
   font-size: ${hp(1.8)}px;
-  color: ${props => props.theme.colors.textLight};
+  color: ${(props) => props.theme.colors.textLight};
   margin-right: 10px;
 `;
 
 const CategoryBadge = styled.View`
-  background-color: ${props => props.theme.colors.primary};
+  background-color: ${(props) => props.theme.colors.primary};
   padding-left: 12px;
   padding-right: 12px;
   padding-top: 6px;
   padding-bottom: 6px;
-  border-radius: ${props => props.theme.radius.md}px;
+  border-radius: ${(props) => props.theme.radius.md}px;
 `;
 
 const CategoryText = styled.Text`
   color: white;
   font-size: ${hp(1.6)}px;
-  font-weight: ${props => props.theme.fonts.medium};
+  font-weight: ${(props) => props.theme.fonts.medium};
 `;
 
 // Utilizziamo l'interfaccia Post originale
-interface PostWithComments extends Omit<Post, 'createdAt'> {
-  created_at: string;  // dal backend arriva come created_at invece di createdAt
-  user_id: string;     // dal backend arriva come user_id invece di userId
+interface PostWithComments extends Omit<Post, "createdAt"> {
+  created_at: string; // dal backend arriva come created_at invece di createdAt
+  user_id: string; // dal backend arriva come user_id invece di userId
   comments: Comment[];
-  category?: string;   // categoria del post
-  pet_ids?: string[];  // array di ID dei gatti taggati
-  pets?: Array<{       // dati dei gatti taggati
+  category?: string; // categoria del post
+  pet_ids?: string[]; // array di ID dei gatti taggati
+  pets?: Array<{
+    // dati dei gatti taggati
     id: string;
     name: string;
     image?: string;
@@ -114,6 +112,7 @@ interface PostWithComments extends Omit<Post, 'createdAt'> {
 const PostDetails: React.FC = () => {
   const params = useLocalSearchParams<{ postId: string; commentId: string }>();
   const { user } = useAuth();
+  const { modalRef, showError } = useModal();
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const commentRef = useRef<string>("");
@@ -127,30 +126,35 @@ const PostDetails: React.FC = () => {
     if (payload.new) {
       // Verifichiamo se il commento è già presente nei nostri commenti
       // per evitare duplicati quando aggiungiamo commenti localmente
-      const commentExists = post?.comments.some(comment => comment.id === payload.new.id);
+      const commentExists = post?.comments.some(
+        (comment) => comment.id === payload.new.id
+      );
       if (commentExists) return;
 
       let newComment = { ...payload.new };
       const res = await getUserData(newComment.userId);
 
       // Verifica che res.data sia di tipo UserRow prima di assegnarlo
-      newComment.user = res.success && res.data ? {
-        id: res.data.id,
-        name: res.data.name,
-        email: res.data.email,
-        image: res.data.image,
-        bio: res.data.bio,
-        website: res.data.website,
-        birthday: res.data.birthday,
-        gender: res.data.gender,
-        phoneNumber: res.data.phoneNumber
-      } : undefined;
+      newComment.user =
+        res.success && res.data
+          ? {
+              id: res.data.id,
+              name: res.data.name,
+              email: res.data.email,
+              image: res.data.image,
+              bio: res.data.bio,
+              website: res.data.website,
+              birthday: res.data.birthday,
+              gender: res.data.gender,
+              phoneNumber: res.data.phoneNumber,
+            }
+          : undefined;
 
-      setPost(prevPost => {
+      setPost((prevPost) => {
         if (!prevPost) return null;
         return {
           ...prevPost,
-          comments: [newComment, ...prevPost.comments]
+          comments: [newComment, ...prevPost.comments],
         };
       });
     }
@@ -192,7 +196,7 @@ const PostDetails: React.FC = () => {
       // Aggiorniamo il post con i commenti ordinati
       setPost({
         ...res.data,
-        comments: sortedComments
+        comments: sortedComments,
       } as PostWithComments);
     } else {
       setPost(null);
@@ -233,7 +237,7 @@ const PostDetails: React.FC = () => {
         createNotification(notify);
       }
     } else {
-      Alert.alert("Commento", res.msg);
+      showError(res.msg || "Error adding comment", "Comment");
     }
   };
 
@@ -244,13 +248,11 @@ const PostDetails: React.FC = () => {
         if (!prevPost) return null;
         return {
           ...prevPost,
-          comments: prevPost.comments.filter(
-            (c) => c.id !== comment.id
-          )
+          comments: prevPost.comments.filter((c) => c.id !== comment.id),
         };
       });
     } else {
-      Alert.alert("Commento", res.msg);
+      showError(res.msg || "Error deleting comment", "Comment");
     }
   };
 
@@ -260,7 +262,7 @@ const PostDetails: React.FC = () => {
     if (res.success) {
       router.back();
     } else {
-      Alert.alert("Post", res.msg);
+      showError(res.msg || "Error deleting post", "Post");
     }
   };
 
@@ -272,8 +274,8 @@ const PostDetails: React.FC = () => {
         ...item,
         file: typeof item.file === "string" ? item.file : undefined,
         user: item.user ? JSON.stringify(item.user) : undefined,
-        petIds: post?.pet_ids ? JSON.stringify(post.pet_ids) : undefined
-      }
+        petIds: post?.pet_ids ? JSON.stringify(post.pet_ids) : undefined,
+      },
     });
   };
 
@@ -300,97 +302,104 @@ const PostDetails: React.FC = () => {
   return (
     <ThemeWrapper>
       <Container>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <PostCard
-          item={{
-            id: post.id,
-            userId: post.user_id,
-            user_id: post.user_id, // Aggiungiamo anche user_id per compatibilità
-            body: post.body,
-            // Assicuriamoci che file sia una stringa o undefined
-            file: typeof post.file === 'string' ? post.file : undefined,
-            created_at: post.created_at,
-            comments: [{ count: post?.comments?.length }],
-            // Assicuriamoci che user abbia la struttura corretta per PostCard
-            user: post.user ? {
-              id: post.user.id,
-              name: post.user.name,
-              image: post.user.image || null
-            } : undefined,
-            postLikes: post.postLikes || [],
-            category: post.category,
-            pets: post.pets || []
-          } as any}
-          currentUser={user as User | null}
-          router={router}
-          hasShadow={false}
-          showMoreIcon={false}
-          showDelete={true}
-          onDelete={onDeletePost}
-          onEdit={() => onEditPost({ ...post, createdAt: post.created_at })}
-        />
-
-        {post.category && (
-          <CategoryContainer>
-            <CategoryLabel>Category:</CategoryLabel>
-            <CategoryBadge>
-              <CategoryText>{post.category}</CategoryText>
-            </CategoryBadge>
-          </CategoryContainer>
-        )}
-        <InputContainer>
-          <Input
-            inputRef={inputRef}
-            placeholder="Add a comment..."
-            onChangeText={(value) => (commentRef.current = value)}
-            placeholderTextColor={theme.colors.textLight}
-            containerStyle={{
-              flex: 1,
-              height: hp(6.2),
-              borderRadius: theme.radius.xl,
-            }}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <PostCard
+            item={
+              {
+                id: post.id,
+                userId: post.user_id,
+                user_id: post.user_id, // Aggiungiamo anche user_id per compatibilità
+                body: post.body,
+                // Assicuriamoci che file sia una stringa o undefined
+                file: typeof post.file === "string" ? post.file : undefined,
+                created_at: post.created_at,
+                comments: [{ count: post?.comments?.length }],
+                // Assicuriamoci che user abbia la struttura corretta per PostCard
+                user: post.user
+                  ? {
+                      id: post.user.id,
+                      name: post.user.name,
+                      image: post.user.image || null,
+                    }
+                  : undefined,
+                postLikes: post.postLikes || [],
+                category: post.category,
+                pets: post.pets || [],
+              } as any
+            }
+            currentUser={user as User | null}
+            router={router}
+            hasShadow={false}
+            showMoreIcon={false}
+            showDelete={true}
+            onDelete={onDeletePost}
+            onEdit={() => onEditPost({ ...post, createdAt: post.created_at })}
           />
-          {loading ? (
-            <LoadingContainer>
-              <Loading size="small" />
-            </LoadingContainer>
-          ) : (
-            <SendIcon onPress={onNewComment}>
-              <Icon
-                name="send"
-                size={hp(2.5)}
-                color={theme.colors.primaryDark}
-              />
-            </SendIcon>
-          )}
-        </InputContainer>
 
-        <View style={{ marginVertical: 15, gap: 17, paddingLeft: wp(4), paddingRight: wp(4) }}>
-          {post?.comments?.map((comment, index) => (
-            <CommentItem
-              key={`${comment?.id?.toString()}-${index}`}
-              item={comment}
-              onDelete={onDeleteComment}
-              highlight={params.commentId === comment.id}
-              canDelete={user?.id === comment.userId || user?.id === post.userId}
+          {post.category && (
+            <CategoryContainer>
+              <CategoryLabel>Category:</CategoryLabel>
+              <CategoryBadge>
+                <CategoryText>{post.category}</CategoryText>
+              </CategoryBadge>
+            </CategoryContainer>
+          )}
+          <InputContainer>
+            <Input
+              inputRef={inputRef}
+              placeholder="Add a comment..."
+              onChangeText={(value) => (commentRef.current = value)}
+              placeholderTextColor={theme.colors.textLight}
+              containerStyle={{
+                flex: 1,
+                height: hp(6.2),
+                borderRadius: theme.radius.xl,
+              }}
             />
-          ))}
+            {loading ? (
+              <LoadingContainer>
+                <Loading size="small" />
+              </LoadingContainer>
+            ) : (
+              <SendIcon onPress={onNewComment}>
+                <Icon
+                  name="send"
+                  size={hp(2.5)}
+                  color={theme.colors.primaryDark}
+                />
+              </SendIcon>
+            )}
+          </InputContainer>
 
-          {post?.comments?.length === 0 && (
-            <BeFirstText>
-              Be the first to comment!
-            </BeFirstText>
-          )}
-        </View>
-      </ScrollView>
-    </Container>
+          <View
+            style={{
+              marginVertical: 15,
+              gap: 17,
+              paddingLeft: wp(4),
+              paddingRight: wp(4),
+            }}
+          >
+            {post?.comments?.map((comment, index) => (
+              <CommentItem
+                key={`${comment?.id?.toString()}-${index}`}
+                item={comment}
+                onDelete={onDeleteComment}
+                highlight={params.commentId === comment.id}
+                canDelete={
+                  user?.id === comment.userId || user?.id === post.userId
+                }
+              />
+            ))}
+
+            {post?.comments?.length === 0 && (
+              <BeFirstText>Be the first to comment!</BeFirstText>
+            )}
+          </View>
+        </ScrollView>
+      </Container>
+      <PrimaryModal ref={modalRef} />
     </ThemeWrapper>
   );
 };
 
 export default PostDetails;
-
-
-
-
-

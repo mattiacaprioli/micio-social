@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Modal, ViewStyle, View } from "react-native";
+import { ScrollView, Modal, ViewStyle, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import ThemeWrapper from "../../components/ThemeWrapper";
@@ -14,6 +14,8 @@ import { updateUser } from "../../services/userService";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { UserRow } from "../../src/types/supabase";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 // Interfacce per i tipi
 interface UserFormData {
@@ -203,6 +205,7 @@ const MAX_BIO_LENGTH = 200;
 const EditProfile: React.FC = () => {
   const router = useRouter();
   const { user: currentUser, setUserData } = useAuth();
+  const { modalRef, showError } = useModal();
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<UserFormData>({
     name: "",
@@ -296,7 +299,7 @@ const EditProfile: React.FC = () => {
   const onSubmit = async (): Promise<void> => {
     const { name, website, bio, birthday, gender, image } = user;
     if (!name || !bio || !phoneNumber || !birthday || !gender) {
-      Alert.alert("Profile", "Please fill all required fields");
+      showError("Please fill all required fields", "Profile");
       return;
     }
 
@@ -311,7 +314,7 @@ const EditProfile: React.FC = () => {
         uploadedImageUrl = imagesRes.data; // Update with new remote URL
       } else {
         uploadedImageUrl = undefined; // Reset if upload failed
-        Alert.alert("Upload Error", "Failed to upload profile image");
+        showError("Failed to upload profile image", "Upload Error");
         setLoading(false);
         return;
       }
@@ -330,7 +333,7 @@ const EditProfile: React.FC = () => {
 
     if (!currentUser?.id) {
       setLoading(false);
-      Alert.alert("Update Error", "User not found");
+      showError("User not found", "Update Error");
       return;
     }
 
@@ -358,9 +361,9 @@ const EditProfile: React.FC = () => {
       router.back();
     } else {
       console.error("Update failed:", res.msg);
-      Alert.alert(
-        "Update Error",
-        res.msg || "Failed to update profile. Please try again."
+      showError(
+        res.msg || "Failed to update profile. Please try again.",
+        "Update Error"
       );
     }
   };
@@ -538,6 +541,8 @@ const EditProfile: React.FC = () => {
             </Form>
           </Container>
         </ScrollView>
+        
+        <PrimaryModal ref={modalRef} />
       </View>
     </ThemeWrapper>
   );

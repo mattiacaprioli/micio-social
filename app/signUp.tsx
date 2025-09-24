@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, View, TouchableOpacity } from "react-native";
+import { Pressable, Text, View, TouchableOpacity } from "react-native";
 import React, { useRef, useState } from "react";
 import styled from "styled-components/native";
 import AuthWrapper from "../components/AuthWrapper";
@@ -12,6 +12,8 @@ import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
 import { validatePasswordStrength } from "../services/authService";
+import PrimaryModal from "../components/PrimaryModal";
+import { useModal } from "../hooks/useModal";
 
 // Styled Components
 const Container = styled.View`
@@ -62,10 +64,11 @@ const SignUp: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
+  const { modalRef, showError } = useModal();
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current || !nameRef.current) {
-      Alert.alert("Sign Up", "Please fill all required fields");
+      showError("Please fill all the fields", "Missing Information");
       return;
     }
 
@@ -75,10 +78,9 @@ const SignUp: React.FC = () => {
 
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
-      Alert.alert(
-        "Invalid Password",
-        passwordValidation.message ||
-          "Password does not meet security requirements"
+      showError(
+        passwordValidation.message || "Password does not meet security requirements",
+        "Invalid Password"
       );
       return;
     }
@@ -97,7 +99,7 @@ const SignUp: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      Alert.alert("Sign Up", error.message);
+      showError(error.message, "Sign Up Error");
     }
   };
 
@@ -197,6 +199,8 @@ const SignUp: React.FC = () => {
           </Pressable>
         </FooterContainer>
       </Container>
+      
+      <PrimaryModal ref={modalRef} />
     </AuthWrapper>
   );
 };

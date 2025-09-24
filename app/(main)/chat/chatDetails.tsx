@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   FlatList,
   View,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -30,6 +29,8 @@ import {
 import { supabase } from "../../../lib/supabase";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import PrimaryModal from "../../../components/PrimaryModal";
+import { useModal } from "../../../hooks/useModal";
 
 const Container = styled.View`
   flex: 1;
@@ -61,6 +62,7 @@ const ActionText = styled.Text<{ color?: string }>`
 
 const ChatDetails: React.FC = () => {
   const { user } = useAuth();
+  const { modalRef, showError, showConfirm } = useModal();
   const theme = useStyledTheme();
   const params = useLocalSearchParams();
 
@@ -203,31 +205,25 @@ const ChatDetails: React.FC = () => {
     bottomSheetRef.current?.open();
   };
   const handleDeleteMessage = async (messageId: string) => {
-    Alert.alert(
-      "Delete Message",
+    showConfirm(
       "Are you sure you want to delete this message?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const result = await deleteMessage(messageId, user?.id || "");
-            if (result.success) {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === messageId ? { ...msg, is_deleted: true } : msg
-                )
-              );
-            } else {
-              Alert.alert(
-                "Error",
-                result.msg || "Unable to delete message"
-              );
-            }
-          },
-        },
-      ]
+      async () => {
+        const result = await deleteMessage(messageId, user?.id || "");
+        if (result.success) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId ? { ...msg, is_deleted: true } : msg
+            )
+          );
+        } else {
+          showError(
+            result.msg || "Unable to delete message",
+            "Error"
+          );
+        }
+      },
+      () => {},
+      "Delete Message"
     );
   };
 
@@ -259,9 +255,9 @@ const ChatDetails: React.FC = () => {
       setEditingMessageId(null);
       setEditingText("");
     } else {
-      Alert.alert(
-        "Error",
-        result.msg || "Unable to edit message"
+      showError(
+        result.msg || "Unable to edit message",
+        "Error"
       );
     }
   };
@@ -305,9 +301,9 @@ const ChatDetails: React.FC = () => {
         setEditingMessageId(null);
         setEditingText("");
       } else {
-        Alert.alert(
-          "Error",
-          result.msg || "Unable to edit message"
+        showError(
+          result.msg || "Unable to edit message",
+          "Error"
         );
       }
       return;
@@ -350,7 +346,7 @@ const ChatDetails: React.FC = () => {
 
     if (!result.success) {
       setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
-      Alert.alert("Errore", "Could not send message. Please try again.");
+      showError("Could not send message. Please try again.", "Error");
     } else {
       // Se l'invio ha successo, sostituisci il messaggio temporaneo con quello reale
       // (questo verrà gestito automaticamente dal realtime quando arriva il messaggio vero)
@@ -513,6 +509,8 @@ const ChatDetails: React.FC = () => {
           )}
         </BottomSheetContent>
       </RBSheet>
+      
+      <PrimaryModal ref={modalRef} />
     </ThemeWrapper>
   );
 };
