@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Pressable, Alert, Text } from 'react-native';
+import { View, TextInput, Pressable, Text } from 'react-native';
 import styled from 'styled-components/native';
 import { useTheme as useStyledTheme } from 'styled-components/native';
 import { wp, hp } from '../../helpers/common';
 import Icon from '../../assets/icons';
+import PrimaryModal from '../PrimaryModal';
+import { useModal } from '../../hooks/useModal';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -87,6 +89,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const theme = useStyledTheme();
+  const { modalRef, showError } = useModal();
 
   useEffect(() => {
     if (isEditing && editingText) {
@@ -99,7 +102,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const handleSend = () => {
     const trimmedMessage = message.trim();
     if (!trimmedMessage) {
-      Alert.alert('Error', 'Please enter a message before sending.');
+      showError('Please enter a message before sending.', 'Error');
       return;
     }
 
@@ -158,6 +161,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
           />
         </SendButton>
       </Container>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </View>
   );
 };

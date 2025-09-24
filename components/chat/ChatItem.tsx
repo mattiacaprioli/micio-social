@@ -1,11 +1,13 @@
 import React from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { wp, hp } from "../../helpers/common";
 import Avatar from "../Avatar";
 import { ConversationWithUser } from "../../services/chatService";
 import { formatTime } from "../../helpers/common";
+import PrimaryModal from "../PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 interface ChatItemProps {
   conversation: ConversationWithUser;
@@ -54,20 +56,17 @@ const LastMessage = styled.Text`
 
 const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) => {
   const theme = useStyledTheme();
+  const { modalRef, showConfirm } = useModal();
 
   const formatLastMessageTime = (timestamp: string) => {
     return formatTime(timestamp);
   };
 
   const handleLongPress = () => {
-    Alert.alert("Hide Chat", "Are you sure you want to hide this chat?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Hide",
-        style: "destructive",
-        onPress: () => onDelete?.(conversation.id),
-      },
-    ]);
+    showConfirm(
+      "Are you sure you want to hide this chat?",
+      () => onDelete?.(conversation.id)
+    );
   };
 
   return (
@@ -90,6 +89,10 @@ const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) 
           </LastMessage>
         )}
       </ContentContainer>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </Container>
   );
 };

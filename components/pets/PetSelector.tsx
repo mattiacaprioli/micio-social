@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import { View, ScrollView } from "react-native";
 import styled from "styled-components/native";
 import { hp, wp } from "../../helpers/common";
 import { Pet } from "../../services/types";
@@ -7,6 +7,8 @@ import { getUserPets } from "../../services/petService";
 import Icon from "../../assets/icons";
 import Avatar from "../Avatar";
 import { useAuth } from "../../context/AuthContext";
+import PrimaryModal from "../PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 interface PetSelectorProps {
   selectedPetIds: string[];
@@ -121,6 +123,7 @@ const PetSelector: React.FC<PetSelectorProps> = ({
   const { user } = useAuth();
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
+  const { modalRef, showError } = useModal();
 
   useEffect(() => {
     loadUserPets();
@@ -152,9 +155,9 @@ const PetSelector: React.FC<PetSelectorProps> = ({
       if (selectedPetIds.length < maxSelections) {
         onSelectionChange([...selectedPetIds, petId]);
       } else {
-        Alert.alert(
-          "Limite raggiunto", 
-          `Puoi taggare al massimo ${maxSelections} gatti per post`
+        showError(
+          `Puoi taggare al massimo ${maxSelections} gatti per post`,
+          "Limite raggiunto"
         );
       }
     }
@@ -226,6 +229,10 @@ const PetSelector: React.FC<PetSelectorProps> = ({
           );
         })}
       </View>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </Container>
   );
 };

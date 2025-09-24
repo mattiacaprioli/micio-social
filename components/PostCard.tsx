@@ -2,7 +2,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
   Share,
   TouchableWithoutFeedback,
   Animated,
@@ -32,6 +31,8 @@ import { User } from "../src/types";
 import { Router } from "expo-router";
 import RBSheet from "react-native-raw-bottom-sheet";
 import TaggedPets from "./TaggedPets";
+import PrimaryModal from "./PrimaryModal";
+import { useModal } from "../hooks/useModal";
 
 interface PostLike {
   userId: string;
@@ -217,6 +218,7 @@ const PostCard: React.FC<PostCardProps> = ({
   variant = "edgeToEdge",
 }) => {
   const [likes, setLikes] = useState<PostLike[]>([]);
+  const { modalRef, showError, showConfirm } = useModal();
   const [loading, setLoading] = useState<boolean>(false);
   const [showHeart, setShowHeart] = useState<boolean>(false);
   const [likeUsers, setLikeUsers] = useState<any[]>([]);
@@ -305,7 +307,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
       console.log("removed like: ", res);
       if (!res.success) {
-        Alert.alert("Post", "Something went wrong!");
+        showError("Something went wrong!", "Post");
       }
     } else {
       // create like
@@ -329,7 +331,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
       console.log("added like: ", res);
       if (!res.success) {
-        Alert.alert("Post", "Something went wrong!");
+        showError("Something went wrong!", "Post");
       }
     }
   };
@@ -362,7 +364,7 @@ const PostCard: React.FC<PostCardProps> = ({
       setLikeUsers(res.data || []);
       likesModalRef.current?.open();
     } else {
-      Alert.alert("Error", "Could not load users who liked this post");
+      showError("Could not load users who liked this post", "Error");
     }
   };
 
@@ -427,18 +429,10 @@ const PostCard: React.FC<PostCardProps> = ({
   };
 
   const handlePostDelete = () => {
-    Alert.alert("Confirm", "Are you sure you want to do this?", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Modal cancelled"),
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        onPress: () => onDelete(item),
-        style: "destructive",
-      },
-    ]);
+    showConfirm(
+      "Are you sure you want to do this?",
+      () => onDelete(item)
+    );
   };
 
   const createdAt = moment(item?.created_at).format("MMM D");
@@ -618,6 +612,10 @@ const PostCard: React.FC<PostCardProps> = ({
           )}
         </ModalContent>
       </RBSheet>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </Container>
   );
 };

@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Alert } from "react-native"
+import { Text, View, TouchableOpacity } from "react-native"
 import React from "react"
 import styled, { css } from "styled-components/native"
 import { useTheme as useStyledTheme } from "styled-components/native"
@@ -8,6 +8,8 @@ import moment from "moment"
 import Icon from "../assets/icons"
 import { Comment } from "../src/types"
 import { useTheme } from "../context/ThemeContext"
+import PrimaryModal from "./PrimaryModal"
+import { useModal } from "../hooks/useModal"
 
 interface CommentItemProps {
   item: Comment;
@@ -81,20 +83,13 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const created_at = moment(item?.created_at).format("MMM d")
   const { isDarkMode } = useTheme()
   const theme = useStyledTheme()
+  const { modalRef, showConfirm } = useModal()
 
   const handleDelete = () => {
-    Alert.alert("Confirm", "Are you sure you want to do this?", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Modal cancelled"),
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        onPress: () => onDelete(item),
-        style: "destructive",
-      },
-    ])
+    showConfirm(
+      "Are you sure you want to do this?",
+      () => onDelete(item)
+    )
   }
 
   return (
@@ -115,6 +110,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
         </HeaderRow>
         <CommentText>{item?.text}</CommentText>
       </Content>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </Container>
   )
 }

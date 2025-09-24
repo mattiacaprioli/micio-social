@@ -1,5 +1,4 @@
 import {
-  Alert,
   FlatList,
   Pressable,
   Text,
@@ -34,6 +33,8 @@ import type { PostWithRelations } from "../../services/postService";
 import { getUserPets } from "../../services/petService";
 import { Pet } from "../../services/types";
 import PetCard from "../../components/pets/PetCard";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 // Styled Components
 
@@ -526,6 +527,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [postsCount, setPostsCount] = useState<number>(0);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
+  const { modalRef, showError } = useModal();
 
   useEffect(() => {
     const fetchCounts = async (): Promise<void> => {
@@ -552,10 +554,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (supported) {
         await Linking.openURL(formattedUrl);
       } else {
-        Alert.alert("Error", "Cannot open this URL");
+        showError("Cannot open this URL", "Error");
       }
     } catch (error) {
-      Alert.alert("Error", "Cannot open this URL");
+      showError("Cannot open this URL", "Error");
     }
   };
 
@@ -644,6 +646,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           <ModernStatLabel>Following</ModernStatLabel>
         </ModernStatItem>
       </ModernStatsContainer>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </HeaderContainer>
   );
 };

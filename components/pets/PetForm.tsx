@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   ScrollView,
-  Alert,
   Modal,
   TouchableOpacity,
 } from "react-native";
@@ -17,6 +16,8 @@ import * as ImagePicker from "expo-image-picker";
 import { CreatePetData, UpdatePetData, Pet } from "../../services/types";
 import { getUserImageSrc } from "../../services/imageService";
 import moment from "moment";
+import PrimaryModal from "../PrimaryModal";
+import { useModal } from "../../hooks/useModal";
 
 interface PetFormProps {
   initialData?: Pet | null;
@@ -176,6 +177,7 @@ const PetForm: React.FC<PetFormProps> = ({
 
   // Modal states
   const [showGenderModal, setShowGenderModal] = useState(false);
+  const { modalRef, showError } = useModal();
 
   // Funzione per formattare la data di nascita
   const formatBirthday = (input: string): string => {
@@ -193,7 +195,7 @@ const PetForm: React.FC<PetFormProps> = ({
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permesso necessario', 'Serve il permesso per accedere alla galleria');
+        showError('Serve il permesso per accedere alla galleria', 'Permesso necessario');
         return;
       }
 
@@ -208,18 +210,18 @@ const PetForm: React.FC<PetFormProps> = ({
         setImage(result.assets[0]);
       }
     } catch (error) {
-      Alert.alert('Errore', 'Non è stato possibile selezionare l\'immagine');
+      showError('Non è stato possibile selezionare l\'immagine', 'Errore');
     }
   };
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      Alert.alert('Errore', 'Il nome è obbligatorio');
+      showError('Il nome è obbligatorio', 'Errore');
       return;
     }
 
     if (!initialData && !userId) {
-      Alert.alert('Errore', 'UserId mancante per la creazione');
+      showError('UserId mancante per la creazione', 'Errore');
       return;
     }
 
@@ -414,6 +416,10 @@ const PetForm: React.FC<PetFormProps> = ({
           </ModalContent>
         </ModalContainer>
       </Modal>
+      
+      <PrimaryModal
+        ref={modalRef}
+      />
     </Container>
   );
 };
