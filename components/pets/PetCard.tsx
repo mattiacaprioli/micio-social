@@ -1,11 +1,6 @@
-import {
-  Alert,
-} from "react-native";
 import React from "react";
 import styled from "styled-components/native";
-import { useTheme as useStyledTheme } from "styled-components/native";
 import { hp, wp } from "../../helpers/common";
-import Icon from "../../assets/icons";
 import { Image } from "expo-image";
 import { getUserImageSrc } from "../../services/imageService";
 import { Pet } from "../../services/types";
@@ -13,10 +8,7 @@ import moment from "moment";
 
 interface PetCardProps {
   pet: Pet;
-  onEdit?: (pet: Pet) => void;
-  onDelete?: (pet: Pet) => void;
   onPress?: (pet: Pet) => void;
-  showActions?: boolean;
 }
 
 // Minimal variant components
@@ -68,54 +60,11 @@ const Subtitle = styled.Text`
   font-weight: 500;
 `;
 
-const Actions = styled.View`
-  flex-direction: row;
-  gap: ${wp(1.5)}px;
-`;
-
-const ActionButton = styled.TouchableOpacity<{ variant?: 'edit' | 'delete' }>`
-  width: ${hp(3.5)}px;
-  height: ${hp(3.5)}px;
-  border-radius: ${hp(1.75)}px;
-  background-color: ${(props) =>
-    props.variant === 'delete'
-      ? props.theme.colors.rose + '20'
-      : props.theme.colors.primary + '20'
-  };
-  align-items: center;
-  justify-content: center;
-  border: 1px solid ${(props) =>
-    props.variant === 'delete'
-      ? props.theme.colors.rose + '40'
-      : props.theme.colors.primary + '40'
-  };
-`;
-
-
-
 const PetCard: React.FC<PetCardProps> = ({
   pet,
-  onEdit,
-  onDelete,
   onPress,
-  showActions = true
 }) => {
-  const theme = useStyledTheme();
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Elimina profilo",
-      `Sei sicuro di voler eliminare il profilo di ${pet.name}?`,
-      [
-        { text: "Annulla", style: "cancel" },
-        {
-          text: "Elimina",
-          style: "destructive",
-          onPress: () => onDelete?.(pet)
-        },
-      ]
-    );
-  };
 
   const calculateAge = () => {
     if (pet.age) {
@@ -148,21 +97,7 @@ const PetCard: React.FC<PetCardProps> = ({
           ].filter(Boolean).join(' • ')}
         </Subtitle>
       </Info>
-
-      {showActions && (
-        <Actions>
-          {onEdit && (
-            <ActionButton variant="edit" onPress={() => onEdit(pet)}>
-              <Icon name="edit" size={hp(1.6)} color={theme.colors.primary} />
-            </ActionButton>
-          )}
-          {onDelete && (
-            <ActionButton variant="delete" onPress={handleDelete}>
-              <Icon name="delete" size={hp(1.6)} color={theme.colors.rose} />
-            </ActionButton>
-          )}
-        </Actions>
-      )}
+      
     </Container>
   );
 };

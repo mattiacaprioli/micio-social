@@ -341,7 +341,6 @@ const Profile: React.FC = () => {
         pathname: "/(main)/pets/petDetails",
         params: { petId: pet.id }
       })}
-      showActions={false}
     />
   );
 
