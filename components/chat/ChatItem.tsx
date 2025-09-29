@@ -27,6 +27,7 @@ const Container = styled(Pressable)`
 const ContentContainer = styled.View`
   flex: 1;
   margin-left: ${wp(3)}px;
+  position: relative;
 `;
 
 const TopRow = styled.View`
@@ -51,7 +52,26 @@ const TimeText = styled.Text`
 const LastMessage = styled.Text`
   font-size: ${hp(1.8)}px;
   color: ${(props) => props.theme.colors.textLight};
-  margin-top: ${hp(0.5)}px;
+  margin-top: ${hp(0.3)}px;
+`;
+
+const UnreadBadge = styled.View`
+  position: absolute;
+  top: ${hp(3)}px;
+  right: 0;
+  background-color: ${(props) => props.theme.colors.primary};
+  border-radius: ${hp(1.2)}px;
+  min-width: ${hp(2.4)}px;
+  height: ${hp(2.4)}px;
+  justify-content: center;
+  align-items: center;
+  padding-horizontal: ${wp(1.5)}px;
+`;
+
+const UnreadBadgeText = styled.Text`
+  color: white;
+  font-size: ${hp(1.3)}px;
+  font-weight: ${(props) => props.theme.fonts.bold};
 `;
 
 const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) => {
@@ -69,6 +89,8 @@ const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) 
     );
   };
 
+  const hasUnreadMessages = conversation.unreadCount && conversation.unreadCount > 0;
+
   return (
     <Container onPress={onPress} onLongPress={handleLongPress} theme={theme}>
       <Avatar uri={conversation.otherUser.image} size={hp(6)} />
@@ -79,7 +101,7 @@ const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) 
           </UserName>
           {conversation.lastMessage && (
             <TimeText theme={theme}>
-              {formatLastMessageTime(conversation.lastMessage.created_at)}
+              {String(formatLastMessageTime(conversation.lastMessage.created_at))}
             </TimeText>
           )}
         </TopRow>
@@ -88,8 +110,15 @@ const ChatItem: React.FC<ChatItemProps> = ({ conversation, onPress, onDelete }) 
             {conversation.lastMessage.content}
           </LastMessage>
         )}
+        {hasUnreadMessages && (
+          <UnreadBadge theme={theme}>
+            <UnreadBadgeText theme={theme}>
+              {String(conversation.unreadCount || 0)}
+            </UnreadBadgeText>
+          </UnreadBadge>
+        )}
       </ContentContainer>
-      
+
       <PrimaryModal
         ref={modalRef}
       />

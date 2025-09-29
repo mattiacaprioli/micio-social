@@ -21,9 +21,8 @@ import Loading from "../../components/Loading";
 
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
-// Importiamo solo i tipi che utilizziamo effettivamente
+import { getTotalUnreadMessagesCount } from "../../services/chatService";
 
-// Interfacce per i payload degli eventi Supabase
 interface PostEventPayload {
   eventType: "INSERT" | "UPDATE" | "DELETE";
   new?: PostWithRelations;
@@ -39,8 +38,8 @@ interface CommentEventPayload {
     id: string;
     post_id: string;
     user_id: string;
-    postId?: string; // Per compatibilità con il codice esistente
-    userId?: string; // Per compatibilità con il codice esistente
+    postId?: string;
+    userId?: string;
     [key: string]: any;
   };
 }
@@ -143,6 +142,7 @@ const Home: React.FC = () => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [limit, setLimit] = useState<number>(0);
@@ -154,7 +154,6 @@ const Home: React.FC = () => {
       let res = await getUserData(newPost.user_id);
       newPost.postLikes = [];
       newPost.comments = [{ count: 0 }];
-      // Convertiamo il tipo per evitare errori di tipo
       newPost.user =
         res.success && res.data
           ? {
@@ -195,11 +194,9 @@ const Home: React.FC = () => {
   ): Promise<void> => {
     if (payload.eventType === "INSERT" && payload.new.id) {
       let newComment = { ...payload.new };
-      // Usa user_id se disponibile, altrimenti fallback su userId per compatibilità
       const userId = newComment.user_id || newComment.userId;
       if (!userId) return;
       let res = await getUserData(userId);
-      // Convertiamo il tipo per evitare errori di tipo
       newComment.user =
         res.success && res.data
           ? {
@@ -211,14 +208,13 @@ const Home: React.FC = () => {
 
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
-          // Usa post_id se disponibile, altrimenti fallback su postId per compatibilità
           const postId = newComment.post_id || newComment.postId;
           if (post.id === postId) {
             return {
               ...post,
               comments: Array.isArray(post.comments)
                 ? [newComment, ...post.comments]
-                : [newComment, { count: post.comments.count }], // Gestisce sia array che oggetto count
+                : [newComment, { count: post.comments.count }],
             };
           }
           return post;
@@ -232,6 +228,24 @@ const Home: React.FC = () => {
   ): Promise<void> => {
     if (payload.eventType === "INSERT" && payload.new.id) {
       setNotificationCount((prevCount) => prevCount + 1);
+    }
+  };
+
+  const handleNewMessage = (payload: any): void => {
+    if (payload.new && payload.new.id) {
+      if (payload.new.sender_id !== user?.id) {
+        setUnreadMessagesCount((prevCount) => prevCount + 1);
+      } else {
+        console.log("❌ Message is from current user, not incrementing");
+      }
+    }
+  };
+
+  const handleMessageUpdate = (payload: any): void => {
+    if (payload.new && payload.old) {
+      if (payload.old.is_read === false && payload.new.is_read === true && payload.new.sender_id !== user?.id) {
+        setUnreadMessagesCount((prevCount) => Math.max(0, prevCount - 1));
+      }
     }
   };
 
@@ -278,14 +292,35 @@ const Home: React.FC = () => {
       )
       .subscribe();
 
+    let messagesChannel = supabase
+      .channel("messages")
+      .on(
+        "postgres_changes" as any,
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        handleNewMessage as any
+      )
+      .on(
+        "postgres_changes" as any,
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        handleMessageUpdate as any
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(postChannel);
       supabase.removeChannel(commentChannel);
       supabase.removeChannel(notificationChannel);
+      supabase.removeChannel(messagesChannel);
     };
   }, [user, posts]);
-
-
 
   const getPosts = async (isRefreshing = false): Promise<void> => {
     // Altrimenti, carica i dati dall'API
@@ -327,7 +362,13 @@ const Home: React.FC = () => {
     useCallback(() => {
       console.log("Loading posts on focus");
       getPosts(true);
-    }, [])
+
+      if (user?.id) {
+        getTotalUnreadMessagesCount(user.id).then((count) => {
+          setUnreadMessagesCount(count);
+        });
+      }
+    }, [user?.id])
   );
 
   const onRefresh = useCallback((): void => {
@@ -347,10 +388,18 @@ const Home: React.FC = () => {
           <Title>Micio Social</Title>
           <IconsContainer>
             <Pressable
-              onPress={() => router.push("/(main)/chat/chat" as any)}
+              onPress={() => {
+                setUnreadMessagesCount(0);
+                router.push("/(main)/chat/chat" as any);
+              }}
               style={{ marginRight: 15 }}
             >
               <Icon name="messageCircle" size={hp(2.5)} color={theme.colors.text} />
+              {unreadMessagesCount > 0 && (
+                <Pill>
+                  <PillText>{String(unreadMessagesCount)}</PillText>
+                </Pill>
+              )}
             </Pressable>
            {/*  <Pressable
               onPress={() => router.push("/(main)/search" as any)}
@@ -367,7 +416,7 @@ const Home: React.FC = () => {
               <Icon name="heart" size={hp(2.5)} color={theme.colors.text} />
               {notificationCount > 0 && (
                 <Pill>
-                  <PillText>{notificationCount}</PillText>
+                  <PillText>{String(notificationCount)}</PillText>
                 </Pill>
               )}
             </Pressable>

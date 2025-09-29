@@ -157,11 +157,20 @@ const ChatDetails: React.FC = () => {
               },
             };
 
-            setMessages((prev) => [...prev, newMessage]);
+            setMessages((prev) => {
+              if (newMessage.sender_id === user?.id) {
+
+                const withoutTemp = prev.filter(msg => !msg.id.toString().startsWith('temp-'));
+                const result = [...withoutTemp, newMessage];
+
+                return result;
+              } else {
+                return [...prev, newMessage];
+              }
+            });
 
             if (user?.id && newMessage.sender_id !== user.id) {
               await markMessagesAsRead(conversationId, user.id);
-              // 🔥 AGGIUNGI QUESTA PARTE: Mostra di nuovo la conversazione se era nascosta quando ricevi un messaggio
               await unhideConversation(user.id, conversationId);
             }
           }
@@ -334,23 +343,10 @@ const ChatDetails: React.FC = () => {
     const result = await sendMessage(conversationId, user.id, messageText);
 
     if (result.success) {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempMessage.id ? { ...msg, sending: false } : msg
-        )
-      );
-
-      // 🔥 AGGIUNGI QUESTA PARTE: Mostra di nuovo la conversazione se era nascosta
       await unhideConversation(user.id, conversationId);
-    }
-
-    if (!result.success) {
+    } else {
       setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
       showError("Could not send message. Please try again.", "Error");
-    } else {
-      // Se l'invio ha successo, sostituisci il messaggio temporaneo con quello reale
-      // (questo verrà gestito automaticamente dal realtime quando arriva il messaggio vero)
-      // Per ora lasciamo il messaggio temporaneo, verrà sostituito dal realtime
     }
 
     setSending(false);

@@ -17,11 +17,13 @@ import {
   ConversationWithUser,
   createOrFindConversation,
   hideConversation,
+  getUnreadMessagesCountForConversation,
 } from "../../../services/chatService";
 import { searchUsers, UserWithBasicInfo } from "../../../services/userService";
 import { usePathname } from "expo-router";
 import PrimaryModal from "../../../components/PrimaryModal";
 import { useModal } from "../../../hooks/useModal";
+import { supabase } from "../../../lib/supabase";
 
 const Container = styled.View`
   flex: 1;
@@ -83,7 +85,19 @@ const Chat: React.FC = () => {
 
     const result = await getUserConversations(user.id);
     if (result.success && result.data) {
-      setConversations(result.data);
+      const conversationsWithUnreadCount = await Promise.all(
+        result.data.map(async (conv) => {
+          const unreadCount = await getUnreadMessagesCountForConversation(
+            conv.id,
+            user.id
+          );
+          return {
+            ...conv,
+            unreadCount,
+          };
+        })
+      );
+      setConversations(conversationsWithUnreadCount);
     }
     setLoading(false);
   };
@@ -177,6 +191,85 @@ const Chat: React.FC = () => {
       fetchConversations();
     }, [user?.id])
   );
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel("chat-updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload) => {
+          const newMessage = payload.new as any;
+
+          const unreadCount = newMessage.sender_id !== user.id
+            ? await getUnreadMessagesCountForConversation(
+                newMessage.conversation_id,
+                user.id
+              )
+            : 0;
+
+          setConversations((prev) => {
+            const updated = prev.map((conv) => {
+              if (conv.id === newMessage.conversation_id) {
+                return {
+                  ...conv,
+                  lastMessage: {
+                    content: newMessage.content,
+                    created_at: newMessage.created_at,
+                  },
+                  unreadCount,
+                  last_message_at: newMessage.created_at,
+                };
+              }
+              return conv;
+            });
+
+            return updated.sort((a, b) => {
+              const timeA = a.last_message_at || a.created_at;
+              const timeB = b.last_message_at || b.created_at;
+              return new Date(timeB).getTime() - new Date(timeA).getTime();
+            });
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload) => {
+          const updatedMessage = payload.new as any;
+         
+          if (updatedMessage.is_read) {
+            const unreadCount = await getUnreadMessagesCountForConversation(
+              updatedMessage.conversation_id,
+              user.id
+            );
+
+            setConversations((prev) =>
+              prev.map((conv) =>
+                conv.id === updatedMessage.conversation_id
+                  ? { ...conv, unreadCount }
+                  : conv
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const handleChatPress = (conversation: ConversationWithUser) => {
     router.push({

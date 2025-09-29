@@ -18,6 +18,7 @@ export interface ConversationWithUser extends ConversationRow {
     content: string;
     created_at: string;
   };
+  unreadCount?: number;
 }
 
 export interface MessageWithUser extends MessageRow {
@@ -404,5 +405,68 @@ export const editMessage = async (
   } catch (error) {
     console.log("editMessage error: ", error);
     return { success: false, msg: "Could not edit message" };
+  }
+};
+
+export const getTotalUnreadMessagesCount = async (
+  userId: string
+): Promise<number> => {
+  try {
+    const { data: conversations, error: convError } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+    if (convError || !conversations) {
+      console.log("getTotalUnreadMessagesCount conversations error: ", convError);
+      return 0;
+    }
+
+    const conversationIds = conversations.map((c) => c.id);
+
+    if (conversationIds.length === 0) {
+      return 0;
+    }
+
+    const { count, error } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .in("conversation_id", conversationIds)
+      .neq("sender_id", userId)
+      .eq("is_read", false);
+
+    if (error) {
+      console.log("getTotalUnreadMessagesCount error: ", error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.log("getTotalUnreadMessagesCount error: ", error);
+    return 0;
+  }
+};
+
+export const getUnreadMessagesCountForConversation = async (
+  conversationId: string,
+  userId: string
+): Promise<number> => {
+  try {
+    const { count, error } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("conversation_id", conversationId)
+      .neq("sender_id", userId)
+      .eq("is_read", false);
+
+    if (error) {
+      console.log("getUnreadMessagesCountForConversation error: ", error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.log("getUnreadMessagesCountForConversation error: ", error);
+    return 0;
   }
 };
