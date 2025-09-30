@@ -199,8 +199,8 @@ const SignUp: React.FC = () => {
           </Pressable>
         </FooterContainer>
       </Container>
-      
-      <PrimaryModal ref={modalRef} />
+
+      <PrimaryModal ref={modalRef} forceLight />
     </AuthWrapper>
   );
 };

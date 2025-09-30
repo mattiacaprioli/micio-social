@@ -147,8 +147,8 @@ const Login: React.FC = () => {
           </Pressable>
         </FooterContainer>
       </Container>
-      
-      <PrimaryModal ref={modalRef} />
+
+      <PrimaryModal ref={modalRef} forceLight />
     </AuthWrapper>
   );
 };

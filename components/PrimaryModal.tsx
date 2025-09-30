@@ -4,6 +4,7 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 import styled, { useTheme } from 'styled-components/native';
 import { hp, wp } from '../helpers/common';
 import Icon from '../assets/icons/index';
+import { theme as lightTheme } from '../constants/theme';
 
 // Styled Components
 const ModalContainer = styled.View`
@@ -80,6 +81,7 @@ interface ModalButton {
 
 interface CustomModalProps {
   height?: number;
+  forceLight?: boolean;
 }
 
 export interface CustomModalRef {
@@ -94,9 +96,10 @@ export interface CustomModalRef {
 }
 
 const PrimaryModal = forwardRef<CustomModalRef, CustomModalProps>(
-  ({ height = 300 }, ref) => {
+  ({ height = 300, forceLight = false }, ref) => {
     const rbSheetRef = useRef<any>(null);
-    const theme = useTheme();
+    const currentTheme = useTheme();
+    const theme = forceLight ? lightTheme : currentTheme;
     const [modalConfig, setModalConfig] = React.useState<{
       type: ModalType;
       title?: string;
