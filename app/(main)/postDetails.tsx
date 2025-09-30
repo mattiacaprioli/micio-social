@@ -97,7 +97,8 @@ const CategoryText = styled.Text`
 // Utilizziamo l'interfaccia Post originale
 interface PostWithComments extends Omit<Post, "createdAt"> {
   created_at: string; // dal backend arriva come created_at invece di createdAt
-  user_id: string; // dal backend arriva come user_id invece di userId
+  userId: string; // dal backend arriva come userId (camelCase)
+  user_id?: string; // campo aggiunto manualmente per compatibilità
   comments: Comment[];
   category?: string; // categoria del post
   pet_ids?: string[]; // array di ID dei gatti taggati
@@ -194,10 +195,16 @@ const PostDetails: React.FC = () => {
       });
 
       // Aggiorniamo il post con i commenti ordinati
-      setPost({
+      // Assicuriamoci che user_id sia presente (il DB restituisce userId in camelCase)
+      const rawData = res.data as any;
+      const postData = {
         ...res.data,
         comments: sortedComments,
-      } as PostWithComments);
+        userId: rawData.userId,
+        user_id: rawData.userId || rawData.user_id
+      } as PostWithComments;
+
+      setPost(postData);
     } else {
       setPost(null);
     }
@@ -218,23 +225,20 @@ const PostDetails: React.FC = () => {
     setLoading(false);
 
     if (res.success) {
-      // Dopo aver creato il commento, ricarichiamo i dettagli del post
-      // per ottenere tutti i commenti aggiornati dal server
-      getPostDetails();
 
       // Puliamo l'input
       inputRef?.current?.clear();
       commentRef.current = "";
 
       // Invia notifica se necessario
-      if (user.id !== post.user_id) {
+      if (post.user_id && user.id !== post.user_id) {
         const notify = {
           senderId: user.id,
           receiverId: post.user_id,
           title: "Ha commentato il tuo post",
           data: JSON.stringify({ postId: post.id, commentId: res?.data?.id }),
         };
-        createNotification(notify);
+        await createNotification(notify);
       }
     } else {
       showError(res.msg || "Error adding comment", "Comment");

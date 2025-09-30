@@ -322,7 +322,7 @@ const PostCard: React.FC<PostCardProps> = ({
           let notify = {
             senderId: currentUser.id,
             receiverId: item.user.id,
-            title: "likedYourPost",
+            title: "Piace al tuo post",
             data: JSON.stringify({ postId: item.id }),
           };
           createNotification(notify);

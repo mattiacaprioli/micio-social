@@ -9,6 +9,7 @@ import ThemeWrapper from "../../components/ThemeWrapper";
 import { useRouter } from "expo-router";
 import NotificationItem from "../../components/NotificationItem";
 import Header from "../../components/Header";
+import { supabase } from "../../lib/supabase";
 
 interface Notification {
   id: string;
@@ -65,6 +66,43 @@ const Notifications: React.FC = () => {
 
   useEffect(() => {
     getNotifications();
+
+    if (!user?.id) return;
+
+    const notificationChannel = supabase
+      .channel(`notifications:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `receiverId=eq.${user.id}`,
+        },
+        async (payload) => {
+          console.log("🔔 New notification received in notifications screen:", payload);
+
+          if (payload.new) {
+            const { data, error } = await supabase
+              .from("notifications")
+              .select(`
+                *,
+                sender: senderId(id, name, image)
+              `)
+              .eq("id", payload.new.id)
+              .single();
+
+            if (!error && data) {
+              setNotifications((prev) => [data, ...prev]);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationChannel);
+    };
   }, [user?.id]);
 
   const onRefresh = useCallback(() => {
