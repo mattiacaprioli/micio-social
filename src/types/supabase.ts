@@ -34,6 +34,45 @@ export interface Database {
         Insert: Omit<PetRow, "id" | "created_at" | "updated_at">;
         Update: Partial<Omit<PetRow, "id" | "created_at" | "updated_at">>;
       };
+      stories: {
+        Row: {
+          id: string;
+          user_id: string;
+          file: string;
+          caption: string | null;
+          created_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          file: string;
+          caption?: string | null;
+          created_at?: string;
+          expires_at?: string;
+        };
+        Update: Partial<{
+          id?: string;
+          user_id: string;
+          file: string;
+          caption?: string | null;
+          created_at?: string;
+          expires_at?: string;
+        }>;
+      };
+      story_views: {
+        Row: {
+          story_id: string;
+          viewer_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          story_id: string;
+          viewer_id: string;
+          viewed_at?: string;
+        };
+        Update: never;
+      };
     };
   };
 }

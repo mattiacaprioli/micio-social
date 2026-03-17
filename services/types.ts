@@ -114,6 +114,35 @@ export interface UpdatePetData {
   medicalNotes?: string;
 }
 
+// ===============================
+// STORIES INTERFACES
+// ===============================
+
+export interface Story {
+  id: string;
+  user_id: string;
+  file: string;
+  caption: string | null;
+  created_at: string;
+  expires_at: string;
+  user?: { id: string; name: string; image: string | null };
+  story_views?: { viewer_id: string }[];
+}
+
+export interface UserStoryGroup {
+  userId: string;
+  userName: string;
+  userImage: string | null;
+  stories: Story[];
+  hasUnseenStory: boolean;
+}
+
+export interface CreateStoryInput {
+  userId: string;
+  imageUri: string;
+  caption?: string;
+}
+
 // Pets
 
 export interface Pet {

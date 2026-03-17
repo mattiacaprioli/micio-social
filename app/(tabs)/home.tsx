@@ -22,6 +22,8 @@ import Loading from "../../components/Loading";
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
 import { getTotalUnreadMessagesCount } from "../../services/chatService";
+import StoriesBar from "../../components/StoriesBar";
+import { UserStoryGroup } from "../../services/types";
 
 interface PostEventPayload {
   eventType: "INSERT" | "UPDATE" | "DELETE";
@@ -144,6 +146,8 @@ const Home: React.FC = () => {
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [allGroups, setAllGroups] = useState<UserStoryGroup[]>([]);
+  const [storiesRefetch, setStoriesRefetch] = useState(0);
 
   const [limit, setLimit] = useState<number>(0);
 
@@ -358,10 +362,25 @@ const Home: React.FC = () => {
   };
 
   // Effetto per il focus della schermata (caricamento iniziale e ritorno da altre schermate)
+  const handleStoryPress = (group: UserStoryGroup, groupIndex: number) => {
+    router.push({
+      pathname: "/(main)/storyViewer",
+      params: {
+        groupsJson: JSON.stringify(allGroups),
+        startGroupIndex: String(groupIndex),
+      },
+    } as any);
+  };
+
+  const handleAddStoryPress = () => {
+    router.push("/(main)/newStory" as any);
+  };
+
   useFocusEffect(
     useCallback(() => {
       console.log("Loading posts on focus");
       getPosts(true);
+      setStoriesRefetch((n) => n + 1);
 
       if (user?.id) {
         getTotalUnreadMessagesCount(user.id).then((count) => {
@@ -429,6 +448,18 @@ const Home: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={ListStyle}
           keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            user ? (
+              <StoriesBar
+                currentUserId={user.id}
+                currentUserImage={(user as any)?.image ?? null}
+                onStoryPress={handleStoryPress}
+                onAddStoryPress={handleAddStoryPress}
+                onGroupsLoaded={setAllGroups}
+                refetchSignal={storiesRefetch}
+              />
+            ) : null
+          }
           renderItem={({ item }) => (
             <PostCard
               item={item}
