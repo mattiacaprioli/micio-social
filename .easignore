@@ -1,12 +1,5 @@
-# Ignora node_modules eccetto i file necessari
-node_modules/**/*
-!node_modules/**/*.js
-!node_modules/**/*.json
-!node_modules/**/*.c
-!node_modules/**/*.cpp
-!node_modules/**/*.h
-!node_modules/**/*.mm
-!node_modules/**/*.m
+# node_modules viene reinstallato da EAS Build tramite yarn install
+node_modules
 
 # Ignora file di build
 android/.gradle
