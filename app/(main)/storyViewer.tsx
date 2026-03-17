@@ -10,12 +10,12 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
-import { useAuth } from "@/context/AuthContext";
-import { markStoryViewed } from "@/services/storyService";
-import { UserStoryGroup, Story } from "@/services/types";
-import { getSupabaseFileUrl } from "@/services/imageService";
-import Avatar from "@/components/Avatar";
-import { hp, wp } from "@/helpers/common";
+import { useAuth } from "../../context/AuthContext";
+import { markStoryViewed } from "../../services/storyService";
+import { UserStoryGroup, Story } from "../../services/types";
+import { getSupabaseFileUrl } from "../../services/imageService";
+import Avatar from "../../components/Avatar";
+import { hp, wp } from "../../helpers/common";
 
 const STORY_DURATION = 5000;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");

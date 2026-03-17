@@ -4,14 +4,14 @@ import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import ThemeWrapper from "@/components/ThemeWrapper";
-import Button from "@/components/Button";
-import PrimaryModal from "@/components/PrimaryModal";
-import { useModal } from "@/hooks/useModal";
-import { useAuth } from "@/context/AuthContext";
-import { createStory } from "@/services/storyService";
-import { hp, wp } from "@/helpers/common";
-import Icon from "@/assets/icons";
+import ThemeWrapper from "../../components/ThemeWrapper";
+import Button from "../../components/Button";
+import PrimaryModal from "../../components/PrimaryModal";
+import { useModal } from "../../hooks/useModal";
+import { useAuth } from "../../context/AuthContext";
+import { createStory } from "../../services/storyService";
+import { hp, wp } from "../../helpers/common";
+import Icon from "../../assets/icons";
 
 const Container = styled.View`
   flex: 1;

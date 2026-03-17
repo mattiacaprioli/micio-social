@@ -49,7 +49,6 @@ yarn-error.log*
 .prettierrc*
 .babelrc*
 jest.config.*
-tsconfig.*
 *.tsbuildinfo
 
 # Ignora immagini e asset non necessari per la build
