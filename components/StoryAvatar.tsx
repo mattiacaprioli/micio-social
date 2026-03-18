@@ -56,6 +56,10 @@ const UserLabel = styled.Text`
 
 const AvatarWrapper = styled.View`
   position: relative;
+  width: ${hp(7.5)}px;
+  height: ${hp(7.5)}px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const StoryAvatar: React.FC<StoryAvatarProps> = ({

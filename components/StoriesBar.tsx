@@ -16,7 +16,7 @@ interface StoriesBarProps {
 }
 
 const BarContainer = styled.View`
-  height: ${hp(14)}px;
+  height: ${hp(12)}px;
   padding-left: ${wp(4)}px;
   padding-right: ${wp(4)}px;
   justify-content: center;
