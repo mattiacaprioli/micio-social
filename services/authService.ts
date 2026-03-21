@@ -1,5 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { ApiResponse } from "./types";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 
 export interface ChangePasswordData {
   currentPassword: string;
@@ -144,6 +146,39 @@ export const validatePasswordStrength = (password: string): { isValid: boolean; 
   }
 
   return { isValid: true };
+};
+
+export const signInWithGoogle = async (): Promise<ApiResponse<null>> => {
+  try {
+    const redirectUrl = Linking.createURL("/auth/callback");
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: redirectUrl,
+        skipBrowserRedirect: true,
+      },
+    });
+
+    if (error) return { success: false, msg: error.message };
+    if (!data.url) return { success: false, msg: "No auth URL received" };
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+
+    if (result.type === "success") {
+      const urlParams = new URL(result.url).searchParams;
+      const code = urlParams.get("code");
+      if (code) {
+        const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        if (sessionError) return { success: false, msg: sessionError.message };
+        return { success: true, data: null };
+      }
+    }
+
+    return { success: false, msg: "Authentication cancelled or failed" };
+  } catch (err) {
+    return { success: false, msg: (err as Error).message };
+  }
 };
 
 export const changePasswordAndLogout = async (

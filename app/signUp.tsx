@@ -11,9 +11,10 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
-import { validatePasswordStrength } from "../services/authService";
+import { validatePasswordStrength, signInWithGoogle } from "../services/authService";
 import PrimaryModal from "../components/PrimaryModal";
 import { useModal } from "../hooks/useModal";
+import { AntDesign } from "@expo/vector-icons";
 
 // Styled Components
 const Container = styled.View`
@@ -56,6 +57,41 @@ const LoginLink = styled(FooterText)`
   font-weight: ${theme.fonts.semibold};
 `;
 
+const DividerRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+`;
+
+const DividerLine = styled.View`
+  flex: 1;
+  height: 1px;
+  background-color: ${theme.colors.gray};
+`;
+
+const DividerText = styled.Text`
+  font-size: ${hp(1.5)}px;
+  color: ${theme.colors.textLight};
+`;
+
+const GoogleButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-width: 1px;
+  border-color: ${theme.colors.gray};
+  border-radius: ${theme.radius.xl}px;
+  padding: ${hp(1.5)}px ${wp(4)}px;
+  background-color: #ffffff;
+`;
+
+const GoogleButtonText = styled.Text`
+  font-size: ${hp(1.8)}px;
+  color: ${theme.colors.text};
+  font-weight: ${theme.fonts.semibold};
+`;
+
 const SignUp: React.FC = () => {
   const router = useRouter();
   const emailRef = useRef<string>("");
@@ -65,6 +101,15 @@ const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const { modalRef, showError } = useModal();
+
+  const onGoogleSignIn = async (): Promise<void> => {
+    setLoading(true);
+    const res = await signInWithGoogle();
+    setLoading(false);
+    if (!res.success) {
+      showError(res.msg ?? "Google sign-in failed", "Sign Up Error");
+    }
+  };
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current || !nameRef.current) {
@@ -189,6 +234,19 @@ const SignUp: React.FC = () => {
 
           {/* Button */}
           <Button title={'Sign Up'} loading={loading} onPress={onSubmit} />
+
+          {/* Divider */}
+          <DividerRow>
+            <DividerLine />
+            <DividerText>or</DividerText>
+            <DividerLine />
+          </DividerRow>
+
+          {/* Google Sign In */}
+          <GoogleButton onPress={onGoogleSignIn} disabled={loading}>
+            <AntDesign name="google" size={20} color="#EA4335" />
+            <GoogleButtonText>Continue with Google</GoogleButtonText>
+          </GoogleButton>
         </FormContainer>
 
         {/* Footer */}

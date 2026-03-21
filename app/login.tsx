@@ -13,6 +13,8 @@ import Icon from "../assets/icons/index";
 import { supabase } from "../lib/supabase";
 import PrimaryModal from "../components/PrimaryModal";
 import { useModal } from "../hooks/useModal";
+import { signInWithGoogle } from "../services/authService";
+import { AntDesign } from "@expo/vector-icons";
 
 // Styled Components
 const Container = styled.View`
@@ -61,6 +63,41 @@ const SignUpLink = styled(FooterText)`
   font-weight: ${theme.fonts.semibold};
 `;
 
+const DividerRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+`;
+
+const DividerLine = styled.View`
+  flex: 1;
+  height: 1px;
+  background-color: ${theme.colors.gray};
+`;
+
+const DividerText = styled.Text`
+  font-size: ${hp(1.5)}px;
+  color: ${theme.colors.textLight};
+`;
+
+const GoogleButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-width: 1px;
+  border-color: ${theme.colors.gray};
+  border-radius: ${theme.radius.xl}px;
+  padding: ${hp(1.5)}px ${wp(4)}px;
+  background-color: #ffffff;
+`;
+
+const GoogleButtonText = styled.Text`
+  font-size: ${hp(1.8)}px;
+  color: ${theme.colors.text};
+  font-weight: ${theme.fonts.semibold};
+`;
+
 const Login: React.FC = () => {
   const router = useRouter();
   const emailRef = useRef<string>("");
@@ -68,6 +105,15 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { modalRef, showError } = useModal();
+
+  const onGoogleSignIn = async (): Promise<void> => {
+    setLoading(true);
+    const res = await signInWithGoogle();
+    setLoading(false);
+    if (!res.success) {
+      showError(res.msg ?? "Google sign-in failed", "Login Error");
+    }
+  };
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
@@ -137,6 +183,19 @@ const Login: React.FC = () => {
 
           {/* Login Button */}
           <Button title={'Login'} loading={loading} onPress={onSubmit} />
+
+          {/* Divider */}
+          <DividerRow>
+            <DividerLine />
+            <DividerText>or</DividerText>
+            <DividerLine />
+          </DividerRow>
+
+          {/* Google Sign In */}
+          <GoogleButton onPress={onGoogleSignIn} disabled={loading}>
+            <AntDesign name="google" size={20} color="#EA4335" />
+            <GoogleButtonText>Continue with Google</GoogleButtonText>
+          </GoogleButton>
         </FormContainer>
 
         {/* Footer */}
