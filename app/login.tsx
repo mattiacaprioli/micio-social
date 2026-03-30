@@ -177,9 +177,9 @@ const Login: React.FC = () => {
               </TouchableOpacity>
             }
           />
-          <ForgotPasswordText>
-            Forgot Password?
-          </ForgotPasswordText>
+          <Pressable onPress={() => router.push("/forgotPassword" as any)}>
+            <ForgotPasswordText>Forgot Password?</ForgotPasswordText>
+          </Pressable>
 
           {/* Login Button */}
           <Button title={'Login'} loading={loading} onPress={onSubmit} />

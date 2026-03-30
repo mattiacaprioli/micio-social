@@ -123,8 +123,9 @@ const SignUp: React.FC = () => {
 
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
+      const firstFailing = passwordValidation.rules.find((r) => !r.passed);
       showError(
-        passwordValidation.message || "Password does not meet security requirements",
+        firstFailing?.label || "Password does not meet security requirements",
         "Invalid Password"
       );
       return;
@@ -227,7 +228,7 @@ const SignUp: React.FC = () => {
               >
                 {validatePasswordStrength(password).isValid
                   ? "✓ Valid password"
-                  : validatePasswordStrength(password).message}
+                  : validatePasswordStrength(password).rules.find((r) => !r.passed)?.label}
               </Text>
             </View>
           )}

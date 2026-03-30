@@ -9,7 +9,8 @@ import { getUserData } from "../services/userService";
 //import '../lib/i18n'; // Importa prima il setup di i18n
 import i18n from '../lib/i18n';
 import { User } from '@supabase/supabase-js';
-import { Session } from '@supabase/supabase-js';
+import { Session, AuthChangeEvent } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 import { UserRow } from "../src/types/supabase";
 
 // Ignora alcuni warning specifici
@@ -42,20 +43,65 @@ const MainLayout: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
-      if (session) {
-        setAuth(session.user);
-        updateUserData(session.user, session.user.email);
-        router.replace("/(tabs)/home" as any);
-      } else {
-        setAuth(null);
-        router.replace("/welcome" as any);
+  const handleDeepLink = async (url: string) => {
+    // PKCE flow: URL contains ?code=XXXX
+    try {
+      const parsed = new URL(url);
+      const code = parsed.searchParams.get("code");
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+        return;
       }
+
+      // Implicit flow: URL contains #access_token=XXX&type=recovery
+      const fragment = url.split("#")[1];
+      if (fragment) {
+        const params = new URLSearchParams(fragment);
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+        const type = params.get("type");
+        if (accessToken && refreshToken && type === "recovery") {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+    } catch {
+      // URL parsing failed — not a recovery link
+    }
+  };
+
+  useEffect(() => {
+    // Handle deep link if app was opened from a closed state
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
     });
 
-    // Cleanup della sottoscrizione
+    // Handle deep link while app is in foreground/background
+    const linkingSub = Linking.addEventListener("url", ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    const { data } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        if (event === "PASSWORD_RECOVERY") {
+          router.replace("/resetPassword" as any);
+          return;
+        }
+        if (session) {
+          setAuth(session.user);
+          updateUserData(session.user, session.user.email);
+          router.replace("/(tabs)/home" as any);
+        } else {
+          setAuth(null);
+          router.replace("/welcome" as any);
+        }
+      }
+    );
+
     return () => {
+      linkingSub.remove();
       data.subscription.unsubscribe();
     };
   }, []);

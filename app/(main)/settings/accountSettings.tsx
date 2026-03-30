@@ -3,8 +3,10 @@ import {
   Switch,
   ScrollView,
   View,
-  Text,
   TouchableOpacity,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from "react-native";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
@@ -19,10 +21,18 @@ import { useAuth } from "../../../context/AuthContext";
 import {
   changePassword,
   validatePasswordStrength,
+  PasswordStrengthResult,
 } from "../../../services/authService";
 import { supabase } from "../../../lib/supabase";
 import PrimaryModal from "../../../components/PrimaryModal";
 import { useModal } from "../../../hooks/useModal";
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Interfacce per i tipi
 interface PersonalInfo {
@@ -84,6 +94,61 @@ const LanguageText = styled.Text`
   font-size: ${hp(1.8)}px;
 `;
 
+const PasswordCard = styled.View`
+  background-color: ${(props) => props.theme.colors.card};
+  border-radius: ${(props) => props.theme.radius.lg}px;
+  padding: ${hp(2)}px;
+  gap: ${hp(1.5)}px;
+`;
+
+const StrengthBarContainer = styled.View`
+  flex-direction: row;
+  gap: ${wp(1)}px;
+  margin-top: ${hp(0.5)}px;
+`;
+
+const StrengthBarSegment = styled.View<{ $active: boolean; $color: string }>`
+  flex: 1;
+  height: ${hp(0.5)}px;
+  border-radius: ${hp(0.25)}px;
+  background-color: ${(props) =>
+    props.$active ? props.$color : props.theme.colors.gray};
+`;
+
+const StrengthLabel = styled.Text<{ $color: string }>`
+  font-size: ${hp(1.4)}px;
+  font-weight: 600;
+  color: ${(props) => props.$color};
+  margin-top: ${hp(0.3)}px;
+`;
+
+const RequirementRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: ${wp(2)}px;
+  padding-top: ${hp(0.3)}px;
+  padding-bottom: ${hp(0.3)}px;
+`;
+
+const RequirementText = styled.Text<{ $passed: boolean }>`
+  font-size: ${hp(1.5)}px;
+  color: ${(props) =>
+    props.$passed ? "#22c55e" : props.theme.colors.textLight};
+`;
+
+const MatchIndicator = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: ${wp(1.5)}px;
+`;
+
+const MatchText = styled.Text<{ $matches: boolean }>`
+  font-size: ${hp(1.5)}px;
+  font-weight: 600;
+  color: ${(props) =>
+    props.$matches ? "#22c55e" : props.theme.colors.rose};
+`;
+
 const AccountSettings: React.FC = () => {
   const { user } = useAuth();
   const { modalRef, showError, showSuccess, showConfirm } = useModal();
@@ -106,6 +171,72 @@ const AccountSettings: React.FC = () => {
     useState<boolean>(false);
   const theme = useStyledTheme();
 
+  const [passwordValidation, setPasswordValidation] =
+    useState<PasswordStrengthResult | null>(null);
+
+  useEffect(() => {
+    if (password.new.length > 0) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setPasswordValidation(validatePasswordStrength(password.new));
+    } else {
+      setPasswordValidation(null);
+    }
+  }, [password.new]);
+
+  const passwordsMatch =
+    password.confirm.length > 0 && password.new === password.confirm;
+
+  const canSubmit =
+    password.current.length > 0 &&
+    passwordValidation?.isValid === true &&
+    passwordsMatch &&
+    password.current !== password.new;
+
+  const getStrengthColor = (strength: string): string => {
+    switch (strength) {
+      case "weak":
+        return theme.colors.rose;
+      case "fair":
+        return theme.colors.primary;
+      case "strong":
+        return "#f59e0b";
+      case "very_strong":
+        return "#22c55e";
+      default:
+        return theme.colors.gray;
+    }
+  };
+
+  const getStrengthLabel = (strength: string): string => {
+    switch (strength) {
+      case "weak":
+        return "Weak";
+      case "fair":
+        return "Fair";
+      case "strong":
+        return "Strong";
+      case "very_strong":
+        return "Very Strong";
+      default:
+        return "";
+    }
+  };
+
+  const getActiveSegments = (strength: string): number => {
+    switch (strength) {
+      case "weak":
+        return 1;
+      case "fair":
+        return 2;
+      case "strong":
+        return 3;
+      case "very_strong":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
   const handleUpdatePersonalInfo = (): void => {
     if (!personalInfo.name || !personalInfo.email) {
       showError("All fields are required", "Error");
@@ -116,36 +247,8 @@ const AccountSettings: React.FC = () => {
   };
 
   const handleChangePassword = async (): Promise<void> => {
-    if (!password.current || !password.new || !password.confirm) {
-      showError("All fields are required", "Error");
-      return;
-    }
-
-    if (password.new !== password.confirm) {
-      showError("Passwords do not match", "Error");
-      return;
-    }
-
-    if (!user?.email) {
-      showError("User not authenticated", "Error");
-      return;
-    }
-
-    const passwordValidation = validatePasswordStrength(password.new);
-    if (!passwordValidation.isValid) {
-      showError(
-        passwordValidation.message ||
-          "Password does not meet security requirements",
-        "Invalid Password"
-      );
-      return;
-    }
-
-    if (password.current === password.new) {
-      showError(
-        "New password must be different from current password",
-        "Error"
-      );
+    if (!canSubmit || !user?.email) {
+      showError("Please fill all fields correctly", "Error");
       return;
     }
 
@@ -161,12 +264,7 @@ const AccountSettings: React.FC = () => {
       setLoading(false);
 
       if (result.success) {
-        setPassword({
-          current: "",
-          new: "",
-          confirm: "",
-        });
-
+        setPassword({ current: "", new: "", confirm: "" });
         showSuccess(
           "Password changed successfully. For security reasons, you will be logged out and need to sign in again.",
           "Password Updated",
@@ -251,98 +349,166 @@ const AccountSettings: React.FC = () => {
 
             <Form>
               <SectionTitle>Change Password</SectionTitle>
-              <Input
-                placeholder="Current Password"
-                secureTextEntry={!showCurrentPassword}
-                value={password.current}
-                onChangeText={(text) =>
-                  setPassword({ ...password, current: text })
-                }
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                  >
+              <PasswordCard>
+                <Input
+                  placeholder="Current Password"
+                  secureTextEntry={!showCurrentPassword}
+                  value={password.current}
+                  onChangeText={(text) =>
+                    setPassword({ ...password, current: text })
+                  }
+                  icon={
                     <Icon
-                      name={showCurrentPassword ? "eyeOff" : "eye"}
-                      size={22}
+                      name="lock"
+                      size={hp(2.2)}
                       color={theme.colors.textLight}
                     />
-                  </TouchableOpacity>
-                }
-              />
-              <Input
-                placeholder="New Password"
-                secureTextEntry={!showNewPassword}
-                value={password.new}
-                onChangeText={(text) => setPassword({ ...password, new: text })}
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowNewPassword(!showNewPassword)}
-                  >
+                  }
+                  rightIcon={
+                    <TouchableOpacity
+                      onPress={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                    >
+                      <Icon
+                        name={showCurrentPassword ? "eyeOff" : "eye"}
+                        size={hp(2.2)}
+                        color={theme.colors.textLight}
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+
+                <Input
+                  placeholder="New Password"
+                  secureTextEntry={!showNewPassword}
+                  value={password.new}
+                  onChangeText={(text) =>
+                    setPassword({ ...password, new: text })
+                  }
+                  icon={
                     <Icon
-                      name={showNewPassword ? "eyeOff" : "eye"}
-                      size={22}
+                      name="lock"
+                      size={hp(2.2)}
                       color={theme.colors.textLight}
                     />
-                  </TouchableOpacity>
-                }
-              />
-              <Input
-                placeholder="Confirm New Password"
-                secureTextEntry={!showConfirmPassword}
-                value={password.confirm}
-                onChangeText={(text) =>
-                  setPassword({ ...password, confirm: text })
-                }
-                rightIcon={
-                  <TouchableOpacity
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
+                  }
+                  rightIcon={
+                    <TouchableOpacity
+                      onPress={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      <Icon
+                        name={showNewPassword ? "eyeOff" : "eye"}
+                        size={hp(2.2)}
+                        color={theme.colors.textLight}
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+
+                {passwordValidation && (
+                  <View>
+                    <StrengthBarContainer>
+                      {[1, 2, 3, 4].map((segment) => (
+                        <StrengthBarSegment
+                          key={segment}
+                          $active={
+                            segment <=
+                            getActiveSegments(passwordValidation.strength)
+                          }
+                          $color={getStrengthColor(
+                            passwordValidation.strength
+                          )}
+                        />
+                      ))}
+                    </StrengthBarContainer>
+                    <StrengthLabel
+                      $color={getStrengthColor(passwordValidation.strength)}
+                    >
+                      {getStrengthLabel(passwordValidation.strength)}
+                    </StrengthLabel>
+
+                    {passwordValidation.rules.map((rule) => (
+                      <RequirementRow key={rule.key}>
+                        <Icon
+                          name={rule.passed ? "checkCircle" : "xCircle"}
+                          size={hp(1.8)}
+                          color={rule.passed ? "#22c55e" : theme.colors.rose}
+                        />
+                        <RequirementText $passed={rule.passed}>
+                          {rule.label}
+                        </RequirementText>
+                      </RequirementRow>
+                    ))}
+                  </View>
+                )}
+
+                <Input
+                  placeholder="Confirm New Password"
+                  secureTextEntry={!showConfirmPassword}
+                  value={password.confirm}
+                  onChangeText={(text) =>
+                    setPassword({ ...password, confirm: text })
+                  }
+                  icon={
                     <Icon
-                      name={showConfirmPassword ? "eyeOff" : "eye"}
-                      size={22}
+                      name="lock"
+                      size={hp(2.2)}
                       color={theme.colors.textLight}
                     />
-                  </TouchableOpacity>
-                }
-              />
-              {password.new.length > 0 && (
-                <View
-                  style={{
-                    marginTop: 10,
-                    padding: 10,
-                    backgroundColor: theme.colors.gray,
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: theme.colors.textDark,
-                      marginBottom: 5,
-                    }}
-                  >
-                    Password requirements:
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: validatePasswordStrength(password.new).isValid
-                        ? theme.colors.primary
-                        : theme.colors.rose,
-                    }}
-                  >
-                    {validatePasswordStrength(password.new).isValid
-                      ? "✓ Valid password"
-                      : validatePasswordStrength(password.new).message}
-                  </Text>
-                </View>
-              )}
+                  }
+                  rightIcon={
+                    <TouchableOpacity
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      <Icon
+                        name={showConfirmPassword ? "eyeOff" : "eye"}
+                        size={hp(2.2)}
+                        color={theme.colors.textLight}
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+
+                {password.confirm.length > 0 && (
+                  <MatchIndicator>
+                    <Icon
+                      name={passwordsMatch ? "checkCircle" : "alertCircle"}
+                      size={hp(1.8)}
+                      color={passwordsMatch ? "#22c55e" : theme.colors.rose}
+                    />
+                    <MatchText $matches={passwordsMatch}>
+                      {passwordsMatch
+                        ? "Passwords match"
+                        : "Passwords do not match"}
+                    </MatchText>
+                  </MatchIndicator>
+                )}
+
+                {password.current.length > 0 &&
+                  password.new.length > 0 &&
+                  password.current === password.new && (
+                    <MatchIndicator>
+                      <Icon
+                        name="alertCircle"
+                        size={hp(1.8)}
+                        color={theme.colors.rose}
+                      />
+                      <MatchText $matches={false}>
+                        New password must be different from current
+                      </MatchText>
+                    </MatchIndicator>
+                  )}
+              </PasswordCard>
+
               <Button
                 title="Change Password"
                 loading={loading}
                 onPress={handleChangePassword}
+                disabled={!canSubmit}
+                hasShadow={canSubmit}
               />
             </Form>
 

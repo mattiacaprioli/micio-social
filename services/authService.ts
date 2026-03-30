@@ -14,6 +14,19 @@ export interface VerifyPasswordData {
   password: string;
 }
 
+export interface PasswordRule {
+  key: string;
+  label: string;
+  passed: boolean;
+}
+
+export interface PasswordStrengthResult {
+  isValid: boolean;
+  rules: PasswordRule[];
+  score: number;
+  strength: "none" | "weak" | "fair" | "strong" | "very_strong";
+}
+
 export const verifyCurrentPassword = async (
   data: VerifyPasswordData
 ): Promise<ApiResponse<boolean>> => {
@@ -47,9 +60,10 @@ export const changePassword = async (
   try {
     const passwordValidation = validatePasswordStrength(data.newPassword);
     if (!passwordValidation.isValid) {
+      const failingRules = passwordValidation.rules.filter(r => !r.passed);
       return {
         success: false,
-        msg: passwordValidation.message || "Invalid password"
+        msg: failingRules.map(r => r.label).join(", "),
       };
     }
 
@@ -95,57 +109,70 @@ export const changePassword = async (
   }
 };
 
-export const validatePasswordStrength = (password: string): { isValid: boolean; message?: string } => {
-  if (password.length < 8) {
-    return {
-      isValid: false,
-      message: "Password must be at least 8 characters long"
-    };
-  }
+export const validatePasswordStrength = (password: string): PasswordStrengthResult => {
+  const rules: PasswordRule[] = [
+    {
+      key: "minLength",
+      label: "At least 8 characters",
+      passed: password.length >= 8,
+    },
+    {
+      key: "maxLength",
+      label: "No more than 128 characters",
+      passed: password.length <= 128,
+    },
+    {
+      key: "lowercase",
+      label: "One lowercase letter",
+      passed: /[a-z]/.test(password),
+    },
+    {
+      key: "uppercase",
+      label: "One uppercase letter",
+      passed: /[A-Z]/.test(password),
+    },
+    {
+      key: "number",
+      label: "One number",
+      passed: /\d/.test(password),
+    },
+    {
+      key: "special",
+      label: "One special character (!@#$%...)",
+      passed: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    },
+    {
+      key: "noSpaces",
+      label: "No spaces",
+      passed: !/\s/.test(password),
+    },
+  ];
 
-  if (password.length > 128) {
-    return {
-      isValid: false,
-      message: "Password cannot exceed 128 characters"
-    };
-  }
+  const score = rules.filter((r) => r.passed).length;
+  const isValid = rules.every((r) => r.passed);
 
-  if (!/[a-z]/.test(password)) {
-    return {
-      isValid: false,
-      message: "Password must contain at least one lowercase letter"
-    };
-  }
+  let strength: PasswordStrengthResult["strength"] = "none";
+  if (score >= 7) strength = "very_strong";
+  else if (score >= 5) strength = "strong";
+  else if (score >= 3) strength = "fair";
+  else if (score >= 1) strength = "weak";
 
-  if (!/[A-Z]/.test(password)) {
-    return {
-      isValid: false,
-      message: "Password must contain at least one uppercase letter"
-    };
-  }
+  return { isValid, rules, score, strength };
+};
 
-  if (!/\d/.test(password)) {
-    return {
-      isValid: false,
-      message: "Password must contain at least one number"
-    };
+export const sendPasswordResetEmail = async (
+  email: string
+): Promise<ApiResponse<null>> => {
+  try {
+    const redirectTo = Linking.createURL("reset-password");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+    if (error) return { success: false, msg: error.message };
+    return { success: true, data: null };
+  } catch (err) {
+    return { success: false, msg: (err as Error).message };
   }
-
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return {
-      isValid: false,
-      message: "Password must contain at least one special character (!@#$%^&*...)"
-    };
-  }
-
-  if (/\s/.test(password)) {
-    return {
-      isValid: false,
-      message: "Password cannot contain spaces"
-    };
-  }
-
-  return { isValid: true };
 };
 
 export const signInWithGoogle = async (): Promise<ApiResponse<null>> => {

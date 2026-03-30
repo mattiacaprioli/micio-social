@@ -1,11 +1,9 @@
 # node_modules viene reinstallato da EAS Build tramite yarn install
 node_modules
 
-# Ignora file di build
-android/.gradle
-android/app/build
-ios/build
-ios/Pods
+# Ignora cartelle native — EAS le rigenera via prebuild
+android/
+ios/
 
 # Ignora file di cache
 .git
