@@ -14,6 +14,7 @@ import Icon from "../../../assets/icons";
 import { supabase } from "../../../lib/supabase";
 import PrimaryModal from "../../../components/PrimaryModal";
 import { useModal } from "../../../hooks/useModal";
+import { useTranslation } from "react-i18next";
 
 // Interfacce per i tipi
 interface SettingsOption {
@@ -98,19 +99,20 @@ const VersionText = styled.Text`
 const Settings: React.FC = () => {
   const router = useRouter();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
   const { modalRef, showError, showConfirm } = useModal();
 
   const onLogout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      showError("errorSigningOut", "logout");
+      showError(t('errorSigningOut'), t('logout'));
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     // show confirm modal
     showConfirm(
-      "Are you sure you want to log out?",
+      t('areYouSureLogout'),
       () => onLogout()
     );
   };
@@ -133,12 +135,13 @@ const Settings: React.FC = () => {
     }
   ];
 
+
   return (
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         {/* Header fisso */}
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title={"settings"} />
+          <Header title={t('settings')} />
         </View>
 
         <ScreenContainer>
@@ -148,12 +151,12 @@ const Settings: React.FC = () => {
               key={index}
               onPress={option.action}
             >
-              <ItemText>{option.label}</ItemText>
+              <ItemText>{t(option.label as any)}</ItemText>
               <Icon name={option.icon} size={20} color={theme.colors.textDark} />
             </Item>
           ))}
           <Item onPress={handleLogout}>
-            <ItemTextLogout>{"logout"}</ItemTextLogout>
+            <ItemTextLogout>{t('logout')}</ItemTextLogout>
             <Icon name="logout" size={20} color={theme.colors.rose} />
           </Item>
         </Card>
@@ -162,8 +165,8 @@ const Settings: React.FC = () => {
           source={require("../../../assets/images/welcome.png")}
         /> */}
         <View style={{flex: 1, justifyContent: 'flex-end'}}>
-          <Title>{"micioSocial"}</Title>
-          <VersionText>{"appVersion"} 1.0.0</VersionText>
+          <Title>{t('micioSocial')}</Title>
+          <VersionText>{t('appVersion')} 1.0.0</VersionText>
         </View>
 
         </ScreenContainer>

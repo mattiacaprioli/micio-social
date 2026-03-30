@@ -21,6 +21,7 @@ import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
 import ExploreSearchInput from "../../components/ExploreSearchInput";
+import { useTranslation } from "react-i18next";
 
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
@@ -179,6 +180,7 @@ const Explore: React.FC = () => {
   const { homeRefreshRef } = useRefresh();
   const router = useRouter();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -504,11 +506,11 @@ const Explore: React.FC = () => {
     <ThemeWrapper>
       <Container>
         {/* Search Input */}
-        <ExploreSearchInput placeholder="Search users..." />
+        <ExploreSearchInput placeholder={t('searchUsersPlaceholder')} />
 
         {/* Categorie */}
         <CategoriesContainer>
-          <CategoryLabel>categories</CategoryLabel>
+          <CategoryLabel>{t('categories')}</CategoryLabel>
           {/* Messaggio rimosso perché la colonna 'category' ora esiste nel database */}
           <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
             <CategoryButton
@@ -524,7 +526,7 @@ const Explore: React.FC = () => {
               }}
             >
               <CategoryText isActive={selectedCategory === undefined}>
-                all
+                {t('all')}
               </CategoryText>
             </CategoryButton>
             {categories.map((category) => (
@@ -603,18 +605,18 @@ const Explore: React.FC = () => {
                       style={{ marginBottom: hp(2), opacity: 0.5 }}
                     />
                     <EmptyStateTitle>
-                      {selectedCategory ? "No posts in this category" : "No posts yet"}
+                      {selectedCategory ? t('noPostsInCategory') : t('noPosts')}
                     </EmptyStateTitle>
                     <EmptyStateSubtitle>
                       {selectedCategory
-                        ? `There are no posts in the "${categories.find(c => c.id === selectedCategory)?.label || selectedCategory}" category yet.`
-                        : "Be the first to share something! Create a new post to get the conversation started."
+                        ? t('noPostsInCategoryMessage')
+                        : t('beFirstToShare')
                       }
                     </EmptyStateSubtitle>
                   </EmptyStateContainer>
                 ) : (
                   <View style={{ marginVertical: 30 }}>
-                    <NoPostText>No more posts</NoPostText>
+                    <NoPostText>{t('noMorePosts')}</NoPostText>
                   </View>
                 )
               }

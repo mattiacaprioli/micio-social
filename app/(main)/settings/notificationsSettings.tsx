@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Switch, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../../components/ThemeWrapper";
@@ -66,6 +67,7 @@ const NotificationsSettings: React.FC = () => {
   const [likesEnabled, setLikesEnabled] = useState<boolean>(true);
   const [commentsEnabled, setCommentsEnabled] = useState<boolean>(true);
   const { isDarkMode } = useTheme();
+  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const toggleFollowers = (): void =>
@@ -77,17 +79,17 @@ const NotificationsSettings: React.FC = () => {
 
   const settingsOptions: NotificationOption[] = [
     {
-      label: "New Followers",
+      label: t('newFollowers'),
       value: followersEnabled,
       toggle: toggleFollowers,
     },
     {
-      label: "Likes",
+      label: t('likes'),
       value: likesEnabled,
       toggle: toggleLikes,
     },
     {
-      label: "Comments",
+      label: t('comments'),
       value: commentsEnabled,
       toggle: toggleComments,
     },
@@ -105,7 +107,7 @@ const NotificationsSettings: React.FC = () => {
             zIndex: 1000,
           }}
         >
-          <Header title="Notifications" />
+          <Header title={t('notifications')} />
         </View>
         <Container>
           <Card>

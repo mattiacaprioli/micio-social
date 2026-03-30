@@ -14,6 +14,7 @@ import Avatar from "../../components/Avatar";
 import { wp, hp } from "../../helpers/common";
 import { useTheme } from "../../context/ThemeContext";
 import Header from "../../components/Header";
+import { useTranslation } from "react-i18next";
 
 // Interfacce per i tipi
 interface RouteParams {
@@ -67,6 +68,7 @@ const Followers: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
 
   const fetchFollowers = async (): Promise<void> => {
     if (targetUserId) {
@@ -109,7 +111,7 @@ const Followers: React.FC = () => {
       <View style={{ flex: 1 }}>
         {/* Header fisso */}
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title="Follower" />
+          <Header title={t('followers')} />
         </View>
 
         <Container>
@@ -126,7 +128,7 @@ const Followers: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyListContainer>
-              <EmptyListText>No followers found</EmptyListText>
+              <EmptyListText>{t('noFollowersFound')}</EmptyListText>
             </EmptyListContainer>
           }
         />

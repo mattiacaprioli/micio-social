@@ -17,7 +17,9 @@ import Button from "../../../components/Button";
 import Icon from "../../../assets/icons";
 import { wp, hp } from "../../../helpers/common";
 import { useTheme } from "../../../context/ThemeContext";
+import { useLanguage } from "../../../context/LanguageContext";
 import { useAuth } from "../../../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import {
   changePassword,
   validatePasswordStrength,
@@ -35,11 +37,6 @@ if (
 }
 
 // Interfacce per i tipi
-interface PersonalInfo {
-  name: string;
-  email: string;
-}
-
 interface PasswordData {
   current: string;
   new: string;
@@ -152,10 +149,6 @@ const MatchText = styled.Text<{ $matches: boolean }>`
 const AccountSettings: React.FC = () => {
   const { user } = useAuth();
   const { modalRef, showError, showSuccess, showConfirm } = useModal();
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    name: "",
-    email: "",
-  });
   const [password, setPassword] = useState<PasswordData>({
     current: "",
     new: "",
@@ -163,7 +156,8 @@ const AccountSettings: React.FC = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const { isDarkMode, toggleTheme } = useTheme();
-  const [language, setLanguage] = useState<string>("Italiano");
+  const { language, toggleLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [showCurrentPassword, setShowCurrentPassword] =
     useState<boolean>(false);
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
@@ -210,13 +204,13 @@ const AccountSettings: React.FC = () => {
   const getStrengthLabel = (strength: string): string => {
     switch (strength) {
       case "weak":
-        return "Weak";
+        return t('weak');
       case "fair":
-        return "Fair";
+        return t('fair');
       case "strong":
-        return "Strong";
+        return t('strong');
       case "very_strong":
-        return "Very Strong";
+        return t('veryStrong');
       default:
         return "";
     }
@@ -237,18 +231,9 @@ const AccountSettings: React.FC = () => {
     }
   };
 
-  const handleUpdatePersonalInfo = (): void => {
-    if (!personalInfo.name || !personalInfo.email) {
-      showError("All fields are required", "Error");
-      return;
-    }
-    console.log("Updated personal information:", personalInfo);
-    showSuccess("Personal information updated", "Success");
-  };
-
   const handleChangePassword = async (): Promise<void> => {
     if (!canSubmit || !user?.email) {
-      showError("Please fill all fields correctly", "Error");
+      showError(t('pleaseFillAllFields'), t('error'));
       return;
     }
 
@@ -266,12 +251,12 @@ const AccountSettings: React.FC = () => {
       if (result.success) {
         setPassword({ current: "", new: "", confirm: "" });
         showSuccess(
-          "Password changed successfully. For security reasons, you will be logged out and need to sign in again.",
-          "Password Updated",
+          t('passwordChangedSuccess'),
+          t('passwordUpdated'),
           handleLogoutAfterPasswordChange
         );
       } else {
-        showError(result.msg || "Error changing password", "Error");
+        showError(result.msg || t('changePassword'), t('error'));
       }
     } catch (error) {
       setLoading(false);
@@ -285,7 +270,7 @@ const AccountSettings: React.FC = () => {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
-        showError("Error during logout", "Error");
+        showError(t('errorSigningOut'), t('error'));
       }
     } catch (error) {
       console.error("Logout error:", error);
@@ -295,7 +280,7 @@ const AccountSettings: React.FC = () => {
 
   const handleDeactivateAccount = (): void => {
     showConfirm(
-      "Are you sure you want to deactivate your account? This action cannot be undone.",
+      t('confirmDeactivateAccount'),
       () => console.log("Account deactivated")
     );
   };
@@ -303,16 +288,9 @@ const AccountSettings: React.FC = () => {
   const handleToggleTheme = (): void => {
     toggleTheme();
     showSuccess(
-      `Theme set to ${!isDarkMode ? "dark" : "light"}`,
-      "Theme Changed"
+      t('themeChanged'),
+      t('themeChanged')
     );
-  };
-
-  const toggleLanguage = (): void => {
-    const newLanguage = language === "English" ? "Italiano" : "English";
-    setLanguage(newLanguage);
-    showSuccess(`Language set to ${newLanguage}`, "Language Changed");
-    console.log("Language changed to:", newLanguage);
   };
 
   return (
@@ -327,7 +305,7 @@ const AccountSettings: React.FC = () => {
             zIndex: 1000,
           }}
         >
-          <Header title="Account Settings" />
+          <Header title={t('accountSettings')} />
         </View>
         <ScrollView style={{ flex: 1 }}>
           <Container>
@@ -348,10 +326,10 @@ const AccountSettings: React.FC = () => {
             </Form> */}
 
             <Form>
-              <SectionTitle>Change Password</SectionTitle>
+              <SectionTitle>{t('changePassword')}</SectionTitle>
               <PasswordCard>
                 <Input
-                  placeholder="Current Password"
+                  placeholder={t('currentPassword')}
                   secureTextEntry={!showCurrentPassword}
                   value={password.current}
                   onChangeText={(text) =>
@@ -380,7 +358,7 @@ const AccountSettings: React.FC = () => {
                 />
 
                 <Input
-                  placeholder="New Password"
+                  placeholder={t('newPassword')}
                   secureTextEntry={!showNewPassword}
                   value={password.new}
                   onChangeText={(text) =>
@@ -444,7 +422,7 @@ const AccountSettings: React.FC = () => {
                 )}
 
                 <Input
-                  placeholder="Confirm New Password"
+                  placeholder={t('confirmNewPassword')}
                   secureTextEntry={!showConfirmPassword}
                   value={password.confirm}
                   onChangeText={(text) =>
@@ -481,8 +459,8 @@ const AccountSettings: React.FC = () => {
                     />
                     <MatchText $matches={passwordsMatch}>
                       {passwordsMatch
-                        ? "Passwords match"
-                        : "Passwords do not match"}
+                        ? t('passwordsMatch')
+                        : t('passwordsDoNotMatch')}
                     </MatchText>
                   </MatchIndicator>
                 )}
@@ -497,14 +475,14 @@ const AccountSettings: React.FC = () => {
                         color={theme.colors.rose}
                       />
                       <MatchText $matches={false}>
-                        New password must be different from current
+                        {t('passwordMustBeDifferent')}
                       </MatchText>
                     </MatchIndicator>
                   )}
               </PasswordCard>
 
               <Button
-                title="Change Password"
+                title={t('changePassword')}
                 loading={loading}
                 onPress={handleChangePassword}
                 disabled={!canSubmit}
@@ -513,9 +491,9 @@ const AccountSettings: React.FC = () => {
             </Form>
 
             <Form>
-              <SectionTitle>App Settings</SectionTitle>
+              <SectionTitle>{t('appSettings')}</SectionTitle>
               <SettingItem>
-                <SettingLabel>Dark Theme</SettingLabel>
+                <SettingLabel>{t('darkTheme')}</SettingLabel>
                 <Switch
                   trackColor={{
                     false: theme.colors.dark,
@@ -528,21 +506,18 @@ const AccountSettings: React.FC = () => {
                   value={isDarkMode}
                 />
               </SettingItem>
-              {/* TODO: fix change language */}
-              {/* <SettingItem>
-              <SettingLabel>Language</SettingLabel>
-              <LanguageButton
-                onPress={toggleLanguage}
-              >
-                <LanguageText>{language}</LanguageText>
-              </LanguageButton>
-            </SettingItem> */}
+              <SettingItem>
+                <SettingLabel>{t('language')}</SettingLabel>
+                <LanguageButton onPress={toggleLanguage}>
+                  <LanguageText>{language === "en" ? "English" : "Italiano"}</LanguageText>
+                </LanguageButton>
+              </SettingItem>
             </Form>
 
             <Form>
-              <SectionTitle>Deactivate Account</SectionTitle>
+              <SectionTitle>{t('deactivateAccount')}</SectionTitle>
               <Button
-                title="Deactivate Account"
+                title={t('deactivateAccount')}
                 buttonStyle={{ backgroundColor: theme.colors.rose }}
                 onPress={handleDeactivateAccount}
               />

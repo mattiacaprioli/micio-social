@@ -35,6 +35,7 @@ import { Pet } from "../../services/types";
 import PetCard from "../../components/pets/PetCard";
 import PrimaryModal from "../../components/PrimaryModal";
 import { useModal } from "../../hooks/useModal";
+import { useTranslation } from "react-i18next";
 
 // Styled Components
 
@@ -249,6 +250,7 @@ let limit = 0;
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [pets, setPets] = useState<Pet[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -358,7 +360,7 @@ const Profile: React.FC = () => {
       if (posts.length === 0) {
         return (
           <View style={{ marginVertical: 80 }}>
-            <NoPostText>No posts yet</NoPostText>
+            <NoPostText>{t('noPosts')}</NoPostText>
           </View>
         );
       }
@@ -368,12 +370,12 @@ const Profile: React.FC = () => {
         <View>
           {pets.length === 0 && (
             <View style={{ marginVertical: 80 }}>
-              <NoPostText>No cats yet</NoPostText>
+              <NoPostText>{t('noCatsYet')}</NoPostText>
             </View>
           )}
           <AddCatButton onPress={handleAddCat}>
             <Icon name="plus" size={hp(2)} color="white" />
-            <AddCatButtonText>Add Cat</AddCatButtonText>
+            <AddCatButtonText>{t('addCat')}</AddCatButtonText>
           </AddCatButton>
         </View>
       );
@@ -399,7 +401,7 @@ const Profile: React.FC = () => {
       <View style={{ flex: 1 }}>
         {/* Header fisso */}
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title={user?.name || "profile"} mb={30} showBackButton={false} rightButton={settingsButton} />
+          <Header title={user?.name || t('profile')} mb={30} showBackButton={false} rightButton={settingsButton} />
         </View>
 
         {/* Contenuto scrollabile */}
@@ -527,6 +529,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const [postsCount, setPostsCount] = useState<number>(0);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
   const { modalRef, showError } = useModal();
 
   useEffect(() => {
@@ -554,10 +557,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (supported) {
         await Linking.openURL(formattedUrl);
       } else {
-        showError("Cannot open this URL", "Error");
+        showError(t('cannotOpenURL'), t('error'));
       }
     } catch (error) {
-      showError("Cannot open this URL", "Error");
+      showError(t('cannotOpenURL'), t('error'));
     }
   };
 
@@ -633,17 +636,17 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       <ModernStatsContainer>
         <ModernStatItemNonClickable>
           <ModernStatNumber>{postsCount}</ModernStatNumber>
-          <ModernStatLabel>Posts</ModernStatLabel>
+          <ModernStatLabel>{t('posts')}</ModernStatLabel>
         </ModernStatItemNonClickable>
 
         <ModernStatItem onPress={() => router.push({ pathname: "/followers", params: { userId: user?.id } })}>
           <ModernStatNumber>{followersCount}</ModernStatNumber>
-          <ModernStatLabel>Followers</ModernStatLabel>
+          <ModernStatLabel>{t('followers')}</ModernStatLabel>
         </ModernStatItem>
 
         <ModernStatItem onPress={() => router.push({ pathname: "/followings", params: { userId: user?.id } })}>
           <ModernStatNumber>{followingCount}</ModernStatNumber>
-          <ModernStatLabel>Following</ModernStatLabel>
+          <ModernStatLabel>{t('following')}</ModernStatLabel>
         </ModernStatItem>
       </ModernStatsContainer>
       

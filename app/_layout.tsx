@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Stack, useRouter } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { ThemeProvider as ThemeContextProvider } from "../context/ThemeContext";
+import { LanguageProvider } from "../context/LanguageContext";
 import ThemeProvider from "../components/ThemeProvider";
 import { supabase } from "../lib/supabase";
 import { getUserData } from "../services/userService";
@@ -19,13 +20,15 @@ LogBox.ignoreLogs(['Warning: TNodeChildrenRenderer', 'Warning: MemoizedTNodeRend
 const Layout: React.FC = () => {
   return (
     // <I18nextProvider i18n={i18n}>
-      <AuthProvider>
-        <ThemeContextProvider>
-          <ThemeProvider>
-            <MainLayout />
-          </ThemeProvider>
-        </ThemeContextProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ThemeContextProvider>
+            <ThemeProvider>
+              <MainLayout />
+            </ThemeProvider>
+          </ThemeContextProvider>
+        </AuthProvider>
+      </LanguageProvider>
     // </I18nextProvider>
   );
 };

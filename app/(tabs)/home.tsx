@@ -18,6 +18,7 @@ import { useRouter } from "expo-router";
 import { fetchPost, PostWithRelations } from "../../services/postService";
 import PostCard from "../../components/PostCard";
 import Loading from "../../components/Loading";
+import { useTranslation } from "react-i18next";
 
 import { getUserData } from "../../services/userService";
 import { User } from "../../src/types";
@@ -140,6 +141,7 @@ const Home: React.FC = () => {
   const { homeRefreshRef } = useRefresh();
   const router = useRouter();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
 
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -404,7 +406,7 @@ const Home: React.FC = () => {
       <Container>
         {/* header */}
         <Header>
-          <Title>Micio Social</Title>
+          <Title>{t('micioSocial')}</Title>
           <IconsContainer>
             <Pressable
               onPress={() => {
@@ -495,15 +497,15 @@ const Home: React.FC = () => {
                   style={{ marginBottom: hp(2), opacity: 0.5 }}
                 />
                 <EmptyStateTitle>
-                  No posts yet
+                  {t('noPosts')}
                 </EmptyStateTitle>
                 <EmptyStateSubtitle>
-                  Follow some users to see their posts in your feed!
+                  {t('followUsersToSeePosts')}
                 </EmptyStateSubtitle>
               </EmptyStateContainer>
             ) : (
               <View style={{ marginVertical: 30 }}>
-                <NoPostText>No more posts</NoPostText>
+                <NoPostText>{t('noMorePosts')}</NoPostText>
               </View>
             )
           }

@@ -38,6 +38,7 @@ import { UserWithBasicInfo } from "../../services/userService";
 import Icon from "../../assets/icons";
 import PrimaryModal from "../../components/PrimaryModal";
 import { useModal } from "../../hooks/useModal";
+import { useTranslation } from "react-i18next";
 
 const HeaderContainer = styled.View`
   flex: 1;
@@ -159,6 +160,7 @@ const UserProfile: React.FC = () => {
   const { userId } = useLocalSearchParams();
   const router = useRouter();
   const { modalRef, showError } = useModal();
+  const { t } = useTranslation();
   const [userData, setUserData] = useState<User | null>(null);
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -228,7 +230,7 @@ const UserProfile: React.FC = () => {
     if (posts.length === 0) {
       return (
         <View style={{ marginVertical: 80 }}>
-          <NoPostText>No posts yet</NoPostText>
+          <NoPostText>{t('noPosts')}</NoPostText>
         </View>
       );
     }
@@ -256,11 +258,11 @@ const UserProfile: React.FC = () => {
           },
         });
       } else {
-        showError("Could not create conversation. Please try again.");
+        showError(t('errorCreatingConversation'));
       }
     } catch (error) {
       console.log("Error creating conversation:", error);
-      showError("Could not create conversation. Please try again.");
+      showError(t('errorCreatingConversation'));
     }
   };
 
@@ -288,7 +290,7 @@ const UserProfile: React.FC = () => {
           }}
         >
           <Header
-            title={userData?.name || "profile"}
+            title={userData?.name || t('profile')}
             mb={30}
             rightButton={chatButton}
           />
@@ -329,6 +331,7 @@ const UserProfile: React.FC = () => {
 const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
   const { user: currentUser } = useAuth();
   const { modalRef, showError } = useModal();
+  const { t } = useTranslation();
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [postsCount, setPostsCount] = useState<number>(0);
@@ -347,7 +350,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       if (supported) {
         await Linking.openURL(formattedUrl);
       } else {
-        showError("Cannot open this URL");
+        showError(t('cannotOpenURL'));
       }
     } catch (error) {
       showError("Cannot open this URL");
@@ -389,7 +392,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           const notify = {
             senderId: currentUser.id,
             receiverId: user.id,
-            title: "Ha iniziato a seguirti",
+            title: t('startedFollowingYou'),
             data: JSON.stringify({ userId: currentUser.id }),
           };
           await createNotification(notify);
@@ -464,7 +467,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
       <ModernStatsContainer>
         <ModernStatItemNonClickable>
           <ModernStatNumber>{postsCount}</ModernStatNumber>
-          <ModernStatLabel>Posts</ModernStatLabel>
+          <ModernStatLabel>{t('posts')}</ModernStatLabel>
         </ModernStatItemNonClickable>
 
         <ModernStatItem
@@ -476,7 +479,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           }
         >
           <ModernStatNumber>{followersCount}</ModernStatNumber>
-          <ModernStatLabel>Followers</ModernStatLabel>
+          <ModernStatLabel>{t('followers')}</ModernStatLabel>
         </ModernStatItem>
 
         <ModernStatItem
@@ -488,7 +491,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, router }) => {
           }
         >
           <ModernStatNumber>{followingCount}</ModernStatNumber>
-          <ModernStatLabel>Following</ModernStatLabel>
+          <ModernStatLabel>{t('following')}</ModernStatLabel>
         </ModernStatItem>
       </ModernStatsContainer>
       <PrimaryModal ref={modalRef} />

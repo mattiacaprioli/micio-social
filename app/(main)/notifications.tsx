@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import NotificationItem from "../../components/NotificationItem";
 import Header from "../../components/Header";
 import { supabase } from "../../lib/supabase";
+import { useTranslation } from "react-i18next";
 
 interface Notification {
   id: string;
@@ -46,6 +47,7 @@ const Notifications: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const theme = useStyledTheme();
 
   const getNotifications = async () => {
@@ -114,7 +116,7 @@ const Notifications: React.FC = () => {
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title="Notifiche" />
+          <Header title={t('notifications')} />
         </View>
 
         <Container>
@@ -138,7 +140,7 @@ const Notifications: React.FC = () => {
             />
           ))}
           {notifications.length === 0 && (
-            <NoDataText>No notifications found</NoDataText>
+            <NoDataText>{t('noNotificationsYet')}</NoDataText>
           )}
         </ListStyle>
         </Container>

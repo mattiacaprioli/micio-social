@@ -22,6 +22,7 @@ import {
 } from "../../services/recentSearchService";
 import PrimaryModal from "../../components/PrimaryModal";
 import { useModal } from "../../hooks/useModal";
+import { useTranslation } from "react-i18next";
 
 // Styled Components
 const Container = styled.View`
@@ -111,6 +112,7 @@ const RemoveButton = styled.TouchableOpacity`
 const Search: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { modalRef, showError, showConfirm } = useModal();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const theme = useStyledTheme();
@@ -155,7 +157,7 @@ const Search: React.FC = () => {
       setUsers([]);
       // Mostra un messaggio di errore solo se non è il primo caricamento
       if (!initialLoading) {
-        showError("Si è verificato un errore durante la ricerca degli utenti. Riprova più tardi.");
+        showError(t('errorSearchingUsers'));
       }
     } finally {
       setLoading(false);
@@ -244,7 +246,7 @@ const Search: React.FC = () => {
     <ThemeWrapper>
       <View style={{ flex: 1 }}>
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-          <Header title="Search" />
+          <Header title={t('search')} />
         </View>
 
         <Container>
@@ -252,7 +254,7 @@ const Search: React.FC = () => {
           <SearchContainer>
           <Icon name="search" size={hp(2.5)} color={theme.colors.textLight} />
           <SearchInput
-            placeholder="Search users..."
+            placeholder={t('searchUsersPlaceholder')}
             placeholderTextColor={theme.colors.textLight}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -281,9 +283,9 @@ const Search: React.FC = () => {
           recentSearches.length > 0 ? (
             <RecentSearchesContainer>
               <SectionHeader>
-                <SectionTitle>Recent</SectionTitle>
+                <SectionTitle>{t('recent')}</SectionTitle>
                 <ClearAllButton onPress={handleClearAllRecentSearches}>
-                  <ClearAllText>Clear All</ClearAllText>
+                  <ClearAllText>{t('clearAll')}</ClearAllText>
                 </ClearAllButton>
               </SectionHeader>
               <FlatList
@@ -297,7 +299,7 @@ const Search: React.FC = () => {
           ) : (
             <NoResultsContainer>
               <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
-              <NoResultsText>Search for users to see them here.</NoResultsText>
+              <NoResultsText>{t('searchForUsersMessage')}</NoResultsText>
             </NoResultsContainer>
           )
         ) : (
@@ -322,7 +324,7 @@ const Search: React.FC = () => {
           ) : (
             <NoResultsContainer>
               <Icon name="search" size={hp(10)} color={theme.colors.darkLight} />
-              <NoResultsText>No users found. Try a different search term.</NoResultsText>
+              <NoResultsText>{t('noUsersFound')}</NoResultsText>
             </NoResultsContainer>
           )
         )}

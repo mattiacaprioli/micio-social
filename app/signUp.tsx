@@ -15,6 +15,7 @@ import { validatePasswordStrength, signInWithGoogle } from "../services/authServ
 import PrimaryModal from "../components/PrimaryModal";
 import { useModal } from "../hooks/useModal";
 import { AntDesign } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 // Styled Components
 const Container = styled.View`
@@ -94,6 +95,7 @@ const GoogleButtonText = styled.Text`
 
 const SignUp: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const emailRef = useRef<string>("");
   const nameRef = useRef<string>("");
   const passwordRef = useRef<string>("");
@@ -107,13 +109,13 @@ const SignUp: React.FC = () => {
     const res = await signInWithGoogle();
     setLoading(false);
     if (!res.success) {
-      showError(res.msg ?? "Google sign-in failed", "Sign Up Error");
+      showError(res.msg ?? t('googleSignInFailed'), t('signUp'));
     }
   };
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current || !nameRef.current) {
-      showError("Please fill all the fields", "Missing Information");
+      showError(t('pleaseFillAllFields'), t('signUp'));
       return;
     }
 
@@ -125,8 +127,8 @@ const SignUp: React.FC = () => {
     if (!passwordValidation.isValid) {
       const firstFailing = passwordValidation.rules.find((r) => !r.passed);
       showError(
-        firstFailing?.label || "Password does not meet security requirements",
-        "Invalid Password"
+        firstFailing?.label || t('passwordNotSecure'),
+        t('signUp')
       );
       return;
     }
@@ -145,7 +147,7 @@ const SignUp: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      showError(error.message, "Sign Up Error");
+      showError(error.message, t('signUp'));
     }
   };
 
@@ -157,30 +159,30 @@ const SignUp: React.FC = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>Let's</WelcomeText>
-          <WelcomeText>get started!</WelcomeText>
+          <WelcomeText>{t('lets')}</WelcomeText>
+          <WelcomeText>{t('getStartedExclamation')}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            Please fill the details to create an account
+            {t('pleaseFillDetails')}
           </FormHelperText>
           <Input
             icon={<Icon name="user" size={26} />}
-            placeholder={'Enter your name'}
+            placeholder={t('enterYourName')}
             onChangeText={(value) => (nameRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder={'Enter your email'}
+            placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder={'Enter your password'}
+            placeholder={t('enterYourPassword')}
             secureTextEntry={!showPassword}
             onChangeText={(value) => {
               passwordRef.current = value;
@@ -216,7 +218,7 @@ const SignUp: React.FC = () => {
                   marginBottom: 5,
                 }}
               >
-                Password requirements:
+                {t('passwordRequirements')}
               </Text>
               <Text
                 style={{
@@ -227,34 +229,34 @@ const SignUp: React.FC = () => {
                 }}
               >
                 {validatePasswordStrength(password).isValid
-                  ? "✓ Valid password"
+                  ? `✓ ${t('validPassword')}`
                   : validatePasswordStrength(password).rules.find((r) => !r.passed)?.label}
               </Text>
             </View>
           )}
 
           {/* Button */}
-          <Button title={'Sign Up'} loading={loading} onPress={onSubmit} />
+          <Button title={t('signUp')} loading={loading} onPress={onSubmit} />
 
           {/* Divider */}
           <DividerRow>
             <DividerLine />
-            <DividerText>or</DividerText>
+            <DividerText>{t('or')}</DividerText>
             <DividerLine />
           </DividerRow>
 
           {/* Google Sign In */}
           <GoogleButton onPress={onGoogleSignIn} disabled={loading}>
             <AntDesign name="google" size={20} color="#EA4335" />
-            <GoogleButtonText>Continue with Google</GoogleButtonText>
+            <GoogleButtonText>{t('continueWithGoogle')}</GoogleButtonText>
           </GoogleButton>
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>{'Already have an account?'}</FooterText>
+          <FooterText>{t('alreadyHaveAccount')}</FooterText>
           <Pressable onPress={() => router.push("/login" as any)}>
-            <LoginLink>{'Login'}</LoginLink>
+            <LoginLink>{t('login')}</LoginLink>
           </Pressable>
         </FooterContainer>
       </Container>

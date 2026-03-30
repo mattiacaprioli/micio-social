@@ -24,6 +24,7 @@ import { Post, Comment, User } from "../../src/types";
 import ThemeWrapper from "../../components/ThemeWrapper";
 import PrimaryModal from "../../components/PrimaryModal";
 import { useModal } from "../../hooks/useModal";
+import { useTranslation } from "react-i18next";
 
 // Styled Components
 const Container = styled.View`
@@ -119,6 +120,7 @@ const PostDetails: React.FC = () => {
   const commentRef = useRef<string>("");
   const theme = useStyledTheme();
 
+  const { t } = useTranslation();
   const [startLoading, setStartLoading] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [post, setPost] = useState<PostWithComments | null>(null);
@@ -235,13 +237,13 @@ const PostDetails: React.FC = () => {
         const notify = {
           senderId: user.id,
           receiverId: post.user_id,
-          title: "Ha commentato il tuo post",
+          title: t('commentedOnYourPost'),
           data: JSON.stringify({ postId: post.id, commentId: res?.data?.id }),
         };
         await createNotification(notify);
       }
     } else {
-      showError(res.msg || "Error adding comment", "Comment");
+      showError(res.msg || t('errorAddingComment'), t('error'));
     }
   };
 
@@ -256,7 +258,7 @@ const PostDetails: React.FC = () => {
         };
       });
     } else {
-      showError(res.msg || "Error deleting comment", "Comment");
+      showError(res.msg || t('errorDeletingComment'), t('error'));
     }
   };
 
@@ -266,7 +268,7 @@ const PostDetails: React.FC = () => {
     if (res.success) {
       router.back();
     } else {
-      showError(res.msg || "Error deleting post", "Post");
+      showError(res.msg || t('errorDeletingPost'), t('post'));
     }
   };
 
@@ -297,7 +299,7 @@ const PostDetails: React.FC = () => {
     return (
       <ThemeWrapper>
         <Center>
-          <NotFoundText>Post not found!</NotFoundText>
+          <NotFoundText>{t('postNotFound')}</NotFoundText>
         </Center>
       </ThemeWrapper>
     );
@@ -342,7 +344,7 @@ const PostDetails: React.FC = () => {
 
           {post.category && (
             <CategoryContainer>
-              <CategoryLabel>Category:</CategoryLabel>
+              <CategoryLabel>{t('category')}:</CategoryLabel>
               <CategoryBadge>
                 <CategoryText>{post.category}</CategoryText>
               </CategoryBadge>
@@ -351,7 +353,7 @@ const PostDetails: React.FC = () => {
           <InputContainer>
             <Input
               inputRef={inputRef}
-              placeholder="Add a comment..."
+              placeholder={t('addAComment')}
               onChangeText={(value) => (commentRef.current = value)}
               placeholderTextColor={theme.colors.textLight}
               containerStyle={{
@@ -396,7 +398,7 @@ const PostDetails: React.FC = () => {
             ))}
 
             {post?.comments?.length === 0 && (
-              <BeFirstText>Be the first to comment!</BeFirstText>
+              <BeFirstText>{t('beFirstToComment')}</BeFirstText>
             )}
           </View>
         </ScrollView>

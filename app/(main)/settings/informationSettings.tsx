@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components/native";
 import { useTheme as useStyledTheme } from "styled-components/native";
 import ThemeWrapper from "../../../components/ThemeWrapper";
@@ -70,17 +71,18 @@ const FooterText = styled.Text`
 
 const InformationSettings: React.FC = () => {
   const theme = useStyledTheme();
+  const { t } = useTranslation();
 
   const infoOptions: InfoOption[] = [
-    { label: "Privacy Policy", action: () => console.log("Privacy Policy pressed") },
-    { label: "Terms of Service", action: () => console.log("Terms of Service pressed") },
-    { label: "Support", action: () => console.log("Support pressed") },
+    { label: t('privacyPolicy'), action: () => console.log("Privacy Policy pressed") },
+    { label: t('termsOfService'), action: () => console.log("Terms of Service pressed") },
+    { label: t('support'), action: () => console.log("Support pressed") },
   ];
 
   return (
     <ThemeWrapper>
       <Container>
-        <Header title="Information" />
+        <Header title={t('information')} />
 
         <Card>
           {infoOptions.map((option, index) => (
@@ -94,8 +96,8 @@ const InformationSettings: React.FC = () => {
         </Card>
 
         <Footer>
-          <FooterText>Micio Social</FooterText>
-          <FooterText>Version: 1.0.0</FooterText>
+          <FooterText>{t('micioSocial')}</FooterText>
+          <FooterText>{t('appVersion')} 1.0.0</FooterText>
         </Footer>
       </Container>
     </ThemeWrapper>

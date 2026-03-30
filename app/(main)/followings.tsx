@@ -11,6 +11,7 @@ import { wp, hp } from "../../helpers/common";
 import { useTheme } from "../../context/ThemeContext";
 import Header from "../../components/Header";
 import { User } from "../../src/types";
+import { useTranslation } from "react-i18next";
 
 // Interfacce per i tipi
 interface RouteParams {
@@ -64,6 +65,7 @@ const Followings: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const { isDarkMode } = useTheme();
   const theme = useStyledTheme();
+  const { t } = useTranslation();
 
   const fetchFollowings = async (): Promise<void> => {
     if (targetUserId) {
@@ -120,7 +122,7 @@ const Followings: React.FC = () => {
             zIndex: 1000,
           }}
         >
-          <Header title="Following" />
+          <Header title={t('following')} />
         </View>
         <Container>
           <FlatList
@@ -136,7 +138,7 @@ const Followings: React.FC = () => {
             }
             ListEmptyComponent={
               <EmptyListContainer>
-                <EmptyListText>No followings found</EmptyListText>
+                <EmptyListText>{t('noFollowingsFound')}</EmptyListText>
               </EmptyListContainer>
             }
           />

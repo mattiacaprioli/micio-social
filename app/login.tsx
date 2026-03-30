@@ -15,6 +15,7 @@ import PrimaryModal from "../components/PrimaryModal";
 import { useModal } from "../hooks/useModal";
 import { signInWithGoogle } from "../services/authService";
 import { AntDesign } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 // Styled Components
 const Container = styled.View`
@@ -100,6 +101,7 @@ const GoogleButtonText = styled.Text`
 
 const Login: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const emailRef = useRef<string>("");
   const passwordRef = useRef<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -111,13 +113,13 @@ const Login: React.FC = () => {
     const res = await signInWithGoogle();
     setLoading(false);
     if (!res.success) {
-      showError(res.msg ?? "Google sign-in failed", "Login Error");
+      showError(res.msg ?? t('googleSignInFailed'), t('login'));
     }
   };
 
   const onSubmit = async (): Promise<void> => {
     if (!emailRef.current || !passwordRef.current) {
-      showError("Please fill all required fields", "Login");
+      showError(t('pleaseFillAllFields'), t('login'));
       return;
     }
 
@@ -134,7 +136,7 @@ const Login: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      showError(error.message, "Login Error");
+      showError(error.message, t('login'));
     }
   };
 
@@ -146,24 +148,24 @@ const Login: React.FC = () => {
 
         {/* Welcome */}
         <View>
-          <WelcomeText>Hey,</WelcomeText>
-          <WelcomeText>Welcome Back!</WelcomeText>
+          <WelcomeText>{t('hey')},</WelcomeText>
+          <WelcomeText>{t('welcomeBack')}</WelcomeText>
         </View>
 
         {/* Form */}
         <FormContainer>
           <FormHelperText>
-            Please enter your email and password to continue
+            {t('pleaseLoginToContinue')}
           </FormHelperText>
           <Input
             icon={<Icon name="mail" size={26} />}
-            placeholder={'Enter your email'}
+            placeholder={t('enterYourEmail')}
             onChangeText={(value) => (emailRef.current = value)}
             forceLightMode={true}
           />
           <Input
             icon={<Icon name="lock" size={26} />}
-            placeholder={'Enter your password'}
+            placeholder={t('enterYourPassword')}
             secureTextEntry={!showPassword}
             onChangeText={(value) => (passwordRef.current = value)}
             forceLightMode={true}
@@ -178,31 +180,31 @@ const Login: React.FC = () => {
             }
           />
           <Pressable onPress={() => router.push("/forgotPassword" as any)}>
-            <ForgotPasswordText>Forgot Password?</ForgotPasswordText>
+            <ForgotPasswordText>{t('forgotPassword')}</ForgotPasswordText>
           </Pressable>
 
           {/* Login Button */}
-          <Button title={'Login'} loading={loading} onPress={onSubmit} />
+          <Button title={t('login')} loading={loading} onPress={onSubmit} />
 
           {/* Divider */}
           <DividerRow>
             <DividerLine />
-            <DividerText>or</DividerText>
+            <DividerText>{t('or')}</DividerText>
             <DividerLine />
           </DividerRow>
 
           {/* Google Sign In */}
           <GoogleButton onPress={onGoogleSignIn} disabled={loading}>
             <AntDesign name="google" size={20} color="#EA4335" />
-            <GoogleButtonText>Continue with Google</GoogleButtonText>
+            <GoogleButtonText>{t('continueWithGoogle')}</GoogleButtonText>
           </GoogleButton>
         </FormContainer>
 
         {/* Footer */}
         <FooterContainer>
-          <FooterText>Don't have an account?</FooterText>
+          <FooterText>{t('dontHaveAccount')}</FooterText>
           <Pressable onPress={() => router.push("/signUp" as any)}>
-            <SignUpLink>Sign Up</SignUpLink>
+            <SignUpLink>{t('signUp')}</SignUpLink>
           </Pressable>
         </FooterContainer>
       </Container>
